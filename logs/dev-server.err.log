@@ -1,0 +1,145 @@
+Error: Route "/finance/[entity]" used `searchParams.farmer`. `searchParams` is a Promise and must be unwrapped with `await` or `React.use()` before accessing its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at FinanceEntityPage (src\app\(app)\finance\[entity]\page.tsx:33:31)
+  31 |   const { entity } = await params;
+  32 |   if (!["payables", "receivables"].includes(entity)) notFound();
+> 33 |   const farmerFilter = String(searchParams?.farmer ?? "all");
+     |                               ^
+  34 |
+  35 |   const isPayable = entity === "payables";
+  36 |   const list = isPayable
+Error: Route "/finance/[entity]" used `searchParams.farmer`. `searchParams` is a Promise and must be unwrapped with `await` or `React.use()` before accessing its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at FinanceEntityPage (src\app\(app)\finance\[entity]\page.tsx:33:31)
+  31 |   const { entity } = await params;
+  32 |   if (!["payables", "receivables"].includes(entity)) notFound();
+> 33 |   const farmerFilter = String(searchParams?.farmer ?? "all");
+     |                               ^
+  34 |
+  35 |   const isPayable = entity === "payables";
+  36 |   const list = isPayable
+
+-----
+[1m[31mFATAL[39m[0m: An unexpected Turbopack error occurred. A panic log has been written to C:\Users\DEVISP~1\AppData\Local\Temp\next-panic-f5c4527c62d9584df7eb21138c518f0a.log.
+
+To help make Turbopack better, report this error by clicking here: https://bugs.nextjs.org/search?category=turbopack-error-report&title=Turbopack%20Error%3A%20Failed%20to%20write%20app%20endpoint%20%2F%28app%29%2Ffinance%2Fpayments%2Fpage&body=Turbopack%20version%3A%20%600ca967b8%60%0ANext.js%20version%3A%20%600.0.0%60%0A%0AError%20message%3A%0A%60%60%60%0AFailed%20to%20write%20app%20endpoint%20%2F%28app%29%2Ffinance%2Fpayments%2Fpage%0A%0ACaused%20by%3A%0A-%20Cell%20CellId%20%7B%20type_id%3A%20ValueTypeId%20%7B%20id%3A%2081%2C%20name%3A%20ValueType%20%7B%20name%3A%20%22next_core%3A%3Aapp_structure%3A%3AAppPageLoaderTree%22%20%7D%20%7D%2C%20index%3A%200%20%7D%20no%20longer%20exists%20in%20task%20TaskId%20%7B%20id%3A%20641%20%7D%20directory_tree_to_loader_tree%20%28no%20cell%20of%20this%20type%20exists%29%0A%0ADebug%20info%3A%0A-%20Execution%20of%20hmr_update_with_issues_operation%20failed%0A-%20Execution%20of%20Project%3A%3Ahmr_update%20failed%0A-%20Execution%20of%20VersionedContentMap%3A%3Aget%20failed%0A-%20Execution%20of%20VersionedContentMap%3A%3Aget_asset%20failed%0A-%20Execution%20of%20VersionedContentMap%3A%3Acompute_entry%20failed%0A-%20Execution%20of%20%2Aemit_assets%20failed%0A-%20Execution%20of%20all_assets_from_entries_operation%20failed%0A-%20Execution%20of%20%2Aall_assets_from_entries%20failed%0A-%20Execution%20of%20endpoint_output_assets_operation%20failed%0A-%20Execution%20of%20%3CAppEndpoint%20as%20Endpoint%3E%3A%3Aoutput%20failed%0A-%20Failed%20to%20write%20app%20endpoint%20%2F%28app%29%2Ffinance%2Fpayments%2Fpage%0A-%20Execution%20of%20%2Aall_asset_paths%20failed%0A-%20Execution%20of%20%2AAppEndpointOutput%3A%3Aoutput_assets%20failed%0A-%20Execution%20of%20AppEndpoint%3A%3Aoutput%20failed%0A-%20Execution%20of%20get_app_page_entry%20failed%0A-%20Execution%20of%20parse_segment_config_from_loader_tree%20failed%0A-%20Cell%20CellId%20%7B%20type_id%3A%20ValueTypeId%20%7B%20id%3A%2081%2C%20name%3A%20ValueType%20%7B%20name%3A%20%22next_core%3A%3Aapp_structure%3A%3AAppPageLoaderTree%22%20%7D%20%7D%2C%20index%3A%200%20%7D%20no%20longer%20exists%20in%20task%20TaskId%20%7B%20id%3A%20641%20%7D%20directory_tree_to_loader_tree%20%28no%20cell%20of%20this%20type%20exists%29%0A%60%60%60&labels=Turbopack,Turbopack%20Panic%20Backtrace
+-----
+
+Persisting failed: Unable to write SST file 00008150.sst
+
+Caused by:
+    The system cannot find the path specified. (os error 3)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+
+thread '<unnamed>' (12552) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:618:14:
+Failed to lookup task ids: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "get_source_map_rope_operation", global_name: "next_napi_bindings::next_api::project::get_source_map_rope_operation", .. }, this: None, arg: (ResolvedVc(RawVc::TaskCell(1, "next_api::project::ProjectContainer#0")), "node:fs") } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00002956.meta
+    1: Unable to open static sorted file 00002954.sst
+    2: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00002954.sst
+    3: The system cannot find the path specified. (os error 3)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+⨯ Error: ENOENT: no such file or directory, open 'D:\Besawit\.next\dev\server\app\(app)\master\[entity]\page\build-manifest.json'
+    at ignore-listed frames {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\Besawit\\.next\\dev\\server\\app\\(app)\\master\\[entity]\\page\\build-manifest.json'
+}
+
+thread 'tokio-runtime-worker' (12972) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:224:17:
+Failed to restore task data (corrupted database or bug): Data for batch of 3 tasks
+
+Caused by:
+    0: Looking up typed data for 3 tasks from database failed
+    1: Unable to open static sorted file referenced from 00008114.meta
+    2: Unable to open static sorted file 00008113.sst
+    3: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00008113.sst
+    4: The system cannot find the path specified. (os error 3)
+
+thread 'tokio-runtime-worker' (8456) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:196:17:
+Failed to restore task data (corrupted database or bug): Data for TaskId 436226)
+
+Caused by:
+    0: Looking up task storage for TaskId 436226 from database failed
+    1: Unable to open static sorted file referenced from 00001065.meta
+    2: Unable to open static sorted file 00001062.sst
+    3: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00001062.sst
+    4: The system cannot find the path specified. (os error 3)
+
+thread '<unnamed>' (12552) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:618:14:
+Failed to lookup task ids: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "get_source_map_rope_operation", global_name: "next_napi_bindings::next_api::project::get_source_map_rope_operation", .. }, this: None, arg: (ResolvedVc(RawVc::TaskCell(1, "next_api::project::ProjectContainer#0")), "node:fs") } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00002956.meta
+    1: Unable to open static sorted file 00002954.sst
+    2: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00002954.sst
+    3: The system cannot find the path specified. (os error 3)
+⨯ Error: ENOENT: no such file or directory, open 'D:\Besawit\.next\dev\server\app\(app)\master\[entity]\page\build-manifest.json'
+    at ignore-listed frames {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\Besawit\\.next\\dev\\server\\app\\(app)\\master\\[entity]\\page\\build-manifest.json'
+}
+
+thread '<unnamed>' (12552) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:618:14:
+Failed to lookup task ids: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "get_source_map_rope_operation", global_name: "next_napi_bindings::next_api::project::get_source_map_rope_operation", .. }, this: None, arg: (ResolvedVc(RawVc::TaskCell(1, "next_api::project::ProjectContainer#0")), "node:fs") } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00002956.meta
+    1: Unable to open static sorted file 00002954.sst
+    2: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00002954.sst
+    3: The system cannot find the path specified. (os error 3)
+⨯ Error: ENOENT: no such file or directory, open 'D:\Besawit\.next\dev\server\app\(app)\finance\[entity]\page\build-manifest.json'
+    at ignore-listed frames {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\Besawit\\.next\\dev\\server\\app\\(app)\\finance\\[entity]\\page\\build-manifest.json'
+}
+Persisting failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Persisting failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+
+thread 'tokio-runtime-worker' (32036) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:224:17:
+Failed to restore task data (corrupted database or bug): Data for batch of 80 tasks
+
+Caused by:
+    0: Looking up typed data for 80 tasks from database failed
+    1: Unable to open static sorted file referenced from 00008149.meta
+    2: Unable to open static sorted file 00008145.sst
+    3: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00008145.sst
+    4: The system cannot find the path specified. (os error 3)
+
+thread 'tokio-runtime-worker' (32036) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:224:17:
+Failed to restore task data (corrupted database or bug): Data for batch of 80 tasks
+
+Caused by:
+    0: Looking up typed data for 80 tasks from database failed
+    1: Unable to open static sorted file referenced from 00008149.meta
+    2: Unable to open static sorted file 00008145.sst
+    3: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00008145.sst
+    4: The system cannot find the path specified. (os error 3)

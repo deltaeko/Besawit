@@ -1,0 +1,62 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1773943970167,
+      "tag": "0000_panoramic_onslaught",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1773945660440,
+      "tag": "0001_master_farmers_crud",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1774002000000,
+      "tag": "0002_transport_personnel",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1774005600000,
+      "tag": "0003_tbs_deduction_config",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1774018800000,
+      "tag": "0004_inventory_movement_audit",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1774028990414,
+      "tag": "0005_stale_nicolaos",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1774117538019,
+      "tag": "0006_crazy_newton_destine",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1774162800000,
+      "tag": "0007_store_debt_offset",
+      "breakpoints": true
+    }
+  ]
+}

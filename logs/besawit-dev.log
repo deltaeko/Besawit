@@ -1,0 +1,205 @@
+
+> besawit@0.1.0 dev
+> next dev --port 6001
+
+▲ Next.js 16.2.0 (Turbopack)
+- Local:         http://localhost:6001
+- Network:       http://172.25.160.1:6001
+- Environments: .env
+✓ Ready in 564ms
+Creating turbopack project { dir: 'D:\\Besawit', testMode: true }
+
+ GET /api/palm/purchases 200 in 363ms (next.js: 292ms, application-code: 71ms)
+ GET /api/inventory/stock-takes 200 in 381ms (next.js: 282ms, application-code: 99ms)
+ GET /api/store/sales 200 in 401ms (next.js: 378ms, application-code: 23ms)
+ GET /api/finance/payments 200 in 403ms (next.js: 326ms, application-code: 77ms)
+ GET /master/farmers 200 in 2.9s (next.js: 934ms, application-code: 1936ms)
+ GET / 307 in 135ms (next.js: 44ms, application-code: 91ms)
+ GET /dashboard 200 in 500ms (next.js: 84ms, application-code: 416ms)
+ GET /master/farmers 200 in 155ms (next.js: 57ms, application-code: 99ms)
+ GET /palm/purchases 200 in 745ms (next.js: 611ms, application-code: 133ms)
+ GET /master/farmers 200 in 125ms (next.js: 35ms, application-code: 90ms)
+ GET /master/farmers/0a20c0ca-08d6-4eaf-b2c7-920629b4661d/edit 200 in 803ms (next.js: 625ms, application-code: 178ms)
+ GET /master/farmers/new 200 in 719ms (next.js: 626ms, application-code: 94ms)
+ POST /api/farmers 201 in 303ms (next.js: 173ms, application-code: 130ms)
+ POST /api/farmers 400 in 30ms (next.js: 5ms, application-code: 25ms)
+ GET /master/farmers/6cf40b1f-59ee-4c9b-8cab-486831458950 200 in 2.5s (next.js: 2.3s, application-code: 124ms)
+ GET /master/farmers/6cf40b1f-59ee-4c9b-8cab-486831458950 200 in 153ms (next.js: 42ms, application-code: 110ms)
+ GET /master/farmers 200 in 151ms (next.js: 43ms, application-code: 107ms)
+ GET /master/farmers/6cf40b1f-59ee-4c9b-8cab-486831458950/edit 200 in 142ms (next.js: 38ms, application-code: 104ms)
+ GET /palm/purchases 200 in 111ms (next.js: 32ms, application-code: 79ms)
+ GET /palm/purchases/new 200 in 789ms (next.js: 631ms, application-code: 158ms)
+ POST /api/palm/purchases 201 in 95ms (next.js: 6ms, application-code: 90ms)
+ GET /palm/purchases/1088f027-e000-46bb-b813-01714a887102 200 in 752ms (next.js: 656ms, application-code: 96ms)
+ GET /palm/purchases/1088f027-e000-46bb-b813-01714a887102 200 in 106ms (next.js: 31ms, application-code: 76ms)
+ GET /palm/purchases/1088f027-e000-46bb-b813-01714a887102 200 in 596ms (next.js: 287ms, application-code: 309ms)
+ GET /palm/purchases/1088f027-e000-46bb-b813-01714a887102 200 in 77ms (next.js: 4ms, application-code: 73ms)
+ GET /palm/purchases/1088f027-e000-46bb-b813-01714a887102 200 in 71ms (next.js: 5ms, application-code: 66ms)
+✓ Compiled in 153ms
+ GET /palm/purchases/1088f027-e000-46bb-b813-01714a887102 200 in 494ms (next.js: 279ms, application-code: 215ms)
+ GET /palm/purchases/1088f027-e000-46bb-b813-01714a887102 200 in 82ms (next.js: 5ms, application-code: 76ms)
+ GET /palm/purchases/1088f027-e000-46bb-b813-01714a887102 200 in 80ms (next.js: 5ms, application-code: 75ms)
+ GET /palm/purchases/1088f027-e000-46bb-b813-01714a887102 200 in 70ms (next.js: 4ms, application-code: 66ms)
+ GET /palm/purchases/1088f027-e000-46bb-b813-01714a887102 200 in 71ms (next.js: 4ms, application-code: 67ms)
+ GET /palm/purchases/1088f027-e000-46bb-b813-01714a887102 200 in 76ms (next.js: 4ms, application-code: 72ms)
+ GET /palm/purchases/1088f027-e000-46bb-b813-01714a887102 200 in 98ms (next.js: 27ms, application-code: 72ms)
+ GET /palm/purchases/1088f027-e000-46bb-b813-01714a887102 200 in 71ms (next.js: 4ms, application-code: 67ms)
+ GET /palm/purchases/1088f027-e000-46bb-b813-01714a887102 200 in 80ms (next.js: 4ms, application-code: 76ms)
+ GET /palm/purchases/1088f027-e000-46bb-b813-01714a887102 200 in 85ms (next.js: 5ms, application-code: 80ms)
+ GET /palm/purchases/1088f027-e000-46bb-b813-01714a887102 200 in 96ms (next.js: 6ms, application-code: 91ms)
+ GET /palm/purchases/1088f027-e000-46bb-b813-01714a887102 200 in 101ms (next.js: 36ms, application-code: 65ms)
+ GET /palm/purchases/1088f027-e000-46bb-b813-01714a887102 200 in 661ms (next.js: 308ms, application-code: 353ms)
+ GET /palm/purchases/1088f027-e000-46bb-b813-01714a887102 200 in 461ms (next.js: 240ms, application-code: 221ms)
+ GET /palm/purchases/0a20c0ca-08d6-4eaf-b2c7-920629b4661d 307 in 924ms (next.js: 37ms, application-code: 887ms)
+ GET /login 200 in 272ms (next.js: 54ms, application-code: 218ms)
+✓ Compiled in 117ms
+ GET /palm/purchases/1088f027-e000-46bb-b813-01714a887102 200 in 549ms (next.js: 295ms, application-code: 255ms)
+ GET /palm/purchases/1088f027-e000-46bb-b813-01714a887102 200 in 92ms (next.js: 7ms, application-code: 85ms)
+ GET /palm/purchases/1088f027-e000-46bb-b813-01714a887102 200 in 132ms (next.js: 4ms, application-code: 128ms)
+ GET /palm/purchases/1088f027-e000-46bb-b813-01714a887102 200 in 78ms (next.js: 5ms, application-code: 73ms)
+ GET /palm/purchases/1088f027-e000-46bb-b813-01714a887102 200 in 114ms (next.js: 30ms, application-code: 84ms)
+ GET /palm/purchases/1088f027-e000-46bb-b813-01714a887102 200 in 84ms (next.js: 5ms, application-code: 80ms)
+ GET /palm/purchases/1088f027-e000-46bb-b813-01714a887102 200 in 90ms (next.js: 5ms, application-code: 85ms)
+ GET /palm/purchases/1088f027-e000-46bb-b813-01714a887102 200 in 479ms (next.js: 263ms, application-code: 216ms)
+ GET /palm/purchases/1088f027-e000-46bb-b813-01714a887102 200 in 97ms (next.js: 5ms, application-code: 92ms)
+ GET /palm/purchases/1088f027-e000-46bb-b813-01714a887102 200 in 94ms (next.js: 4ms, application-code: 90ms)
+ GET /palm/purchases/1088f027-e000-46bb-b813-01714a887102 200 in 548ms (next.js: 306ms, application-code: 242ms)
+ GET /palm/purchases/1088f027-e000-46bb-b813-01714a887102 200 in 86ms (next.js: 5ms, application-code: 81ms)
+ GET /palm/purchases/1088f027-e000-46bb-b813-01714a887102 200 in 81ms (next.js: 11ms, application-code: 70ms)
+✓ Compiled in 177ms
+ GET /palm/purchases/1088f027-e000-46bb-b813-01714a887102 404 in 719ms (next.js: 671ms, application-code: 48ms)
+ GET /palm/purchases/1088f027-e000-46bb-b813-01714a887102 404 in 198ms (next.js: 8ms, application-code: 191ms)
+ GET /palm/purchases/1088f027-e000-46bb-b813-01714a887102 404 in 145ms (next.js: 12ms, application-code: 132ms)
+ GET /palm/purchases/1088f027-e000-46bb-b813-01714a887102 404 in 55ms (next.js: 7ms, application-code: 48ms)
+ GET /palm/purchases/1088f027-e000-46bb-b813-01714a887102 200 in 1089ms (next.js: 745ms, application-code: 344ms)
+ GET /palm/purchases/1088f027-e000-46bb-b813-01714a887102 200 in 142ms (next.js: 7ms, application-code: 135ms)
+ GET /palm/purchases/1088f027-e000-46bb-b813-01714a887102 200 in 1564ms (next.js: 6ms, application-code: 1558ms)
+ GET /palm/purchases/1088f027-e000-46bb-b813-01714a887102 200 in 1498ms (next.js: 4ms, application-code: 1495ms)
+ GET /palm/purchases/1088f027-e000-46bb-b813-01714a887102 200 in 149ms (next.js: 36ms, application-code: 113ms)
+ GET /palm/purchases/1088f027-e000-46bb-b813-01714a887102 200 in 123ms (next.js: 5ms, application-code: 118ms)
+ GET /palm/purchases/1088f027-e000-46bb-b813-01714a887102 200 in 588ms (next.js: 291ms, application-code: 297ms)
+ GET /palm/purchases/1088f027-e000-46bb-b813-01714a887102 200 in 521ms (next.js: 279ms, application-code: 242ms)
+ GET /palm/purchases/1088f027-e000-46bb-b813-01714a887102 200 in 559ms (next.js: 274ms, application-code: 286ms)
+✓ Compiled in 90ms
+ GET /palm/purchases/1088f027-e000-46bb-b813-01714a887102 200 in 642ms (next.js: 290ms, application-code: 352ms)
+ GET /palm/purchases/1088f027-e000-46bb-b813-01714a887102 200 in 545ms (next.js: 274ms, application-code: 271ms)
+ GET /palm/purchases/1088f027-e000-46bb-b813-01714a887102 200 in 598ms (next.js: 276ms, application-code: 322ms)
+ GET /palm/purchases/1088f027-e000-46bb-b813-01714a887102 200 in 594ms (next.js: 290ms, application-code: 304ms)
+ GET /palm/purchases/1088f027-e000-46bb-b813-01714a887102 200 in 131ms (next.js: 5ms, application-code: 126ms)
+ GET /palm/purchases/1088f027-e000-46bb-b813-01714a887102 200 in 107ms (next.js: 4ms, application-code: 102ms)
+✓ Compiled in 227ms
+⨯ ReferenceError: nonNegativeNumber is not defined
+    at module evaluation (src\lib\validation\palm.ts:53:11)
+    at <unknown> (src\services\palm-service.ts:3:1)
+    at module evaluation (D:\Besawit\.next\dev\server\chunks\ssr\[root-of-the-server]__0s~jakg._.js:2418:30)
+    at <unknown> (src\app\(app)\palm\[entity]\[id]\page.tsx:15:1)
+    at module evaluation (D:\Besawit\.next\dev\server\chunks\ssr\[root-of-the-server]__0s~jakg._.js:2593:30)
+    at module evaluation (D:\Besawit\.next\dev\server\chunks\ssr\[root-of-the-server]__0s~jakg._.js:3027:47)
+  51 | export const palmSaleDeductionSchema = z.object({
+  52 |   type: z.enum(["trash", "water", "sand_mud", "fronds", "others"]),
+> 53 |   weight: nonNegativeNumber,
+     |           ^
+  54 |   notes: z.string().max(255).optional().or(z.literal("")),
+  55 | });
+  56 |
+⨯ ReferenceError: nonNegativeNumber is not defined
+    at module evaluation (src\lib\validation\palm.ts:53:11)
+    at <unknown> (src\services\palm-service.ts:3:1)
+    at module evaluation (D:\Besawit\.next\dev\server\chunks\ssr\[root-of-the-server]__0s~jakg._.js:2418:30)
+    at <unknown> (src\app\(app)\palm\[entity]\[id]\page.tsx:15:1)
+    at module evaluation (D:\Besawit\.next\dev\server\chunks\ssr\[root-of-the-server]__0s~jakg._.js:2593:30)
+    at module evaluation (D:\Besawit\.next\dev\server\chunks\ssr\[root-of-the-server]__0s~jakg._.js:3027:47)
+  51 | export const palmSaleDeductionSchema = z.object({
+  52 |   type: z.enum(["trash", "water", "sand_mud", "fronds", "others"]),
+> 53 |   weight: nonNegativeNumber,
+     |           ^
+  54 |   notes: z.string().max(255).optional().or(z.literal("")),
+  55 | });
+  56 | {
+  page: '/palm/purchases/1088f027-e000-46bb-b813-01714a887102'
+}
+⨯ Failed to generate static paths for /palm/[entity]/[id]:
+ReferenceError: nonNegativeNumber is not defined
+    at module evaluation (src\lib\validation\palm.ts:53:11)
+    at <unknown> (src\services\palm-service.ts:3:1)
+    at module evaluation (D:\Besawit\.next\dev\server\chunks\ssr\[root-of-the-server]__0s~jakg._.js:2418:30)
+  51 | export const palmSaleDeductionSchema = z.object({
+  52 |   type: z.enum(["trash", "water", "sand_mud", "fronds", "others"]),
+> 53 |   weight: nonNegativeNumber,
+     |           ^
+  54 |   notes: z.string().max(255).optional().or(z.literal("")),
+  55 | });
+  56 | {
+  type: 'ReferenceError'
+}
+ GET /palm/purchases/1088f027-e000-46bb-b813-01714a887102 500 in 1994ms (next.js: 1577ms, application-code: 416ms)
+⨯ ReferenceError: nonNegativeNumber is not defined
+    at module evaluation (src\lib\validation\palm.ts:53:11)
+    at <unknown> (src\services\palm-service.ts:3:1)
+    at module evaluation (D:\Besawit\.next\dev\server\chunks\ssr\[root-of-the-server]__0s~jakg._.js:2418:30)
+  51 | export const palmSaleDeductionSchema = z.object({
+  52 |   type: z.enum(["trash", "water", "sand_mud", "fronds", "others"]),
+> 53 |   weight: nonNegativeNumber,
+     |           ^
+  54 |   notes: z.string().max(255).optional().or(z.literal("")),
+  55 | });
+  56 | {
+  type: 'ReferenceError',
+  page: '/palm/purchases/1088f027-e000-46bb-b813-01714a887102'
+}
+⨯ ReferenceError: nonNegativeNumber is not defined
+    at module evaluation (src\lib\validation\palm.ts:53:11)
+    at <unknown> (src\services\palm-service.ts:3:1)
+    at module evaluation (D:\Besawit\.next\dev\server\chunks\ssr\[root-of-the-server]__0s~jakg._.js:2418:30)
+  51 | export const palmSaleDeductionSchema = z.object({
+  52 |   type: z.enum(["trash", "water", "sand_mud", "fronds", "others"]),
+> 53 |   weight: nonNegativeNumber,
+     |           ^
+  54 |   notes: z.string().max(255).optional().or(z.literal("")),
+  55 | });
+  56 | {
+  type: 'ReferenceError',
+  page: '/palm/purchases/1088f027-e000-46bb-b813-01714a887102'
+}
+ GET /palm/purchases/1088f027-e000-46bb-b813-01714a887102 500 in 585ms (next.js: 548ms, application-code: 37ms)
+ GET /palm/purchases/1088f027-e000-46bb-b813-01714a887102 500 in 521ms (next.js: 505ms, application-code: 16ms)
+[browser] Uncaught ReferenceError: nonNegativeNumber is not defined
+    at module evaluation (src/lib/validation/palm.ts:53:11)
+    at <unknown> (src/services/palm-service.ts:3:1)
+    at module evaluation (src/repositories/palm-repository.ts:93:1)
+  51 | export const palmSaleDeductionSchema = z.object({
+  52 |   type: z.enum(["trash", "water", "sand_mud", "fronds", "others"]),
+> 53 |   weight: nonNegativeNumber,
+     |           ^
+  54 |   notes: z.string().max(255).optional().or(z.literal("")),
+  55 | });
+  56 |
+✓ Compiled in 88ms
+✓ Compiled in 179ms
+⨯ ReferenceError: nonNegativeNumber is not defined
+    at module evaluation (src\lib\validation\palm.ts:53:11)
+    at <unknown> (src\services\palm-service.ts:3:1)
+    at module evaluation (D:\Besawit\.next\dev\server\chunks\ssr\[root-of-the-server]__13yplxg._.js:2595:30)
+  51 | export const palmSaleDeductionSchema = z.object({
+  52 |   type: z.enum(["trash", "water", "sand_mud", "fronds", "others"]),
+> 53 |   weight: nonNegativeNumber,
+     |           ^
+  54 |   notes: z.string().max(255).optional().or(z.literal("")),
+  55 | });
+  56 | {
+  type: 'ReferenceError',
+  page: '/palm/purchases/1088f027-e000-46bb-b813-01714a887102'
+}
+ GET /palm/purchases/1088f027-e000-46bb-b813-01714a887102 500 in 915ms (next.js: 893ms, application-code: 22ms)
+[browser] Uncaught ReferenceError: nonNegativeNumber is not defined
+    at module evaluation (src/lib/validation/palm.ts:53:11)
+    at <unknown> (src/services/palm-service.ts:3:1)
+    at module evaluation (src/lib/validation/palm.ts:101:3)
+  51 | export const palmSaleDeductionSchema = z.object({
+  52 |   type: z.enum(["trash", "water", "sand_mud", "fronds", "others"]),
+> 53 |   weight: nonNegativeNumber,
+     |           ^
+  54 |   notes: z.string().max(255).optional().or(z.literal("")),
+  55 | });
+  56 |
+^C^C
