@@ -11,6 +11,55 @@ import { formatCurrency, formatDate, formatDateTime, formatNumber } from "@/lib/
 import { formatPalmStatusLabel, resolvePalmStatusBadgeVariant } from "@/modules/palm/status-utils";
 import { getPayableDetail, getReceivableDetail } from "@/services/finance-service";
 
+function getDueDateMeta(value?: Date | string | null) {
+  if (!value) {
+    return {
+      dateLabel: "-",
+      hint: "Belum ditetapkan",
+      tone: "muted" as const,
+    };
+  }
+
+  const dueDate = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(dueDate.getTime())) {
+    return {
+      dateLabel: "-",
+      hint: "Belum ditetapkan",
+      tone: "muted" as const,
+    };
+  }
+
+  const dueMidnight = new Date(dueDate);
+  dueMidnight.setHours(0, 0, 0, 0);
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const diffDays = Math.round((dueMidnight.getTime() - today.getTime()) / 86_400_000);
+
+  if (diffDays < 0) {
+    return {
+      dateLabel: formatDate(dueDate),
+      hint: `Lewat ${Math.abs(diffDays)} hari`,
+      tone: "danger" as const,
+    };
+  }
+
+  if (diffDays === 0) {
+    return {
+      dateLabel: formatDate(dueDate),
+      hint: "Hari ini",
+      tone: "warning" as const,
+    };
+  }
+
+  return {
+    dateLabel: formatDate(dueDate),
+    hint: `${diffDays} hari lagi`,
+    tone: diffDays <= 7 ? ("warning" as const) : ("default" as const),
+  };
+}
+
 function MetricCard({
   label,
   value,
@@ -102,6 +151,38 @@ function DetailRow({ label, value }: { label: string; value: string }) {
   );
 }
 
+function SummaryList({
+  rows,
+}: {
+  rows: Array<{
+    label: string;
+    value: string;
+    emphasis?: boolean;
+  }>;
+}) {
+  return (
+    <div className="overflow-hidden rounded-2xl border border-border/80 bg-muted/10">
+      {rows.map((row, index) => (
+        <div
+          className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-6 border-b border-border/70 px-5 py-4 last:border-b-0"
+          key={`${row.label}-${index}`}
+        >
+          <div className="text-sm text-muted-foreground">{row.label}</div>
+          <div
+            className={
+              row.emphasis
+                ? "text-right text-xl font-semibold tracking-tight text-foreground"
+                : "text-right text-base font-semibold text-foreground"
+            }
+          >
+            {row.value}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default async function FinanceDetailPage({
   params,
 }: {
@@ -187,14 +268,16 @@ export default async function FinanceDetailPage({
         <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
           <div className="space-y-6">
             <SectionCard title="Ringkasan Hutang" description="Nilai hutang, pembayaran, dan informasi pihak terkait.">
-              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                <MetricCard label={partyLabel} value={partyName} />
-                <MetricCard label="Tanggal Referensi" value={formatDate(payable.sourceDate)} />
-                <MetricCard label="Total Hutang" value={formatCurrency(payable.amount)} />
-                <MetricCard emphasis label="Sisa Hutang" value={formatCurrency(payable.outstandingAmount)} />
-                <MetricCard label="Sudah Dibayar" value={formatCurrency(payable.paidAmount)} />
-                <MetricCard label="Jatuh Tempo" value={formatDate(payable.dueDate)} />
-              </div>
+              <SummaryList
+                rows={[
+                  { label: partyLabel, value: partyName },
+                  { label: "Tanggal Referensi", value: formatDate(payable.sourceDate) },
+                  { label: "Total Hutang", value: formatCurrency(payable.amount) },
+                  { label: "Sisa Hutang", value: formatCurrency(payable.outstandingAmount), emphasis: true },
+                  { label: "Sudah Dibayar", value: formatCurrency(payable.paidAmount) },
+                  { label: "Jatuh Tempo", value: formatDate(payable.dueDate) },
+                ]}
+              />
             </SectionCard>
 
             <SectionCard
@@ -279,6 +362,26 @@ export default async function FinanceDetailPage({
           </div>
 
           <SectionCard title="Metadata Dokumen" description="Ringkasan administratif dokumen hutang.">
+            {(() => {
+              const dueDateMeta = getDueDateMeta(payable.dueDate);
+              return (
+                <div
+                  className={
+                    dueDateMeta.tone === "danger"
+                      ? "mb-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3"
+                      : dueDateMeta.tone === "warning"
+                        ? "mb-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3"
+                        : "mb-4 rounded-2xl border border-border/80 bg-muted/20 px-4 py-3"
+                  }
+                >
+                  <div className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+                    Jatuh Tempo
+                  </div>
+                  <div className="mt-1 text-lg font-semibold text-foreground">{dueDateMeta.dateLabel}</div>
+                  <div className="mt-1 text-sm text-muted-foreground">{dueDateMeta.hint}</div>
+                </div>
+              );
+            })()}
             <div className="space-y-1">
               <DetailRow label="Kode Hutang" value={payable.code} />
               <DetailRow label="Pihak" value={partyName} />
@@ -368,15 +471,17 @@ export default async function FinanceDetailPage({
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
         <div className="space-y-6">
           <SectionCard title="Ringkasan Piutang" description="Nilai piutang, penerimaan, dan informasi pihak terkait.">
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-              <MetricCard label="Pihak" value={partyName} />
-              {farmerLabel ? <MetricCard label="Petani Terkait" value={farmerLabel} /> : null}
-              <MetricCard label="Tanggal Referensi" value={formatDate(receivable.sourceDate)} />
-              <MetricCard label="Total Piutang" value={formatCurrency(receivable.amount)} />
-              <MetricCard emphasis label="Sisa Piutang" value={formatCurrency(receivable.outstandingAmount)} />
-              <MetricCard label="Sudah Diterima" value={formatCurrency(receivable.paidAmount)} />
-              <MetricCard label="Jatuh Tempo" value={formatDate(receivable.dueDate)} />
-            </div>
+            <SummaryList
+              rows={[
+                { label: "Pihak", value: partyName },
+                ...(farmerLabel ? [{ label: "Petani Terkait", value: farmerLabel }] : []),
+                { label: "Tanggal Referensi", value: formatDate(receivable.sourceDate) },
+                { label: "Total Piutang", value: formatCurrency(receivable.amount) },
+                { label: "Sisa Piutang", value: formatCurrency(receivable.outstandingAmount), emphasis: true },
+                { label: "Sudah Diterima", value: formatCurrency(receivable.paidAmount) },
+                { label: "Jatuh Tempo", value: formatDate(receivable.dueDate) },
+              ]}
+            />
           </SectionCard>
 
           <SectionCard title="Histori Penerimaan" description="Semua pembayaran yang sudah diterima untuk piutang ini.">
@@ -385,6 +490,26 @@ export default async function FinanceDetailPage({
         </div>
 
         <SectionCard title="Metadata Dokumen" description="Ringkasan administratif dokumen piutang.">
+          {(() => {
+            const dueDateMeta = getDueDateMeta(receivable.dueDate);
+            return (
+              <div
+                className={
+                  dueDateMeta.tone === "danger"
+                    ? "mb-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3"
+                    : dueDateMeta.tone === "warning"
+                      ? "mb-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3"
+                      : "mb-4 rounded-2xl border border-border/80 bg-muted/20 px-4 py-3"
+                }
+              >
+                <div className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+                  Jatuh Tempo
+                </div>
+                <div className="mt-1 text-lg font-semibold text-foreground">{dueDateMeta.dateLabel}</div>
+                <div className="mt-1 text-sm text-muted-foreground">{dueDateMeta.hint}</div>
+              </div>
+            );
+          })()}
           <div className="space-y-1">
             <DetailRow label="Kode Piutang" value={receivable.code} />
             <DetailRow label="Pihak" value={partyName} />

@@ -484,12 +484,9 @@ export async function getFinanceInventorySummary() {
   };
 }
 
-export async function getDashboardSummary() {
-  const startOfToday = new Date();
-  startOfToday.setHours(0, 0, 0, 0);
-
-  const endOfToday = new Date(startOfToday);
-  endOfToday.setDate(endOfToday.getDate() + 1);
+export async function getDashboardSummary(selectedDateParam?: string) {
+  const selectedDate = resolveSelectedDate(selectedDateParam);
+  const currentRange = getDateRange(selectedDate);
 
   const [
     [purchaseRow],
@@ -499,6 +496,7 @@ export async function getDashboardSummary() {
     [receivableRow],
     [lowStockRow],
     [varianceRow],
+    recentPalmPurchases,
     recentStoreSales,
     recentPalmSales,
   ] = await Promise.all([
@@ -509,8 +507,9 @@ export async function getDashboardSummary() {
       .from(tbsPurchases)
       .where(
         and(
-          gte(tbsPurchases.purchaseDate, startOfToday),
-          lt(tbsPurchases.purchaseDate, endOfToday),
+          eq(tbsPurchases.status, "active"),
+          gte(tbsPurchases.purchaseDate, currentRange.start),
+          lt(tbsPurchases.purchaseDate, currentRange.end),
         ),
       ),
     db
@@ -519,7 +518,11 @@ export async function getDashboardSummary() {
       })
       .from(tbsSales)
       .where(
-        and(gte(tbsSales.saleDate, startOfToday), lt(tbsSales.saleDate, endOfToday)),
+        and(
+          eq(tbsSales.status, "active"),
+          gte(tbsSales.saleDate, currentRange.start),
+          lt(tbsSales.saleDate, currentRange.end),
+        ),
       ),
     db
       .select({
@@ -527,7 +530,11 @@ export async function getDashboardSummary() {
       })
       .from(tbsSales)
       .where(
-        and(gte(tbsSales.saleDate, startOfToday), lt(tbsSales.saleDate, endOfToday)),
+        and(
+          eq(tbsSales.status, "active"),
+          gte(tbsSales.saleDate, currentRange.start),
+          lt(tbsSales.saleDate, currentRange.end),
+        ),
       ),
     db
       .select({
@@ -552,6 +559,12 @@ export async function getDashboardSummary() {
       .from(stockTakeItems),
     db
       .select()
+      .from(tbsPurchases)
+      .where(eq(tbsPurchases.status, "active"))
+      .orderBy(desc(tbsPurchases.purchaseDate), desc(tbsPurchases.createdAt))
+      .limit(4),
+    db
+      .select()
       .from(storeSales)
       .orderBy(desc(storeSales.transactionDate), desc(storeSales.createdAt))
       .limit(4),
@@ -562,13 +575,23 @@ export async function getDashboardSummary() {
       .limit(4),
   ]);
 
-  const recentTransactions = [...recentPalmSales, ...recentStoreSales]
+  const recentTransactions = [...recentPalmPurchases, ...recentPalmSales, ...recentStoreSales]
     .sort((left, right) => {
       const leftDate = new Date(
-        String((left as Record<string, unknown>).saleDate ?? (left as Record<string, unknown>).transactionDate ?? 0),
+        String(
+          (left as Record<string, unknown>).saleDate ??
+            (left as Record<string, unknown>).transactionDate ??
+            (left as Record<string, unknown>).purchaseDate ??
+            0,
+        ),
       ).getTime();
       const rightDate = new Date(
-        String((right as Record<string, unknown>).saleDate ?? (right as Record<string, unknown>).transactionDate ?? 0),
+        String(
+          (right as Record<string, unknown>).saleDate ??
+            (right as Record<string, unknown>).transactionDate ??
+            (right as Record<string, unknown>).purchaseDate ??
+            0,
+        ),
       ).getTime();
 
       return rightDate - leftDate;

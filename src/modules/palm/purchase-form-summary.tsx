@@ -6,7 +6,7 @@ import {
   resolvePalmStatusBadgeVariant,
 } from "@/modules/palm/status-utils";
 
-function SummaryMetric({
+function SummaryRow({
   label,
   value,
   emphasis = false,
@@ -16,17 +16,17 @@ function SummaryMetric({
   emphasis?: boolean;
 }) {
   return (
-    <div
-      className={
-        emphasis
-          ? "rounded-3xl border border-amber-200 bg-amber-50/70 p-5"
-          : "rounded-2xl border border-border/80 bg-card/80 p-4"
-      }
-    >
-      <div className="text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
+    <div className="flex items-start justify-between gap-4 border-b border-border/60 py-3 last:border-b-0 last:pb-0">
+      <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
         {label}
       </div>
-      <div className={emphasis ? "mt-3 text-3xl font-semibold tracking-tight" : "mt-2 text-xl font-semibold tracking-tight"}>
+      <div
+        className={
+          emphasis
+            ? "max-w-[56%] text-right text-lg font-semibold tracking-tight text-foreground"
+            : "max-w-[56%] text-right text-base font-medium text-foreground"
+        }
+      >
         {value}
       </div>
     </div>
@@ -57,15 +57,13 @@ export function PalmPurchaseFormSummary({
   hasPaymentConflict: boolean;
 }) {
   return (
-    <Card className="sticky top-24 self-start">
-      <CardHeader className="space-y-4 border-b border-border/70 pb-5">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="space-y-1">
-            <CardTitle>Ringkasan Perhitungan</CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Periksa angka timbangan, nilai pembelian, dan posisi hutang sebelum menyimpan.
-            </p>
-          </div>
+    <Card className="sticky top-6 self-start">
+      <CardHeader className="space-y-2 border-b border-border/70 pb-3">
+        <div className="space-y-2">
+          <CardTitle className="text-[1.35rem] tracking-tight">Ringkasan Perhitungan</CardTitle>
+          <p className="text-sm leading-5 text-muted-foreground">
+            Periksa angka timbangan, nilai pembelian, dan posisi hutang sebelum menyimpan.
+          </p>
           <div className="flex flex-wrap gap-2">
             <Badge variant={resolvePalmStatusBadgeVariant(transactionStatus)}>
               {formatPalmStatusLabel(transactionStatus)}
@@ -76,41 +74,30 @@ export function PalmPurchaseFormSummary({
           </div>
         </div>
       </CardHeader>
-      <CardContent className="space-y-4 p-5 pt-5">
-        <SummaryMetric
-          emphasis={outstandingAmount > 0}
-          label="Sisa Hutang"
-          value={formatCurrency(outstandingAmount)}
-        />
-        <div className="grid gap-4 sm:grid-cols-2">
-          <SummaryMetric
-            label="Total Akhir"
-            value={formatCurrency(totalFinal)}
+      <CardContent className="space-y-3 p-3.5 pt-3.5">
+        <div className="rounded-2xl border border-border/80 bg-card/80 px-4 py-2">
+          <SummaryRow
+            emphasis
+            label="Sisa Hutang"
+            value={formatCurrency(outstandingAmount)}
           />
-          <SummaryMetric
-            label="Sudah Dibayar"
-            value={formatCurrency(paidAmount)}
+          <SummaryRow label="Total Akhir" value={formatCurrency(totalFinal)} />
+          <SummaryRow label="Sudah Dibayar" value={formatCurrency(paidAmount)} />
+          <SummaryRow label="Berat Bersih" value={`${formatNumber(netWeight)} kg`} />
+          <SummaryRow label="Total Pembelian" value={formatCurrency(totalPurchase)} />
+          <SummaryRow label="Potong Hutang Toko" value={formatCurrency(deductionAmount)} />
+          <SummaryRow
+            label="Referensi Hutang"
+            value={payableCode ?? "Otomatis setelah disimpan"}
           />
-          <SummaryMetric
-            label="Berat Bersih"
-            value={`${formatNumber(netWeight)} kg`}
+          <SummaryRow
+            label="Status Pembayaran"
+            value={formatPalmStatusLabel(paymentStatus)}
           />
-          <SummaryMetric
-            label="Total Pembelian"
-            value={formatCurrency(totalPurchase)}
+          <SummaryRow
+            label="Catatan"
+            value="Dicatat terpisah agar audit hutang tetap jelas"
           />
-          <SummaryMetric
-            label="Potong Hutang Toko"
-            value={formatCurrency(deductionAmount)}
-          />
-        </div>
-        <div className="rounded-2xl border border-border/80 bg-muted/25 p-4 text-sm text-muted-foreground">
-          <div className="font-medium text-foreground">
-            {payableCode ? `Referensi hutang: ${payableCode}` : "Hutang dibuat otomatis setelah transaksi disimpan."}
-          </div>
-          <p className="mt-2 leading-6">
-            Pembayaran dicatat sebagai langkah terpisah agar audit trail hutang tetap jelas dan dapat ditelusuri.
-          </p>
         </div>
         {hasPaymentConflict ? (
           <div className="rounded-2xl border border-destructive/20 bg-destructive/5 p-4 text-sm leading-6 text-destructive">

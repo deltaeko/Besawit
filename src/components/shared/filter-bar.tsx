@@ -14,7 +14,7 @@ export function FilterBar({
   return (
     <div
       className={cn(
-        "flex flex-col gap-3 rounded-2xl border border-border/80 bg-card px-4 py-3 shadow-sm 2xl:flex-row 2xl:items-center 2xl:justify-between",
+        "flex flex-col gap-3 rounded-2xl border border-border/80 bg-card px-4 py-3 shadow-sm print:hidden 2xl:flex-row 2xl:items-center 2xl:justify-between",
         className,
       )}
     >

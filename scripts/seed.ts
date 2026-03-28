@@ -280,6 +280,17 @@ async function ensureMasters() {
         minStock: "20.00",
         isActive: true,
       },
+      {
+        categoryId: null,
+        code: "SYS-TBS-POOL",
+        name: "TBS Pool",
+        unit: "kg",
+        purchasePrice: "0.00",
+        sellingPrice: "0.00",
+        minStock: "0.00",
+        notes: "Produk internal sistem untuk pooled stock TBS.",
+        isActive: false,
+      },
     ])
     .onConflictDoNothing();
 
@@ -408,6 +419,7 @@ async function ensureTransactions() {
       {
         saleDate: new Date().toISOString().slice(0, 10),
         referencePurchaseId: purchase.id,
+        warehouseId: warehouse.id,
         factoryId: factory.id,
         grossWeight: 9800,
         tareWeight: 1600,

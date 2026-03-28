@@ -1,5 +1,6 @@
 import { eq } from "drizzle-orm";
 
+import { normalizeRolePermissions } from "@/lib/auth/permissions";
 import { getSession } from "@/lib/auth/session";
 import { db } from "@/lib/db/client";
 import { roles, users } from "@/lib/db/schema";
@@ -15,6 +16,7 @@ export async function getCurrentUser() {
       email: users.email,
       roleCode: roles.code,
       roleName: roles.name,
+      permissions: roles.permissions,
     })
     .from(users)
     .innerJoin(roles, eq(users.roleId, roles.id))
@@ -25,6 +27,7 @@ export async function getCurrentUser() {
 
   return {
     ...user,
+    permissions: normalizeRolePermissions(user.permissions),
     role: session.role,
   };
 }

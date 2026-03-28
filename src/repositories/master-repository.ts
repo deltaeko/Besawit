@@ -746,6 +746,17 @@ export async function findMasterByCode(
   return record;
 }
 
+export async function findCustomerByFarmerId(farmerId: string, excludeId?: string) {
+  const rows = await db
+    .select()
+    .from(customers)
+    .where(eq(customers.farmerId, farmerId))
+    .limit(10);
+
+  const record = rows.find((row) => !excludeId || row.id !== excludeId) ?? null;
+  return record;
+}
+
 export async function createMasterRecord(
   entity: MasterEntityKey,
   values: Record<string, unknown>,

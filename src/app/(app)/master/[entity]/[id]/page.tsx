@@ -6,6 +6,7 @@ import { AuditLogPanel } from "@/components/shared/audit-log-panel";
 import { SimpleTable } from "@/components/shared/simple-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { appPermissionDefinitions, getEffectivePermissions } from "@/lib/auth/permissions";
 import { formatCurrency, formatDateTime } from "@/lib/utils";
 import { masterEntityConfig } from "@/modules/master/config";
 import { isMasterEntity } from "@/modules/master/helpers";
@@ -29,6 +30,13 @@ export default async function MasterDetailPage({
 
   if (!record) notFound();
   const baseRecordView = record as Record<string, unknown>;
+  const effectiveRolePermissions =
+    entity === "roles"
+      ? getEffectivePermissions(
+          String(baseRecordView.code ?? ""),
+          baseRecordView.permissions as Record<string, boolean> | undefined,
+        )
+      : undefined;
   const recordView =
     entity === "transport-personnel"
       ? {
@@ -46,8 +54,25 @@ export default async function MasterDetailPage({
               .filter(Boolean)
               .join(" • ") || "-",
         }
-      : baseRecordView;
+      : entity === "roles"
+        ? {
+            ...baseRecordView,
+            permissions: effectiveRolePermissions,
+          }
+        : baseRecordView;
   const titleValue = String(recordView.name ?? recordView.fullName ?? recordView.code ?? "").trim();
+  const rolePermissions = entity === "roles" ? effectiveRolePermissions ?? {} : {};
+  const permissionGroups =
+    entity === "roles"
+      ? appPermissionDefinitions.reduce<Record<string, Array<(typeof appPermissionDefinitions)[number]>>>(
+          (acc, item) => {
+            if (!rolePermissions[item.key]) return acc;
+            acc[item.group] = [...(acc[item.group] ?? []), item];
+            return acc;
+          },
+          {},
+        )
+      : {};
   const farmerStatement =
     entity === "farmers" ? await getFarmerPayableStatement(id).catch(() => null) : null;
   const factoryStatement =
@@ -102,6 +127,34 @@ export default async function MasterDetailPage({
       />
 
       <MasterDetailPanel config={config} record={recordView} />
+
+      {entity === "roles" ? (
+        <SectionCard
+          title="Ringkasan Akses Menu"
+          description="Jumlah menu yang bisa diakses oleh role ini beserta pembagian grup utamanya."
+        >
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-[220px_minmax(0,1fr)]">
+            <div className="rounded-2xl border bg-primary/10 p-4">
+              <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Total Menu Aktif</div>
+              <div className="mt-2 text-3xl font-semibold">{Object.keys(rolePermissions).length}</div>
+            </div>
+            <div className="rounded-2xl border bg-muted/20 p-4">
+              {Object.keys(permissionGroups).length ? (
+                <div className="grid gap-3 md:grid-cols-2">
+                  {Object.entries(permissionGroups).map(([group, items]) => (
+                    <div className="rounded-xl border border-border/70 bg-background px-3 py-2.5" key={group}>
+                      <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">{group}</div>
+                      <div className="mt-1 text-sm font-semibold text-foreground">{items.length} menu aktif</div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-sm text-muted-foreground">Belum ada akses menu yang dipilih.</div>
+              )}
+            </div>
+          </div>
+        </SectionCard>
+      ) : null}
 
       {entity === "transport-personnel" ? (
         <SectionCard

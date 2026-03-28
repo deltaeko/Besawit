@@ -87,23 +87,37 @@ function buildDeductionRows(
 }
 
 export function PalmSaleForm({
-  purchases,
   factories,
+  warehouses,
+  tbsPoolBalances,
   deductionConfigs,
   factoryDefaults,
 }: {
-  purchases: Array<{ id: string; code: string; totalPurchase: string; totalOperationalCost: string }>;
   factories: Array<{ id: string; name: string }>;
+  warehouses: Array<{ id: string; name: string }>;
+  tbsPoolBalances: Array<{
+    warehouseId: string;
+    warehouseName: string;
+    quantity: number;
+    averageCost: number;
+    unit: string;
+  }>;
   deductionConfigs: DeductionConfigOption[];
   factoryDefaults: Record<string, FactoryDeductionDefault[]>;
 }) {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
+  const defaultDueDate = useMemo(() => {
+    const nextYear = new Date();
+    nextYear.setFullYear(nextYear.getFullYear() + 1);
+    return nextYear.toISOString().slice(0, 10);
+  }, []);
   const form = useForm<SaleFormInput, unknown, SaleValues>({
     resolver: zodResolver(palmSaleSchema),
     defaultValues: {
       saleDate: new Date().toISOString().slice(0, 10),
-      referencePurchaseId: "",
+      dueDate: defaultDueDate,
+      warehouseId: "",
       factoryId: "",
       grossWeight: 0,
       tareWeight: 0,
@@ -129,6 +143,7 @@ export function PalmSaleForm({
     notes: item.notes ?? "",
   }));
   const selectedFactoryId = values.factoryId ?? "";
+  const selectedWarehouseId = values.warehouseId ?? "";
 
   useEffect(() => {
     form.setValue(
@@ -142,8 +157,9 @@ export function PalmSaleForm({
     );
   }, [deductionConfigs, factoryDefaults, form, selectedFactoryId]);
 
-  const referencePurchase = purchases.find(
-    (item) => item.id === values.referencePurchaseId,
+  const selectedWarehouse = warehouses.find((item) => item.id === selectedWarehouseId);
+  const selectedTbsPoolBalance = tbsPoolBalances.find(
+    (item) => item.warehouseId === selectedWarehouseId,
   );
   const returnData = values.returnData ?? {
     returnWeight: 0,
@@ -177,10 +193,8 @@ export function PalmSaleForm({
     const netFinal = Math.max(netAfterDeduction - Number(returnData.returnWeight || 0), 0);
     const grossSalesAmount = netFinal * Number(values.sellingPricePerKg || 0);
     const totalSales = Math.max(grossSalesAmount - totalDeductionAmount, 0);
-    const margin =
-      totalSales -
-      Number(referencePurchase?.totalPurchase || 0) -
-      Number(referencePurchase?.totalOperationalCost || 0);
+    const estimatedCost = netFinal * Number(selectedTbsPoolBalance?.averageCost ?? 0);
+    const margin = totalSales - estimatedCost;
 
     return {
       breakdown,
@@ -190,12 +204,13 @@ export function PalmSaleForm({
       netFinal,
       grossSalesAmount,
       totalSales,
+      estimatedCost,
       margin,
     };
   }, [
     deductionRows,
-    referencePurchase,
     returnData.returnWeight,
+    selectedTbsPoolBalance?.averageCost,
     values.grossWeight,
     values.tareWeight,
     values.sellingPricePerKg,
@@ -226,22 +241,41 @@ export function PalmSaleForm({
   return (
     <form className="grid gap-6 xl:grid-cols-[1.45fr_0.7fr]" onSubmit={form.handleSubmit(onSubmit)}>
       <div className="space-y-6">
-        <SectionCard title="Referensi Penjualan">
+        <SectionCard title="Informasi Penjualan">
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <Label>Tanggal</Label>
               <Input type="date" {...form.register("saleDate")} />
             </div>
             <div className="space-y-2">
-              <Label>Referensi Pembelian</Label>
-              <Select {...form.register("referencePurchaseId")}>
-                <option value="">Pilih pembelian</option>
-                {purchases.map((item) => (
+              <Label>Jatuh Tempo Piutang</Label>
+              <Input type="date" {...form.register("dueDate")} />
+            </div>
+            <div className="space-y-2 md:col-span-2">
+              <Label>Gudang Asal</Label>
+              <Select {...form.register("warehouseId")}>
+                <option value="">Pilih gudang asal</option>
+                {warehouses.map((item) => (
                   <option key={item.id} value={item.id}>
-                    {item.code}
+                    {item.name}
                   </option>
                 ))}
               </Select>
+              <div className="rounded-xl border border-border/70 bg-muted/20 px-3 py-2 text-sm">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-muted-foreground">Saldo TBS gudang</span>
+                  <span className="font-semibold tabular-nums text-foreground">
+                    {selectedWarehouseId
+                      ? formatWeight(Number(selectedTbsPoolBalance?.quantity ?? 0))
+                      : "-"}
+                  </span>
+                </div>
+                <div className="mt-1 text-xs text-muted-foreground">
+                  {selectedWarehouse
+                    ? `Pool stok sawit campuran di ${selectedWarehouse.name}.`
+                    : "Pilih gudang asal untuk melihat saldo pool TBS."}
+                </div>
+              </div>
             </div>
             <div className="space-y-2 md:col-span-2">
               <Label>Pabrik</Label>
@@ -374,12 +408,24 @@ export function PalmSaleForm({
       <SummaryPanel
         title="Ringkasan Penjualan"
         items={[
+          {
+            label: "Stok TBS Gudang",
+            value: selectedWarehouseId
+              ? formatWeight(Number(selectedTbsPoolBalance?.quantity ?? 0))
+              : "-",
+          },
+          {
+            label: "Rata-rata Biaya Pool",
+            value: formatCurrency(Number(selectedTbsPoolBalance?.averageCost ?? 0)),
+          },
+          { label: "Jatuh Tempo Piutang", value: values.dueDate || "-" },
           { label: "Berat Bersih Awal", value: formatWeight(summary.netInitial) },
           { label: "Potongan Berat", value: formatWeight(summary.totalDeductionWeight) },
           { label: "Potongan Nominal", value: formatCurrency(summary.totalDeductionAmount) },
           { label: "Berat Bersih Final", value: formatWeight(summary.netFinal) },
           { label: "Nilai Bruto Penjualan", value: formatCurrency(summary.grossSalesAmount) },
           { label: "Nilai Penjualan Akhir", value: formatCurrency(summary.totalSales) },
+          { label: "Estimasi Nilai Pokok", value: formatCurrency(summary.estimatedCost) },
           { label: "Margin", value: formatCurrency(summary.margin) },
         ]}
         footer={

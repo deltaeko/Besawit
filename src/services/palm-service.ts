@@ -8,6 +8,9 @@ import {
   createTbsSaleReturns,
   getTbsPurchaseById,
   getTbsSaleById,
+  hasActiveTbsSalesByReferencePurchaseId,
+  listAllTbsPurchases,
+  listAllTbsSales,
   listActiveTbsDeductionConfigs,
   listFactoryDeductionDefaults,
   listTbsSaleDeductionsBySaleId,
@@ -17,23 +20,40 @@ import {
   listTbsSales,
   listTbsSalesPage,
   updateTbsPurchase,
+  updateTbsSale,
 } from "@/repositories/palm-repository";
 import { logAudit } from "@/services/audit-service";
 import { generateTransactionCode } from "@/services/code-service";
 import {
   applyTbsPurchaseStoreOffset,
   buildStoreDebtOffsetPlan,
+  cancelPayableBySource,
+  cancelReceivableBySource,
   createPayableEntry,
   createReceivableEntry,
+  getReceivableByReference,
   getTbsPurchaseStoreOffsetDetail,
   getPayableByReference,
   reverseTbsPurchaseStoreOffset,
   syncPayableAmountBySource,
 } from "@/services/finance-service";
+import {
+  applyStockMovement,
+  ensureTbsPoolProduct,
+  getInventoryStockBalance,
+  getStockBalancePage,
+  hasReferenceStockMovement,
+  reverseReferenceStockMovements,
+} from "@/services/inventory-service";
 import { getMasterList } from "@/services/master-service";
 
 function normalizeOptionalReference(value?: string) {
   return value ? value : null;
+}
+
+function appendVoidNote(existingNotes?: string | null) {
+  const prefix = existingNotes?.trim() ? `${existingNotes.trim()}\n\n` : "";
+  return `${prefix}VOID: transaksi dibatalkan dan dibalikkan oleh sistem.`;
 }
 
 function resolvePaymentStatusLabel(status?: string | null) {
@@ -148,6 +168,14 @@ export async function getPalmSaleList(limit = 20) {
   return listTbsSales(limit);
 }
 
+export async function getAllPalmPurchaseList() {
+  return listAllTbsPurchases();
+}
+
+export async function getAllPalmSaleList() {
+  return listAllTbsSales();
+}
+
 export async function getPalmPurchasePage(page = 1, pageSize = 20) {
   const safePage = Number.isFinite(page) ? Math.max(1, page) : 1;
   const safePageSize = Number.isFinite(pageSize) ? Math.min(Math.max(pageSize, 10), 50) : 20;
@@ -213,13 +241,22 @@ export async function getPalmSale(id: string) {
 }
 
 export async function getPalmSaleFormOptions() {
-  const [factories, purchases, configs] = await Promise.all([
+  const [factories, configs, warehouses, tbsPoolProduct] = await Promise.all([
     getMasterList("factories", { status: "active", pageSize: 50 })
       .then((result) => result.items)
       .catch(() => []),
-    listTbsPurchases(100),
     listActiveTbsDeductionConfigs(),
+    getMasterList("warehouses", { status: "active", pageSize: 50 })
+      .then((result) => result.items)
+      .catch(() => []),
+    ensureTbsPoolProduct(),
   ]);
+  const tbsPoolBalances = await getStockBalancePage(1, 100, {
+    productId: tbsPoolProduct.id,
+  }).catch(() => ({
+    items: [],
+    meta: { page: 1, pageSize: 100, total: 0, totalPages: 1 },
+  }));
 
   const factoryDefaultsEntries = await Promise.all(
     factories.map(async (factory) => {
@@ -235,7 +272,17 @@ export async function getPalmSaleFormOptions() {
       id: (item as { id: string }).id,
       name: (item as { name: string }).name,
     })),
-    purchases,
+    warehouses: warehouses.map((item) => ({
+      id: (item as { id: string }).id,
+      name: (item as { name: string }).name,
+    })),
+    tbsPoolBalances: tbsPoolBalances.items.map((item) => ({
+      warehouseId: item.warehouseId,
+      warehouseName: item.warehouseName ?? item.warehouseCode ?? "Gudang",
+      quantity: Number(item.quantity ?? 0),
+      averageCost: Number(item.averageCost ?? 0),
+      unit: item.unit ?? "kg",
+    })),
     configs,
     factoryDefaults: Object.fromEntries(
       factoryDefaultsEntries.filter(Boolean) as Array<[string, Awaited<ReturnType<typeof listFactoryDeductionDefaults>>]>,
@@ -245,6 +292,10 @@ export async function getPalmSaleFormOptions() {
 
 export async function createPalmPurchase(payload: unknown, actorId?: string | null) {
   const parsed = palmPurchaseSchema.parse(payload);
+  if (!parsed.warehouseId) {
+    throw new Error("Gudang wajib diisi untuk membentuk stok TBS.");
+  }
+
   const netWeight = new Decimal(parsed.grossWeight).minus(parsed.tareWeight);
   const totalPurchase = netWeight.mul(parsed.buyingPricePerKg);
   const totalOperationalCost = new Decimal(parsed.transportCost)
@@ -267,6 +318,8 @@ export async function createPalmPurchase(payload: unknown, actorId?: string | nu
   });
   const storeDebtAppliedAmount = storeDebtPlanResult.plan?.appliedAmount ?? new Decimal(0);
   const payableAmount = Decimal.max(totalPurchase.minus(storeDebtAppliedAmount), 0);
+  const tbsPoolProduct = await ensureTbsPoolProduct();
+  const purchaseWarehouseId = parsed.warehouseId;
 
   const purchase = await createTbsPurchase({
     code: generateTransactionCode("TBP"),
@@ -308,6 +361,18 @@ export async function createPalmPurchase(payload: unknown, actorId?: string | nu
     plan: storeDebtPlanResult.plan,
   });
 
+  await applyStockMovement({
+    warehouseId: purchaseWarehouseId,
+    productId: tbsPoolProduct.id,
+    referenceType: "tbs_purchase",
+    referenceId: purchase.id,
+    movementType: "purchase_in",
+    quantity: Number(netWeight.toFixed(2)),
+    unitCost: Number(parsed.buyingPricePerKg),
+    notes: "Stok TBS masuk dari pembelian petani",
+    createdBy: actorId,
+  });
+
   await logAudit({
     entityType: "tbs_purchases",
     entityId: purchase.id,
@@ -334,6 +399,10 @@ export async function updatePalmPurchase(
   }
 
   const parsed = palmPurchaseSchema.parse(payload);
+  if (!parsed.warehouseId) {
+    throw new Error("Gudang wajib diisi untuk transaksi pembelian TBS.");
+  }
+
   const netWeight = new Decimal(parsed.grossWeight).minus(parsed.tareWeight);
   const totalPurchase = netWeight.mul(parsed.buyingPricePerKg);
   const totalOperationalCost = new Decimal(parsed.transportCost)
@@ -342,6 +411,19 @@ export async function updatePalmPurchase(
 
   if (netWeight.lte(0)) {
     throw new Error("Berat bersih harus lebih besar dari 0.");
+  }
+
+  const hasStockMovement = await hasReferenceStockMovement("tbs_purchase", id);
+  const hasStockImpactingChange =
+    String(existing.warehouseId ?? "") !== String(parsed.warehouseId ?? "") ||
+    Number(existing.grossWeight) !== Number(parsed.grossWeight) ||
+    Number(existing.tareWeight) !== Number(parsed.tareWeight) ||
+    Number(existing.buyingPricePerKg) !== Number(parsed.buyingPricePerKg);
+
+  if (hasStockMovement && hasStockImpactingChange) {
+    throw new Error(
+      "Pembelian TBS yang sudah membentuk stok tidak bisa mengubah gudang, timbangan, atau harga beli. Gunakan adjustment stok jika perlu koreksi.",
+    );
   }
 
   const payable = await getPayableByReference("tbs_purchase", id);
@@ -439,12 +521,8 @@ export async function updatePalmPurchase(
 
 export async function createPalmSale(payload: unknown, actorId?: string | null) {
   const parsed = palmSaleSchema.parse(payload);
-  const purchase = await getTbsPurchaseById(parsed.referencePurchaseId);
   const deductionConfigMap = await getDeductionConfigMap();
-
-  if (!purchase) {
-    throw new Error("Reference purchase not found.");
-  }
+  const tbsPoolProduct = await ensureTbsPoolProduct();
 
   const netWeightInitial = new Decimal(parsed.grossWeight).minus(parsed.tareWeight);
   const deductionSummary = calculateSaleDeductions(
@@ -460,21 +538,31 @@ export async function createPalmSale(payload: unknown, actorId?: string | null) 
     throw new Error("Net weight final must not be negative.");
   }
 
+  const currentStockBalance = await getInventoryStockBalance(parsed.warehouseId, tbsPoolProduct.id);
+  const availableQty = new Decimal(currentStockBalance?.quantity ?? "0");
+  const averageCost = new Decimal(currentStockBalance?.averageCost ?? "0");
+
+  if (availableQty.lt(netWeightFinal)) {
+    throw new Error(
+      `Stok TBS di gudang tidak mencukupi. Tersedia ${availableQty.toFixed(2)} kg, diperlukan ${netWeightFinal.toFixed(2)} kg.`,
+    );
+  }
+
   const grossSalesAmount = netWeightFinal.mul(parsed.sellingPricePerKg);
   const totalSales = grossSalesAmount.minus(deductionSummary.totalDeductionAmount);
+  const stockCost = netWeightFinal.mul(averageCost);
 
   if (totalSales.lt(0)) {
     throw new Error("Total penjualan akhir tidak boleh negatif.");
   }
 
-  const margin = totalSales
-    .minus(purchase.totalPurchase)
-    .minus(purchase.totalOperationalCost);
+  const margin = totalSales.minus(stockCost);
 
   const sale = await createTbsSale({
     code: generateTransactionCode("TBS"),
     saleDate: new Date(parsed.saleDate),
-    referencePurchaseId: parsed.referencePurchaseId,
+    referencePurchaseId: null,
+    warehouseId: parsed.warehouseId,
     factoryId: parsed.factoryId,
     grossWeight: parsed.grossWeight.toFixed(2),
     tareWeight: parsed.tareWeight.toFixed(2),
@@ -523,12 +611,25 @@ export async function createPalmSale(payload: unknown, actorId?: string | null) 
     ]);
   }
 
+  await applyStockMovement({
+    warehouseId: parsed.warehouseId,
+    productId: tbsPoolProduct.id,
+    referenceType: "tbs_sale",
+    referenceId: sale.id,
+    movementType: "sales_out",
+    quantity: Number(netWeightFinal.toFixed(2)),
+    unitCost: Number(averageCost.toFixed(2)),
+    notes: "Stok TBS keluar ke penjualan pabrik",
+    createdBy: actorId,
+  });
+
   await createReceivableEntry({
     sourceType: "tbs_sale",
     sourceId: sale.id,
     partyType: "factory",
     factoryId: sale.factoryId,
     amount: Number(sale.totalSales),
+    dueDate: new Date(parsed.dueDate),
     notes: "Auto-generated from TBS sale",
     createdBy: actorId,
   });
@@ -542,4 +643,121 @@ export async function createPalmSale(payload: unknown, actorId?: string | null) 
   });
 
   return sale;
+}
+
+export async function voidPalmPurchase(id: string, actorId?: string | null) {
+  const existing = await getTbsPurchaseById(id);
+
+  if (!existing) {
+    throw new Error("Transaksi pembelian tidak ditemukan.");
+  }
+
+  if (existing.status !== "active") {
+    throw new Error("Hanya transaksi pembelian aktif yang bisa dibatalkan.");
+  }
+
+  const [payable, hasActiveLinkedSale, storeDebtOffset] = await Promise.all([
+    getPayableByReference("tbs_purchase", id),
+    hasActiveTbsSalesByReferencePurchaseId(id),
+    getTbsPurchaseStoreOffsetDetail(id).catch(() => null),
+  ]);
+
+  if (hasActiveLinkedSale) {
+    throw new Error(
+      "Pembelian TBS ini sudah dipakai pada penjualan aktif ke pabrik dan tidak bisa dibatalkan.",
+    );
+  }
+
+  if (payable && new Decimal(payable.paidAmount).gt(0)) {
+    throw new Error("Pembelian yang sudah memiliki pembayaran tidak bisa dibatalkan otomatis.");
+  }
+
+  if (storeDebtOffset) {
+    await reverseTbsPurchaseStoreOffset(id, actorId);
+  }
+
+  if (await hasReferenceStockMovement("tbs_purchase", id)) {
+    await reverseReferenceStockMovements(
+      "tbs_purchase",
+      id,
+      actorId,
+      "Reversal stok dari pembatalan pembelian TBS.",
+    );
+  }
+
+  await cancelPayableBySource("tbs_purchase", id);
+
+  const updated = await updateTbsPurchase(id, {
+    status: "void",
+    paymentStatus: "cancelled",
+    notes: appendVoidNote(existing.notes),
+    updatedAt: new Date(),
+  });
+
+  await logAudit({
+    entityType: "tbs_purchases",
+    entityId: id,
+    action: "void",
+    actorId,
+    before: existing,
+    after: updated ?? existing,
+    metadata: {
+      storeDebtOffsetReversed: Boolean(storeDebtOffset),
+      stockReversed: true,
+      financeCancelled: Boolean(payable),
+    },
+  });
+
+  return updated ?? existing;
+}
+
+export async function voidPalmSale(id: string, actorId?: string | null) {
+  const existing = await getTbsSaleById(id);
+
+  if (!existing) {
+    throw new Error("Transaksi penjualan tidak ditemukan.");
+  }
+
+  if (existing.status !== "active") {
+    throw new Error("Hanya transaksi penjualan aktif yang bisa dibatalkan.");
+  }
+
+  const saleReceivable = await getReceivableByReference("tbs_sale", id);
+
+  if (saleReceivable && new Decimal(saleReceivable.paidAmount).gt(0)) {
+    throw new Error("Penjualan yang sudah memiliki penerimaan tidak bisa dibatalkan otomatis.");
+  }
+
+  if (await hasReferenceStockMovement("tbs_sale", id)) {
+    await reverseReferenceStockMovements(
+      "tbs_sale",
+      id,
+      actorId,
+      "Reversal stok dari pembatalan penjualan TBS.",
+    );
+  }
+
+  await cancelReceivableBySource("tbs_sale", id);
+
+  const updated = await updateTbsSale(id, {
+    status: "void",
+    paymentStatus: "cancelled",
+    notes: appendVoidNote(existing.notes),
+    updatedAt: new Date(),
+  });
+
+  await logAudit({
+    entityType: "tbs_sales",
+    entityId: id,
+    action: "void",
+    actorId,
+    before: existing,
+    after: updated ?? existing,
+    metadata: {
+      stockReversed: true,
+      financeCancelled: Boolean(saleReceivable),
+    },
+  });
+
+  return updated ?? existing;
 }

@@ -596,6 +596,7 @@ export const masterEntityConfig: Record<MasterEntityKey, MasterEntityConfig> = {
       { key: "code", label: "Code" },
       { key: "name", label: "Name" },
       { key: "description", label: "Description" },
+      { key: "permissionCount", label: "Akses Menu", type: "number" },
       { key: "isSystem", label: "System", type: "boolean" },
       { key: "createdAt", label: "Created At", type: "date" },
     ],
@@ -612,13 +613,18 @@ export const masterEntityConfig: Record<MasterEntityKey, MasterEntityConfig> = {
       },
       {
         key: "notes",
-        title: "Deskripsi & Permissions",
+        title: "Deskripsi",
         fields: [
           { name: "description", label: "Description", type: "textarea" },
-          { name: "permissions", label: "Permissions JSON", type: "textarea" },
         ],
       },
+      {
+        key: "permissions",
+        title: "Akses Menu",
+        description: "Checklist menu yang boleh diakses oleh role ini.",
+        fields: [{ name: "permissions", label: "Hak Akses Menu", type: "permissions" }],
+      },
     ],
-    defaultValues: { code: "", name: "", description: "", permissions: "", isSystem: false },
+    defaultValues: { code: "", name: "", description: "", permissions: {}, isSystem: false },
   },
 };

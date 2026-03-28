@@ -1,9 +1,10 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 import { PalmPurchaseForm } from "@/modules/palm/purchase-form";
 import { getPalmPurchaseFormOptions } from "@/modules/palm/purchase-form-options";
 import { isPalmEntity } from "@/modules/palm/helpers";
 import { getPayableByReference } from "@/services/finance-service";
+import { hasReferenceStockMovement } from "@/services/inventory-service";
 import { getPalmPurchase } from "@/services/palm-service";
 
 function toDateInputValue(value?: Date | string | null) {
@@ -19,13 +20,17 @@ export default async function EditPalmEntityPage({
   const { entity, id } = await params;
   if (!isPalmEntity(entity) || entity !== "purchases") notFound();
 
-  const [purchase, payable, options] = await Promise.all([
+  const [purchase, payable, options, hasStockMovement] = await Promise.all([
     getPalmPurchase(id).catch(() => null),
     getPayableByReference("tbs_purchase", id).catch(() => null),
     getPalmPurchaseFormOptions(),
+    hasReferenceStockMovement("tbs_purchase", id).catch(() => false),
   ]);
 
   if (!purchase) notFound();
+  if (hasStockMovement) {
+    redirect(`/palm/purchases/${id}`);
+  }
 
   return (
     <PalmPurchaseForm

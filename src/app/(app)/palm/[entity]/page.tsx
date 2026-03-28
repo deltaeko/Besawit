@@ -58,6 +58,7 @@ export default async function PalmEntityPage({
           netWeightFinal: `${formatNumber(String(row.netWeightFinal))} kg`,
           totalSales: String(row.totalSales ?? 0),
           margin: String(row.margin ?? 0),
+          paymentStatus: String(row.paymentStatus ?? "unpaid"),
         };
   });
 
@@ -143,6 +144,11 @@ export default async function PalmEntityPage({
                 : {
                     totalSales: (value) => formatCurrency(Number(value ?? 0)),
                     margin: (value) => formatCurrency(Number(value ?? 0)),
+                    paymentStatus: (value) => (
+                      <Badge variant={resolvePalmStatusBadgeVariant(String(value ?? "unpaid"))}>
+                        {formatPalmStatusLabel(String(value ?? "unpaid"))}
+                      </Badge>
+                    ),
                   }
             }
             columns={Object.keys(rows[0]).filter((column) => column !== "id")}
@@ -163,6 +169,7 @@ export default async function PalmEntityPage({
                     netWeightFinal: "Berat Bersih Final",
                     totalSales: "Total Penjualan",
                     margin: "Margin",
+                    paymentStatus: "Status Pembayaran",
                   }
             }
             getHref={(row) => `/palm/${entity}/${String(row.id)}`}

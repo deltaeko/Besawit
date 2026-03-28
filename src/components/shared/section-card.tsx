@@ -12,12 +12,12 @@ export function SectionCard({
   children: ReactNode;
 }) {
   return (
-    <Card className="shadow-sm">
-      <CardHeader className="border-b border-border/70 px-5 py-4">
+    <Card className="shadow-sm print:break-inside-avoid print:border-border/60 print:shadow-none">
+      <CardHeader className="border-b border-border/70 px-5 py-4 print:px-4 print:py-3">
         <CardTitle className="text-base tracking-tight">{title}</CardTitle>
         {description ? <CardDescription>{description}</CardDescription> : null}
       </CardHeader>
-      <CardContent className="px-5 py-5">{children}</CardContent>
+      <CardContent className="px-5 py-5 print:px-4 print:py-4">{children}</CardContent>
     </Card>
   );
 }

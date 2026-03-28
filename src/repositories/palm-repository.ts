@@ -1,4 +1,4 @@
-import { asc, count, desc, eq, getTableColumns } from "drizzle-orm";
+import { and, asc, count, desc, eq, getTableColumns } from "drizzle-orm";
 
 import { db } from "@/lib/db/client";
 import {
@@ -30,16 +30,44 @@ export async function listTbsPurchases(limit = 20) {
     .limit(limit);
 }
 
+export async function listAllTbsPurchases() {
+  return db
+    .select({
+      ...getTableColumns(tbsPurchases),
+      farmerName: farmers.name,
+      driverName: transportPersonnel.name,
+    })
+    .from(tbsPurchases)
+    .leftJoin(farmers, eq(tbsPurchases.farmerId, farmers.id))
+    .leftJoin(transportPersonnel, eq(tbsPurchases.driverId, transportPersonnel.id))
+    .orderBy(desc(tbsPurchases.purchaseDate), desc(tbsPurchases.createdAt));
+}
+
 export async function listTbsSales(limit = 20) {
   return db
     .select({
       ...getTableColumns(tbsSales),
       factoryName: factories.name,
+      warehouseName: warehouses.name,
     })
     .from(tbsSales)
     .leftJoin(factories, eq(tbsSales.factoryId, factories.id))
+    .leftJoin(warehouses, eq(tbsSales.warehouseId, warehouses.id))
     .orderBy(desc(tbsSales.saleDate), desc(tbsSales.createdAt))
     .limit(limit);
+}
+
+export async function listAllTbsSales() {
+  return db
+    .select({
+      ...getTableColumns(tbsSales),
+      factoryName: factories.name,
+      warehouseName: warehouses.name,
+    })
+    .from(tbsSales)
+    .leftJoin(factories, eq(tbsSales.factoryId, factories.id))
+    .leftJoin(warehouses, eq(tbsSales.warehouseId, warehouses.id))
+    .orderBy(desc(tbsSales.saleDate), desc(tbsSales.createdAt));
 }
 
 export async function listTbsPurchasesPage(page: number, pageSize: number) {
@@ -75,9 +103,11 @@ export async function listTbsSalesPage(page: number, pageSize: number) {
       .select({
         ...getTableColumns(tbsSales),
         factoryName: factories.name,
+        warehouseName: warehouses.name,
       })
       .from(tbsSales)
       .leftJoin(factories, eq(tbsSales.factoryId, factories.id))
+      .leftJoin(warehouses, eq(tbsSales.warehouseId, warehouses.id))
       .orderBy(desc(tbsSales.saleDate), desc(tbsSales.createdAt))
       .limit(pageSize)
       .offset(offset),
@@ -119,11 +149,13 @@ export async function getTbsSaleById(id: string) {
       ...getTableColumns(tbsSales),
       referencePurchaseCode: tbsPurchases.code,
       factoryName: factories.name,
+      warehouseName: warehouses.name,
       createdByName: users.fullName,
     })
     .from(tbsSales)
     .leftJoin(tbsPurchases, eq(tbsSales.referencePurchaseId, tbsPurchases.id))
     .leftJoin(factories, eq(tbsSales.factoryId, factories.id))
+    .leftJoin(warehouses, eq(tbsSales.warehouseId, warehouses.id))
     .leftJoin(users, eq(tbsSales.createdBy, users.id))
     .where(eq(tbsSales.id, id))
     .limit(1);
@@ -202,6 +234,20 @@ export async function updateTbsPurchase(
 export async function createTbsSale(values: typeof tbsSales.$inferInsert) {
   const [row] = await db.insert(tbsSales).values(values).returning();
   return row;
+}
+
+export async function hasActiveTbsSalesByReferencePurchaseId(referencePurchaseId: string) {
+  const [row] = await db
+    .select({ value: count() })
+    .from(tbsSales)
+    .where(
+      and(
+        eq(tbsSales.referencePurchaseId, referencePurchaseId),
+        eq(tbsSales.status, "active"),
+      ),
+    );
+
+  return Number(row?.value ?? 0) > 0;
 }
 
 export async function updateTbsSale(

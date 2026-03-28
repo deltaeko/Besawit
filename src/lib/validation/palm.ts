@@ -133,7 +133,8 @@ export const palmSaleReturnSchema = z.object({
 export const palmSaleSchema = z
   .object({
     saleDate: z.string().min(1),
-    referencePurchaseId: z.uuid(),
+    dueDate: z.string().min(1, "Tanggal jatuh tempo wajib diisi."),
+    warehouseId: requiredUuidField("Gudang asal wajib diisi.", "Gudang asal tidak valid."),
     factoryId: z.uuid(),
     grossWeight: positiveNumber,
     tareWeight: nonNegativeNumber,

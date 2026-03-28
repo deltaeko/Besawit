@@ -1,15 +1,17 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, FileText, Receipt, Warehouse } from "lucide-react";
+import { ArrowLeft, FileText, Receipt, Wallet, Warehouse } from "lucide-react";
 
 import { PageHeader } from "@/components/shared/page-header";
 import { SectionCard } from "@/components/shared/section-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatCurrency, formatDate } from "@/lib/utils";
+import { PalmTransactionDetailActions } from "@/modules/palm/transaction-detail-actions";
 import { formatPalmStatusLabel, resolvePalmStatusBadgeVariant } from "@/modules/palm/status-utils";
 import { isStoreEntity } from "@/modules/store/helpers";
-import { getStorePurchase, getStoreSale } from "@/services/store-service";
+import { getPayableByReference, getReceivableByReference } from "@/services/finance-service";
+import { getStorePurchase, getStorePurchaseReturnFormData, getStoreSale } from "@/services/store-service";
 
 function MetricCard({
   label,
@@ -63,34 +65,72 @@ export default async function StoreDetailPage({
   const isPurchase = entity === "purchases";
   const paymentStatus = String(data.paymentStatus ?? "unpaid");
   const transactionStatus = String(data.status ?? "active");
+  const financeReference = isPurchase
+    ? await getPayableByReference("store_purchase", id).catch(() => null)
+    : await getReceivableByReference("store_sale", id).catch(() => null);
+  const purchaseReturnContext = isPurchase
+    ? await getStorePurchaseReturnFormData(id).catch(() => null)
+    : null;
+  const canPostFinance =
+    transactionStatus === "active" &&
+    (paymentStatus === "unpaid" || paymentStatus === "partial") &&
+    Boolean(financeReference?.id);
+  const returnTo = `/store/${entity}/${id}`;
 
   return (
     <div className="space-y-6">
       <PageHeader
+        stackAction
         eyebrow="Transaksi Toko"
         title={isPurchase ? "Detail Pembelian Barang" : "Detail Penjualan Toko"}
-        description={
-          isPurchase
-            ? "Periksa informasi supplier, nilai transaksi, dan status pembayaran pembelian barang toko."
-            : "Periksa pelanggan toko, jenis penjualan, nilai transaksi, dan status pembayaran atau piutang."
-        }
         action={
-          <div className="flex flex-wrap gap-2">
-            <Button asChild variant="outline">
-              <Link href={`/store/${entity}`}>
-                <ArrowLeft className="size-4" />
-                Kembali
-              </Link>
-            </Button>
-            {!isPurchase ? (
-              <Button asChild variant="outline">
-                <Link href={`/store/sales/${id}/invoice`}>
-                  <FileText className="size-4" />
-                  Preview Nota
-                </Link>
-              </Button>
-            ) : null}
-          </div>
+          <PalmTransactionDetailActions
+            backHref={`/store/${entity}`}
+            documentHref={isPurchase ? `/store/purchases/${id}/invoice` : `/store/sales/${id}/invoice`}
+            documentLabel={isPurchase ? "Preview Slip Pembelian" : "Preview Nota"}
+            editDisabledReason={
+              isPurchase
+                ? "Transaksi pembelian toko belum mendukung ubah langsung."
+                : "Transaksi penjualan toko belum mendukung ubah langsung."
+            }
+            paymentHref={
+              isPurchase
+                ? `/finance/payments?payableId=${financeReference?.id}&returnTo=${returnTo}`
+                : `/finance/payments?receivableId=${financeReference?.id}&returnTo=${returnTo}`
+            }
+            paymentStatus={paymentStatus}
+            transactionStatus={transactionStatus}
+            extraAction={
+              isPurchase
+                ? {
+                    href: `/store/purchases/${id}/returns/new`,
+                    label: "Retur Pembelian",
+                    disabledReason:
+                      transactionStatus !== "active"
+                        ? "Hanya pembelian aktif yang bisa diretur."
+                        : Number(financeReference?.paidAmount ?? 0) > 0
+                          ? "Retur pembelian saat ini hanya didukung sebelum ada pembayaran supplier."
+                          : purchaseReturnContext && !purchaseReturnContext.summary.hasReturnableItems
+                            ? "Semua item pembelian ini sudah diretur penuh."
+                            : null,
+                  }
+                : undefined
+            }
+            voidAction={
+              isPurchase
+                ? {
+                    apiPath: `/api/store/purchases/${id}/void`,
+                    disabledReason:
+                      transactionStatus !== "active"
+                        ? "Hanya transaksi aktif yang bisa dibatalkan."
+                        : paymentStatus === "partial" || paymentStatus === "paid"
+                          ? "Pembelian yang sudah memiliki pembayaran tidak bisa dibatalkan otomatis."
+                          : null,
+                    label: "Void Pembelian",
+                  }
+                : undefined
+            }
+          />
         }
       />
 
@@ -159,6 +199,51 @@ export default async function StoreDetailPage({
               <MetricCard emphasis label="Total Transaksi" value={formatCurrency(Number(data.totalAmount))} />
             </div>
           </SectionCard>
+
+          {isPurchase ? (
+            <SectionCard
+              title="Ringkasan Retur"
+              description="Pantau nilai retur pembelian barang yang sudah dicatat dan sisa item yang masih bisa diretur."
+            >
+              <div className="grid gap-4 md:grid-cols-3">
+                <MetricCard
+                  label="Total Retur"
+                  value={formatCurrency(Number(purchaseReturnContext?.summary.totalReturnedAmount ?? 0))}
+                />
+                <MetricCard
+                  label="Dokumen Retur"
+                  value={String(purchaseReturnContext?.summary.returnCount ?? 0)}
+                />
+                <MetricCard
+                  emphasis
+                  label="Sisa Hutang"
+                  value={formatCurrency(Number(financeReference?.outstandingAmount ?? data.totalAmount ?? 0))}
+                />
+              </div>
+              <div className="mt-4 space-y-2 rounded-2xl border border-border/80 bg-muted/10 p-4">
+                {(purchaseReturnContext?.returns ?? []).length ? (
+                  purchaseReturnContext!.returns.map((item) => (
+                    <div
+                      key={item.id}
+                      className="flex flex-wrap items-center justify-between gap-3 border-b border-border/70 pb-3 text-sm last:border-b-0 last:pb-0"
+                    >
+                      <div>
+                        <div className="font-semibold text-foreground">{item.code}</div>
+                        <div className="text-muted-foreground">{formatDate(String(item.returnDate))}</div>
+                      </div>
+                      <div className="font-semibold text-foreground">
+                        {formatCurrency(Number(item.totalReturnAmount))}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-sm text-muted-foreground">
+                    Belum ada retur pembelian yang dicatat untuk transaksi ini.
+                  </div>
+                )}
+              </div>
+            </SectionCard>
+          ) : null}
 
           <SectionCard title="Catatan" description="Catatan tambahan transaksi untuk audit dan tindak lanjut operasional.">
             <div className="rounded-2xl border border-border/80 bg-muted/20 p-4 text-sm leading-7 text-foreground">

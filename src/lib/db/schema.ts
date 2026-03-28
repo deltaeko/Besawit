@@ -441,9 +441,8 @@ export const tbsSales = pgTable(
     id: uuid("id").defaultRandom().primaryKey(),
     code: varchar("code", { length: 50 }).notNull(),
     saleDate: timestamp("sale_date", { withTimezone: true }).defaultNow().notNull(),
-    referencePurchaseId: uuid("reference_purchase_id")
-      .references(() => tbsPurchases.id)
-      .notNull(),
+    referencePurchaseId: uuid("reference_purchase_id").references(() => tbsPurchases.id),
+    warehouseId: uuid("warehouse_id").references(() => warehouses.id),
     factoryId: uuid("factory_id")
       .references(() => factories.id)
       .notNull(),
@@ -487,6 +486,7 @@ export const tbsSales = pgTable(
   (table) => [
     uniqueIndex("tbs_sales_code_idx").on(table.code),
     index("tbs_sales_purchase_idx").on(table.referencePurchaseId),
+    index("tbs_sales_warehouse_idx").on(table.warehouseId),
     index("tbs_sales_factory_idx").on(table.factoryId),
     index("tbs_sales_date_idx").on(table.saleDate),
   ],
@@ -633,6 +633,54 @@ export const storePurchaseItems = pgTable(
     ...timestamps,
   },
   (table) => [index("store_purchase_items_purchase_idx").on(table.purchaseId)],
+);
+
+export const storePurchaseReturns = pgTable(
+  "store_purchase_returns",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    code: varchar("code", { length: 50 }).notNull(),
+    purchaseId: uuid("purchase_id")
+      .references(() => storePurchases.id, { onDelete: "cascade" })
+      .notNull(),
+    returnDate: timestamp("return_date", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    totalReturnAmount: numeric("total_return_amount", { precision: 16, scale: 2 }).notNull(),
+    notes: text("notes"),
+    createdBy: uuid("created_by").references(() => users.id),
+    status: recordStatusEnum("status").default("active").notNull(),
+    ...timestamps,
+  },
+  (table) => [
+    uniqueIndex("store_purchase_returns_code_idx").on(table.code),
+    index("store_purchase_returns_purchase_idx").on(table.purchaseId),
+    index("store_purchase_returns_date_idx").on(table.returnDate),
+  ],
+);
+
+export const storePurchaseReturnItems = pgTable(
+  "store_purchase_return_items",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    returnId: uuid("return_id")
+      .references(() => storePurchaseReturns.id, { onDelete: "cascade" })
+      .notNull(),
+    purchaseItemId: uuid("purchase_item_id")
+      .references(() => storePurchaseItems.id, { onDelete: "cascade" })
+      .notNull(),
+    productId: uuid("product_id")
+      .references(() => products.id)
+      .notNull(),
+    quantity: numeric("quantity", { precision: 14, scale: 2 }).notNull(),
+    unitCost: numeric("unit_cost", { precision: 16, scale: 2 }).notNull(),
+    lineTotal: numeric("line_total", { precision: 16, scale: 2 }).notNull(),
+    ...timestamps,
+  },
+  (table) => [
+    index("store_purchase_return_items_return_idx").on(table.returnId),
+    index("store_purchase_return_items_purchase_item_idx").on(table.purchaseItemId),
+  ],
 );
 
 export const storeSales = pgTable(

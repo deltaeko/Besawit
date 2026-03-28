@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { ChevronDown, ChevronRight, LogOut, Menu, X } from "lucide-react";
 
 import { appNavigation } from "@/components/layout/navigation";
+import { canAccessPermission, type RolePermissionMap } from "@/lib/auth/permissions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -14,9 +15,11 @@ import type { AppRole } from "@/types/domain";
 export function AppHeader({
   userName,
   role,
+  permissions,
 }: {
   userName: string;
   role: AppRole;
+  permissions: RolePermissionMap;
 }) {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -28,15 +31,15 @@ export function AppHeader({
         .map((item) => ({
           ...item,
           children:
-            item.children?.filter((child) => child.roles.some((childRole) => childRole === role)) ??
+            item.children?.filter((child) => canAccessPermission(role, permissions, child.permission)) ??
             [],
         }))
         .filter(
           (item) =>
-            item.roles.some((itemRole) => itemRole === role) ||
+            (item.permission ? canAccessPermission(role, permissions, item.permission) : false) ||
             (item.children?.length ?? 0) > 0,
         ),
-    [role],
+    [permissions, role],
   );
 
   const navGroups = useMemo(

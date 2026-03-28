@@ -12,8 +12,10 @@ import { MasterPagination } from "@/modules/master/master-pagination";
 import { PaymentForm } from "@/modules/finance/payment-form";
 import {
   getFinancePaymentOptions,
+  getPayableDetail,
   getPayableByReference,
   getPaymentPage,
+  getReceivableDetail,
   getReceivableByReference,
 } from "@/services/finance-service";
 
@@ -40,19 +42,25 @@ export default async function PaymentsPage({
   const query = await searchParams;
   const sourceType = typeof query.sourceType === "string" ? query.sourceType : "";
   const sourceId = typeof query.sourceId === "string" ? query.sourceId : "";
+  const returnTo = typeof query.returnTo === "string" ? query.returnTo : "";
   const q = typeof query.q === "string" ? query.q : "";
   const direction = typeof query.direction === "string" ? query.direction : "";
   const method = typeof query.method === "string" ? query.method : "";
   const page = typeof query.page === "string" ? Number(query.page) : 1;
   const pageSize = typeof query.pageSize === "string" ? Number(query.pageSize) : 20;
+  const payableId = typeof query.payableId === "string" ? query.payableId : "";
+  const receivableId = typeof query.receivableId === "string" ? query.receivableId : "";
 
-  const [referencedPayable, referencedReceivable, options, paymentsResult] = await Promise.all([
+  const [referencedPayable, referencedReceivable, selectedPayableDetail, selectedReceivableDetail, options, paymentsResult] =
+    await Promise.all([
     sourceType === "tbs_purchase" || sourceType === "store_purchase"
       ? getPayableByReference(sourceType, sourceId).catch(() => null)
       : Promise.resolve(null),
     sourceType === "tbs_sale" || sourceType === "store_sale"
       ? getReceivableByReference(sourceType, sourceId).catch(() => null)
       : Promise.resolve(null),
+    payableId ? getPayableDetail(payableId).catch(() => null) : Promise.resolve(null),
+    receivableId ? getReceivableDetail(receivableId).catch(() => null) : Promise.resolve(null),
     getFinancePaymentOptions().catch(() => ({
       payables: [],
       receivables: [],
@@ -67,8 +75,48 @@ export default async function PaymentsPage({
     })),
   ]);
 
-  const paymentContext =
-    referencedReceivable || typeof query.receivableId === "string" ? "receivable" : "payable";
+  const paymentContext = referencedReceivable || receivableId ? "receivable" : "payable";
+
+  const resolvedReturnHref =
+    returnTo ||
+    (() => {
+      const payableSource =
+        referencedPayable && sourceId
+          ? { sourceType, sourceId }
+          : selectedPayableDetail?.payable?.sourceType && selectedPayableDetail.payable.sourceId
+            ? {
+                sourceType: selectedPayableDetail.payable.sourceType,
+                sourceId: selectedPayableDetail.payable.sourceId,
+              }
+            : null;
+
+      if (payableSource?.sourceType === "tbs_purchase") {
+        return `/palm/purchases/${payableSource.sourceId}`;
+      }
+      if (payableSource?.sourceType === "store_purchase") {
+        return `/store/purchases/${payableSource.sourceId}`;
+      }
+
+      const receivableSource =
+        referencedReceivable && sourceId
+          ? { sourceType, sourceId }
+          : selectedReceivableDetail?.receivable?.sourceType &&
+              selectedReceivableDetail.receivable.sourceId
+            ? {
+                sourceType: selectedReceivableDetail.receivable.sourceType,
+                sourceId: selectedReceivableDetail.receivable.sourceId,
+              }
+            : null;
+
+      if (receivableSource?.sourceType === "tbs_sale") {
+        return `/palm/sales/${receivableSource.sourceId}`;
+      }
+      if (receivableSource?.sourceType === "store_sale") {
+        return `/store/sales/${receivableSource.sourceId}`;
+      }
+
+      return "";
+    })();
 
   const pageTitle =
     paymentContext === "receivable" ? "Catat Penerimaan Piutang" : "Catat Pembayaran Hutang";
@@ -108,21 +156,21 @@ export default async function PaymentsPage({
   paginationQuery.set("pageSize", String(paymentsResult.meta.pageSize));
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <PageHeader eyebrow="Finance" title={pageTitle} description={pageDescription} />
 
       <FilterBar
         left={
-          <div className="text-sm text-muted-foreground">
+          <div className="text-sm leading-6 text-muted-foreground">
             Gunakan halaman ini untuk mencatat pembayaran hutang atau penerimaan piutang tanpa mengubah transaksi sumber.
           </div>
         }
         right={
           <div className="flex flex-wrap gap-2 text-sm text-muted-foreground">
-            <div className="rounded-xl border border-border/70 bg-muted/20 px-3 py-2">
+            <div className="rounded-xl border border-border/70 bg-muted/20 px-3 py-1.5">
               Hutang aktif: {options.payables.length}
             </div>
-            <div className="rounded-xl border border-border/70 bg-muted/20 px-3 py-2">
+            <div className="rounded-xl border border-border/70 bg-muted/20 px-3 py-1.5">
               Piutang aktif: {options.receivables.length}
             </div>
           </div>
@@ -131,12 +179,8 @@ export default async function PaymentsPage({
 
       <PaymentForm
         initialValues={{
-          payableId:
-            typeof query.payableId === "string" ? query.payableId : referencedPayable?.id ?? "",
-          receivableId:
-            typeof query.receivableId === "string"
-              ? query.receivableId
-              : referencedReceivable?.id ?? "",
+          payableId: payableId || referencedPayable?.id || "",
+          receivableId: receivableId || referencedReceivable?.id || "",
         }}
         payables={options.payables.map((item) => ({
           id: item.id,
@@ -160,6 +204,7 @@ export default async function PaymentsPage({
           dueDate: item.dueDate?.toISOString?.() ?? null,
           partyType: item.partyType,
         }))}
+        returnHref={resolvedReturnHref || null}
       />
 
       <FilterBar
@@ -193,19 +238,19 @@ export default async function PaymentsPage({
         }
         right={
           <>
-            <div className="flex items-center gap-2 rounded-xl border border-border/70 bg-muted/20 px-3 py-2 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2 rounded-xl border border-border/70 bg-muted/20 px-3 py-1.5 text-sm text-muted-foreground">
               <ReceiptText className="size-4" />
               {paymentsResult.meta.total} payment
             </div>
-            <div className="flex items-center gap-2 rounded-xl border border-border/70 bg-muted/20 px-3 py-2 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2 rounded-xl border border-border/70 bg-muted/20 px-3 py-1.5 text-sm text-muted-foreground">
               <ArrowDownLeft className="size-4" />
               Terima {inCount}
             </div>
-            <div className="flex items-center gap-2 rounded-xl border border-border/70 bg-muted/20 px-3 py-2 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2 rounded-xl border border-border/70 bg-muted/20 px-3 py-1.5 text-sm text-muted-foreground">
               <ArrowUpRight className="size-4" />
               Bayar {outCount}
             </div>
-            <div className="flex items-center gap-2 rounded-xl border border-border/70 bg-muted/20 px-3 py-2 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2 rounded-xl border border-border/70 bg-muted/20 px-3 py-1.5 text-sm text-muted-foreground">
               <Landmark className="size-4" />
               Nilai halaman {formatCurrency(pageTotal)}
             </div>

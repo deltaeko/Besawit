@@ -8,12 +8,14 @@ import {
   Settings2,
 } from "lucide-react";
 
+import type { AppPermissionKey } from "@/lib/auth/permissions";
 import type { AppRole } from "@/types/domain";
 
 export type NavigationChild = {
   title: string;
   href: string;
   roles: AppRole[];
+  permission: AppPermissionKey;
 };
 
 export type NavigationItem = {
@@ -22,6 +24,7 @@ export type NavigationItem = {
   href?: string;
   icon: React.ComponentType<{ className?: string }>;
   roles: AppRole[];
+  permission?: AppPermissionKey;
   children?: NavigationChild[];
 };
 
@@ -31,6 +34,7 @@ export const appNavigation = [
     title: "Dashboard",
     href: "/dashboard",
     icon: LayoutDashboard,
+    permission: "dashboard.view",
     roles: ["owner", "admin_sawit", "admin_store", "finance", "supervisor"],
   },
   {
@@ -42,56 +46,67 @@ export const appNavigation = [
       {
         title: "Petani",
         href: "/master/farmers",
+        permission: "master.farmers",
         roles: ["owner", "admin_sawit", "admin_store", "supervisor"],
       },
       {
         title: "Pabrik",
         href: "/master/factories",
+        permission: "master.factories",
         roles: ["owner", "admin_sawit", "admin_store", "supervisor"],
       },
       {
         title: "Pelanggan",
         href: "/master/customers",
+        permission: "master.customers",
         roles: ["owner", "admin_sawit", "admin_store", "supervisor"],
       },
       {
         title: "Supplier",
         href: "/master/suppliers",
+        permission: "master.suppliers",
         roles: ["owner", "admin_sawit", "admin_store", "supervisor"],
       },
       {
         title: "Personel Armada",
         href: "/master/transport-personnel",
+        permission: "master.transport_personnel",
         roles: ["owner", "admin_sawit", "admin_store", "supervisor"],
       },
       {
         title: "Kendaraan",
         href: "/master/vehicles",
+        permission: "master.vehicles",
         roles: ["owner", "admin_sawit", "admin_store", "supervisor"],
       },
       {
         title: "Gudang",
         href: "/master/warehouses",
+        permission: "master.warehouses",
         roles: ["owner", "admin_sawit", "admin_store", "supervisor"],
       },
       {
         title: "Produk",
         href: "/master/products",
+        permission: "master.products",
         roles: ["owner", "admin_sawit", "admin_store", "supervisor"],
       },
       {
         title: "Kategori",
         href: "/master/categories",
+        permission: "master.categories",
         roles: ["owner", "admin_sawit", "admin_store", "supervisor"],
       },
       {
         title: "Pengguna",
         href: "/master/users",
+        permission: "master.users",
         roles: ["owner", "admin_sawit", "admin_store", "supervisor"],
       },
       {
         title: "Peran",
         href: "/master/roles",
+        permission: "master.roles",
         roles: ["owner", "admin_sawit", "admin_store", "supervisor"],
       },
     ],
@@ -105,11 +120,13 @@ export const appNavigation = [
       {
         title: "Pembelian TBS",
         href: "/palm/purchases",
+        permission: "palm.purchases",
         roles: ["owner", "admin_sawit", "finance", "supervisor"],
       },
       {
         title: "Penjualan ke Pabrik",
         href: "/palm/sales",
+        permission: "palm.sales",
         roles: ["owner", "admin_sawit", "finance", "supervisor"],
       },
     ],
@@ -123,11 +140,13 @@ export const appNavigation = [
       {
         title: "Pembelian Barang",
         href: "/store/purchases",
+        permission: "store.purchases",
         roles: ["owner", "admin_store", "finance", "supervisor"],
       },
       {
         title: "Penjualan Toko",
         href: "/store/sales",
+        permission: "store.sales",
         roles: ["owner", "admin_store", "finance", "supervisor"],
       },
     ],
@@ -141,21 +160,25 @@ export const appNavigation = [
       {
         title: "Stok",
         href: "/inventory/stock",
+        permission: "inventory.stock",
         roles: ["owner", "admin_store", "admin_sawit", "supervisor"],
       },
       {
         title: "Stock Take",
         href: "/inventory/stock-takes",
+        permission: "inventory.stock_takes",
         roles: ["owner", "admin_store", "admin_sawit", "supervisor"],
       },
       {
         title: "Adjustment",
         href: "/inventory/adjustments",
+        permission: "inventory.adjustments",
         roles: ["owner", "admin_store", "admin_sawit", "supervisor"],
       },
       {
         title: "Histori Mutasi",
         href: "/inventory/movements",
+        permission: "inventory.movements",
         roles: ["owner", "admin_store", "admin_sawit", "finance", "supervisor"],
       },
     ],
@@ -165,6 +188,7 @@ export const appNavigation = [
     title: "Finance",
     href: "/finance/payables",
     icon: CreditCard,
+    permission: "finance.view",
     roles: ["owner", "finance", "supervisor"],
   },
   {
@@ -172,6 +196,7 @@ export const appNavigation = [
     title: "Reports",
     href: "/reports/transactions",
     icon: BarChart3,
+    permission: "reports.view",
     roles: ["owner", "finance", "supervisor"],
   },
 ] satisfies NavigationItem[];

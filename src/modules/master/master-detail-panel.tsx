@@ -1,5 +1,6 @@
 import { SectionCard } from "@/components/shared/section-card";
 import { StatusBadge } from "@/components/shared/status-badge";
+import { formatPermissionLabel } from "@/lib/auth/permissions";
 import { formatCurrency, formatDate, formatNumber } from "@/lib/utils";
 import type { MasterEntityConfig } from "@/modules/master/types";
 
@@ -40,6 +41,13 @@ function renderDetailValue(key: string, value: unknown) {
     }
 
     return value ? "Ya" : "Tidak";
+  }
+
+  if (key === "permissions" && value && typeof value === "object") {
+    const entries = Object.entries(value as Record<string, unknown>).filter(([, enabled]) => Boolean(enabled));
+    if (!entries.length) return "Belum ada akses menu yang dipilih.";
+
+    return entries.map(([permissionKey]) => formatPermissionLabel(permissionKey)).join(", ");
   }
 
   if (typeof value === "string" && value.includes("T")) {

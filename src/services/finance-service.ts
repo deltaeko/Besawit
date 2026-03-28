@@ -83,7 +83,7 @@ function resolveLedgerDescription(
 async function syncSourcePaymentStatus(
   sourceType: "tbs_purchase" | "tbs_sale" | "store_purchase" | "store_sale" | "manual",
   sourceId: string | null | undefined,
-  status: "unpaid" | "partial" | "paid",
+  status: "unpaid" | "partial" | "paid" | "cancelled",
 ) {
   if (!sourceId) return;
 
@@ -106,6 +106,48 @@ async function syncSourcePaymentStatus(
     default:
       return;
   }
+}
+
+export async function cancelPayableBySource(
+  sourceType: "tbs_purchase" | "store_purchase" | "manual",
+  sourceId: string,
+) {
+  const payable = await getPayableBySource(sourceType, sourceId);
+  if (!payable) return null;
+
+  if (new Decimal(payable.paidAmount).gt(0)) {
+    throw new Error("Hutang yang sudah memiliki pembayaran tidak bisa dibatalkan otomatis.");
+  }
+
+  const updated = await updatePayable(payable.id, {
+    status: "cancelled",
+    outstandingAmount: "0.00",
+    updatedAt: new Date(),
+  });
+
+  await syncSourcePaymentStatus(sourceType, sourceId, "cancelled");
+  return updated;
+}
+
+export async function cancelReceivableBySource(
+  sourceType: "tbs_sale" | "store_sale" | "manual",
+  sourceId: string,
+) {
+  const receivable = await getReceivableBySource(sourceType, sourceId);
+  if (!receivable) return null;
+
+  if (new Decimal(receivable.paidAmount).gt(0)) {
+    throw new Error("Piutang yang sudah memiliki penerimaan tidak bisa dibatalkan otomatis.");
+  }
+
+  const updated = await updateReceivable(receivable.id, {
+    status: "cancelled",
+    outstandingAmount: "0.00",
+    updatedAt: new Date(),
+  });
+
+  await syncSourcePaymentStatus(sourceType, sourceId, "cancelled");
+  return updated;
 }
 
 export type FarmerStoreReceivableSummary = {

@@ -1,3 +1,4 @@
+import { canAccessPermission, findPermissionByPath, type RolePermissionMap } from "@/lib/auth/permissions";
 import type { AppRole, RouteAccessRule } from "@/types/domain";
 
 export const routeAccessRules: RouteAccessRule[] = [
@@ -31,10 +32,18 @@ export const routeAccessRules: RouteAccessRule[] = [
   },
 ];
 
-export function canAccessPath(role: AppRole, pathname: string) {
-  const matchedRule = routeAccessRules.find((rule) =>
-    pathname.startsWith(rule.href),
-  );
+export function canAccessPath(
+  role: AppRole,
+  permissions: RolePermissionMap | undefined,
+  pathname: string,
+) {
+  const matchedPermission = findPermissionByPath(pathname);
+
+  if (matchedPermission) {
+    return canAccessPermission(role, permissions, matchedPermission.key);
+  }
+
+  const matchedRule = routeAccessRules.find((rule) => pathname.startsWith(rule.href));
 
   if (!matchedRule) return true;
 

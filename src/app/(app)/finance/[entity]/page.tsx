@@ -30,6 +30,55 @@ type FinanceRow = {
   farmerName?: string;
 };
 
+function getDueDateMeta(value?: Date | string | null) {
+  if (!value) {
+    return {
+      dateLabel: "-",
+      hint: "Belum ditetapkan",
+      tone: "muted" as const,
+    };
+  }
+
+  const dueDate = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(dueDate.getTime())) {
+    return {
+      dateLabel: "-",
+      hint: "Belum ditetapkan",
+      tone: "muted" as const,
+    };
+  }
+
+  const dueMidnight = new Date(dueDate);
+  dueMidnight.setHours(0, 0, 0, 0);
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const diffDays = Math.round((dueMidnight.getTime() - today.getTime()) / 86_400_000);
+
+  if (diffDays < 0) {
+    return {
+      dateLabel: formatDate(dueDate),
+      hint: `Lewat ${Math.abs(diffDays)} hari`,
+      tone: "danger" as const,
+    };
+  }
+
+  if (diffDays === 0) {
+    return {
+      dateLabel: formatDate(dueDate),
+      hint: "Hari ini",
+      tone: "warning" as const,
+    };
+  }
+
+  return {
+    dateLabel: formatDate(dueDate),
+    hint: `${diffDays} hari lagi`,
+    tone: diffDays <= 7 ? ("warning" as const) : ("default" as const),
+  };
+}
+
 export default async function FinanceEntityPage({
   params,
   searchParams,
@@ -253,6 +302,27 @@ export default async function FinanceEntityPage({
         cellRenderers={{
           amount: (value) => formatCurrency(Number(value ?? 0)),
           outstandingAmount: (value) => formatCurrency(Number(value ?? 0)),
+          dueDate: (value) => {
+            const meta = getDueDateMeta(String(value ?? ""));
+            return (
+              <div className="space-y-1">
+                <div className="font-medium text-foreground">{meta.dateLabel}</div>
+                <div>
+                  <Badge
+                    variant={
+                      meta.tone === "danger"
+                        ? "destructive"
+                        : meta.tone === "warning"
+                          ? "warning"
+                          : "neutral"
+                    }
+                  >
+                    {meta.hint}
+                  </Badge>
+                </div>
+              </div>
+            );
+          },
           status: (value) => (
             <Badge variant={resolvePalmStatusBadgeVariant(String(value ?? "unpaid"))}>
               {formatPalmStatusLabel(String(value ?? "unpaid"))}

@@ -6,7 +6,8 @@ export const appRoles = [
   "supervisor",
 ] as const;
 
-export type AppRole = (typeof appRoles)[number];
+export type SystemAppRole = (typeof appRoles)[number];
+export type AppRole = string;
 
 export const paymentStatuses = [
   "unpaid",
@@ -44,5 +45,5 @@ export type StoreEntityKey = "purchases" | "sales";
 
 export type RouteAccessRule = {
   href: string;
-  roles: AppRole[];
+  roles: string[];
 };

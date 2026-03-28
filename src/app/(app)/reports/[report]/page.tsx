@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowRight, FileClock, Landmark, ReceiptText, Wallet } from "lucide-react";
+import { ArrowRight, FileClock, Wallet } from "lucide-react";
 
 import { BrowserPrintButton } from "@/components/shared/browser-print-button";
 import { FilterBar } from "@/components/shared/filter-bar";
@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { formatCurrency, formatDate, formatDateTime, formatNumber } from "@/lib/utils";
 import { formatPalmStatusLabel, resolvePalmStatusBadgeVariant } from "@/modules/palm/status-utils";
 import { reportConfig, isReportKey } from "@/modules/reports/config";
-import { getDashboardSummary, getFinanceInventorySummary } from "@/services/dashboard-service";
+import { getFinanceInventorySummary } from "@/services/dashboard-service";
 import {
   getCashLedgerPage,
   getPayableAging,
@@ -23,17 +23,16 @@ import {
   getStoreDebtOffsetReport,
 } from "@/services/finance-service";
 import {
-  getStockAdjustmentList,
+  getStockAdjustmentSummary,
   getStockAdjustmentPage,
-  getStockBalanceList,
+  getStockBalanceSummary,
   getStockBalancePage,
-  getStockMovementList,
   getStockMovementPage,
-  getStockTakeList,
+  getStockTakeSummary,
   getStockTakePage,
 } from "@/services/inventory-service";
-import { getPalmPurchaseList, getPalmSaleList } from "@/services/palm-service";
-import { getStorePurchaseList, getStoreSaleList } from "@/services/store-service";
+import { getAllPalmPurchaseList, getAllPalmSaleList } from "@/services/palm-service";
+import { getAllStorePurchaseList, getAllStoreSaleList } from "@/services/store-service";
 
 type AgingSummary = {
   current: number;
@@ -46,18 +45,16 @@ type AgingSummary = {
 type ReportData =
   | {
       kind: "transactions";
-      dashboard: Awaited<ReturnType<typeof getDashboardSummary>>;
-      palmPurchases: Awaited<ReturnType<typeof getPalmPurchaseList>>;
-      palmSales: Awaited<ReturnType<typeof getPalmSaleList>>;
-      storePurchases: Awaited<ReturnType<typeof getStorePurchaseList>>;
-      storeSales: Awaited<ReturnType<typeof getStoreSaleList>>;
+      palmPurchases: Awaited<ReturnType<typeof getAllPalmPurchaseList>>;
+      palmSales: Awaited<ReturnType<typeof getAllPalmSaleList>>;
+      storePurchases: Awaited<ReturnType<typeof getAllStorePurchaseList>>;
+      storeSales: Awaited<ReturnType<typeof getAllStoreSaleList>>;
     }
   | {
       kind: "profit-loss";
-      dashboard: Awaited<ReturnType<typeof getDashboardSummary>>;
       finance: Awaited<ReturnType<typeof getFinanceInventorySummary>>;
-      palmPurchases: Awaited<ReturnType<typeof getPalmPurchaseList>>;
-      palmSales: Awaited<ReturnType<typeof getPalmSaleList>>;
+      palmPurchases: Awaited<ReturnType<typeof getAllPalmPurchaseList>>;
+      palmSales: Awaited<ReturnType<typeof getAllPalmSaleList>>;
       cashLedger: Awaited<ReturnType<typeof getCashLedgerPage>>;
       payableAging: AgingSummary;
       receivableAging: AgingSummary;
@@ -102,12 +99,31 @@ export default async function ReportPage({
 
   return (
     <div className="space-y-6">
+      <ReportPrintStyles />
       <PageHeader
         eyebrow="Reports"
         title={config.title}
         description={config.description}
         action={getHeaderActions(reportData)}
       />
+
+      <div className="hidden rounded-2xl border border-border/70 bg-card px-4 py-3 text-sm print:block">
+        <div className="font-semibold tracking-tight">{config.title}</div>
+        <div className="mt-1 text-muted-foreground">{config.description}</div>
+        <div className="mt-3 grid gap-2 text-[12px] text-muted-foreground md:grid-cols-3">
+          <div>
+            <span className="font-medium text-foreground">Periode:</span>{" "}
+            {buildPeriodLabel(dateFrom, dateTo)}
+          </div>
+          <div>
+            <span className="font-medium text-foreground">Dicetak:</span>{" "}
+            {formatDateTime(new Date())}
+          </div>
+          <div>
+            <span className="font-medium text-foreground">Tipe:</span> {config.title}
+          </div>
+        </div>
+      </div>
 
       {showPeriodFilter ? (
         <FilterBar
@@ -159,27 +175,23 @@ async function getReportData(
     case "transactions":
       return {
         kind: "transactions",
-        dashboard: await getDashboardSummary().catch(() => ({
-          kpis: [],
-          recentTransactions: [],
-        })),
         palmPurchases: filterRowsByDateRange(
-          await getPalmPurchaseList(200).catch(() => []),
+          await getAllPalmPurchaseList().catch(() => []),
           "purchaseDate",
           period,
         ),
         palmSales: filterRowsByDateRange(
-          await getPalmSaleList(200).catch(() => []),
+          await getAllPalmSaleList().catch(() => []),
           "saleDate",
           period,
         ),
         storePurchases: filterRowsByDateRange(
-          await getStorePurchaseList(200).catch(() => []),
+          await getAllStorePurchaseList().catch(() => []),
           "transactionDate",
           period,
         ),
         storeSales: filterRowsByDateRange(
-          await getStoreSaleList(200).catch(() => []),
+          await getAllStoreSaleList().catch(() => []),
           "transactionDate",
           period,
         ),
@@ -190,18 +202,14 @@ async function getReportData(
 
       return {
         kind: "profit-loss",
-        dashboard: await getDashboardSummary().catch(() => ({
-          kpis: [],
-          recentTransactions: [],
-        })),
         finance: await getFinanceInventorySummary().catch(() => emptyFinanceSummary()),
         palmPurchases: filterRowsByDateRange(
-          await getPalmPurchaseList(200).catch(() => []),
+          await getAllPalmPurchaseList().catch(() => []),
           "purchaseDate",
           period,
         ),
         palmSales: filterRowsByDateRange(
-          await getPalmSaleList(200).catch(() => []),
+          await getAllPalmSaleList().catch(() => []),
           "saleDate",
           period,
         ),
@@ -247,6 +255,7 @@ async function getReportData(
         data: {
           balances: await getStockBalancePage(1, 12).catch(() => emptyDocumentPage()),
           movements: await getStockMovementPage(1, 12).catch(() => emptyDocumentPage()),
+          summary: await getStockBalanceSummary().catch(() => emptyStockSummary()),
         },
       };
     case "stock-take":
@@ -255,19 +264,16 @@ async function getReportData(
         data: {
           stockTakes: await getStockTakePage(1, 12).catch(() => emptyDocumentPage()),
           adjustments: await getStockAdjustmentPage(1, 12).catch(() => emptyDocumentPage()),
+          stockTakeSummary: await getStockTakeSummary().catch(() => emptyStockTakeSummary()),
+          adjustmentSummary: await getStockAdjustmentSummary().catch(() => emptyStockAdjustmentSummary()),
         },
       };
     case "margin":
       return {
         kind: "snapshot",
         data: {
-          dashboard: await getDashboardSummary().catch(() => ({
-            kpis: [],
-            recentTransactions: [],
-          })),
-          palmPurchases: await getPalmPurchaseList(500).catch(() => []),
           palmSales: filterRowsByDateRange(
-            await getPalmSaleList(200).catch(() => []),
+            await getAllPalmSaleList().catch(() => []),
             "saleDate",
             period,
           ),
@@ -279,7 +285,7 @@ async function getReportData(
         kind: "snapshot",
         data: {
           palmSales: filterRowsByDateRange(
-            await getPalmSaleList(200).catch(() => []),
+            await getAllPalmSaleList().catch(() => []),
             "saleDate",
             period,
           ),
@@ -354,6 +360,11 @@ function getHeaderActions(reportData: ReportData) {
 
 function renderPayablesReport(data: Extract<ReportData, { kind: "payables" }>) {
   const topFarmer = data.finance.topFarmerPayables[0];
+  const payablesSnapshotLabel = buildSnapshotDescription(
+    data.payables.meta.total,
+    data.payables.items.length,
+    "dokumen hutang",
+  );
 
   return (
     <>
@@ -390,8 +401,8 @@ function renderPayablesReport(data: Extract<ReportData, { kind: "payables" }>) {
 
       <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
         <SectionCard
-          title="Dokumen Hutang Terbaru"
-          description="Snapshot dokumen hutang terbaru untuk follow-up operasional dan finance."
+          title="Dokumen Hutang Terbaru (Snapshot)"
+          description={payablesSnapshotLabel}
         >
           <SimpleTable
             cellRenderers={{
@@ -505,6 +516,11 @@ function renderPayablesReport(data: Extract<ReportData, { kind: "payables" }>) {
 
 function renderReceivablesReport(data: Extract<ReportData, { kind: "receivables" }>) {
   const overdueHeavy = data.aging.dueOver30 + data.aging.due15to30;
+  const receivablesSnapshotLabel = buildSnapshotDescription(
+    data.receivables.meta.total,
+    data.receivables.items.length,
+    "dokumen piutang",
+  );
   const topReceivables = [...data.receivables.items]
     .sort((left, right) => Number(right.outstandingAmount ?? 0) - Number(left.outstandingAmount ?? 0))
     .slice(0, 5);
@@ -544,8 +560,8 @@ function renderReceivablesReport(data: Extract<ReportData, { kind: "receivables"
 
       <div className="grid gap-6 xl:grid-cols-[1.08fr_0.92fr]">
         <SectionCard
-          title="Dokumen Piutang Terbaru"
-          description="Snapshot piutang terbaru untuk monitoring penerimaan pabrik dan pelanggan."
+          title="Dokumen Piutang Terbaru (Snapshot)"
+          description={receivablesSnapshotLabel}
         >
           <SimpleTable
             cellRenderers={{
@@ -646,11 +662,17 @@ function renderReceivablesReport(data: Extract<ReportData, { kind: "receivables"
 
 function renderProfitLossReport(data: Extract<ReportData, { kind: "profit-loss" }>) {
   const purchaseTotal = data.palmPurchases.reduce(
-    (sum, item) => sum + Number(item.totalPurchase ?? 0),
+    (sum: number, item: (typeof data.palmPurchases)[number]) => sum + Number(item.totalPurchase ?? 0),
     0,
   );
-  const salesTotal = data.palmSales.reduce((sum, item) => sum + Number(item.totalSales ?? 0), 0);
-  const marginTotal = data.palmSales.reduce((sum, item) => sum + Number(item.margin ?? 0), 0);
+  const salesTotal = data.palmSales.reduce(
+    (sum: number, item: (typeof data.palmSales)[number]) => sum + Number(item.totalSales ?? 0),
+    0,
+  );
+  const marginTotal = data.palmSales.reduce(
+    (sum: number, item: (typeof data.palmSales)[number]) => sum + Number(item.margin ?? 0),
+    0,
+  );
   const dueItems = [...data.finance.nearestReceivables, ...data.finance.nearestSupplierPayables]
     .sort((left, right) => {
       const leftTime = left.dueDate ? new Date(left.dueDate).getTime() : Number.MAX_SAFE_INTEGER;
@@ -661,19 +683,34 @@ function renderProfitLossReport(data: Extract<ReportData, { kind: "profit-loss" 
 
   return (
     <>
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
-        <MetricCard label="Pembelian TBS Periode" value={formatCurrency(purchaseTotal)} />
-        <MetricCard label="Penjualan TBS Periode" value={formatCurrency(salesTotal)} />
-        <MetricCard emphasis label="Margin Periode" value={formatCurrency(marginTotal)} />
-        <MetricCard label="Piutang Aktif" value={formatCurrency(data.finance.metrics.activeReceivables)} />
-        <MetricCard label="Hutang Aktif" value={formatCurrency(data.finance.metrics.activePayables)} />
-        <MetricCard label="Stok Kritis" value={formatNumber(data.finance.metrics.criticalStockCount, 0)} />
+      <div className="grid gap-6 xl:grid-cols-2">
+        <SectionCard
+          title="Ringkasan Periode"
+          description="Angka di blok ini mengikuti filter periode yang sedang aktif pada report."
+        >
+          <div className="grid gap-4 md:grid-cols-3">
+            <MetricCard label="Pembelian TBS Periode" value={formatCurrency(purchaseTotal)} />
+            <MetricCard label="Penjualan TBS Periode" value={formatCurrency(salesTotal)} />
+            <MetricCard emphasis label="Margin Periode" value={formatCurrency(marginTotal)} />
+          </div>
+        </SectionCard>
+
+        <SectionCard
+          title="Snapshot Saat Ini"
+          description="Angka di blok ini menunjukkan posisi finance dan stok terakhir saat report dibuka."
+        >
+          <div className="grid gap-4 md:grid-cols-3">
+            <MetricCard label="Piutang Aktif Saat Ini" value={formatCurrency(data.finance.metrics.activeReceivables)} />
+            <MetricCard label="Hutang Aktif Saat Ini" value={formatCurrency(data.finance.metrics.activePayables)} />
+            <MetricCard label="Stok Kritis Saat Ini" value={formatNumber(data.finance.metrics.criticalStockCount, 0)} />
+          </div>
+        </SectionCard>
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[1.12fr_0.88fr]">
         <SectionCard
-          title="Snapshot Cashflow & Aging"
-          description="Owner dapat melihat posisi hutang, piutang, dan risiko keterlambatan dari satu layar."
+          title="Snapshot Cashflow & Aging Saat Ini"
+          description="Owner dapat melihat posisi hutang, piutang, dan risiko keterlambatan terakhir dari satu layar."
         >
           <div className="grid gap-4 md:grid-cols-2">
             <div className="rounded-2xl border border-border/80 bg-muted/20 p-4">
@@ -710,8 +747,8 @@ function renderProfitLossReport(data: Extract<ReportData, { kind: "profit-loss" 
         </SectionCard>
 
         <SectionCard
-          title="Fokus Owner Hari Ini"
-          description="Prioritas yang perlu ditindaklanjuti dari sisi cashflow dan partner usaha."
+          title="Fokus Owner Saat Ini"
+          description="Prioritas yang perlu ditindaklanjuti dari sisi cashflow dan partner usaha berdasarkan snapshot terbaru."
         >
           <div className="space-y-4">
             <div className="rounded-2xl border border-primary/15 bg-primary/10 px-4 py-4">
@@ -746,7 +783,7 @@ function renderProfitLossReport(data: Extract<ReportData, { kind: "profit-loss" 
       <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
         <SectionCard
           title="Cash Ledger Terbaru"
-          description="Histori kas masuk dan kas keluar terbaru dari payment aktif."
+          description="Histori kas masuk dan kas keluar pada periode report yang sedang aktif."
         >
           <SimpleTable
             cellRenderers={{
@@ -784,8 +821,8 @@ function renderProfitLossReport(data: Extract<ReportData, { kind: "profit-loss" 
         </SectionCard>
 
         <SectionCard
-          title="Jatuh Tempo Terdekat"
-          description="Dokumen hutang dan piutang yang paling dekat memengaruhi posisi kas."
+          title="Jatuh Tempo Terdekat Saat Ini"
+          description="Dokumen hutang dan piutang terakhir yang paling dekat memengaruhi posisi kas."
         >
           <div className="space-y-3">
             {dueItems.length ? (
@@ -867,8 +904,24 @@ function renderStoreDebtOffsetReport(
 }
 
 function renderTransactionsReport(data: Extract<ReportData, { kind: "transactions" }>) {
+  const palmPurchaseTotal = data.palmPurchases.reduce(
+    (sum: number, item: (typeof data.palmPurchases)[number]) => sum + Number(item.totalPurchase ?? 0),
+    0,
+  );
+  const palmSalesTotal = data.palmSales.reduce(
+    (sum: number, item: (typeof data.palmSales)[number]) => sum + Number(item.totalSales ?? 0),
+    0,
+  );
+  const storePurchaseTotal = data.storePurchases.reduce(
+    (sum: number, item: (typeof data.storePurchases)[number]) => sum + Number(item.totalAmount ?? 0),
+    0,
+  );
+  const storeSalesTotal = data.storeSales.reduce(
+    (sum: number, item: (typeof data.storeSales)[number]) => sum + Number(item.totalAmount ?? 0),
+    0,
+  );
   const recentRows = [
-    ...data.palmPurchases.map((item) => ({
+    ...data.palmPurchases.map((item: (typeof data.palmPurchases)[number]) => ({
       id: item.id,
       code: item.code ?? "-",
       module: "Pembelian TBS",
@@ -890,7 +943,7 @@ function renderTransactionsReport(data: Extract<ReportData, { kind: "transaction
       id: item.id,
       code: item.code ?? "-",
       module: "Pembelian Toko",
-      party: item.supplierId ? `Supplier ${String(item.supplierId).slice(0, 8)}` : "-",
+      party: String(item.supplierName ?? "-"),
       transactionDate: item.transactionDate,
       amount: Number(item.totalAmount ?? 0),
       href: `/store/purchases/${item.id}`,
@@ -899,7 +952,7 @@ function renderTransactionsReport(data: Extract<ReportData, { kind: "transaction
       id: item.id,
       code: item.code ?? "-",
       module: "Penjualan Toko",
-      party: item.customerId ? `Pelanggan ${String(item.customerId).slice(0, 8)}` : "Tunai Umum",
+      party: String(item.customerName ?? "Tunai Umum"),
       transactionDate: item.transactionDate,
       amount: Number(item.totalAmount ?? 0),
       href: `/store/sales/${item.id}`,
@@ -914,9 +967,10 @@ function renderTransactionsReport(data: Extract<ReportData, { kind: "transaction
   return (
     <>
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {data.dashboard.kpis.slice(0, 4).map((item) => (
-          <MetricCard key={item.label} label={item.label} value={formatCurrency(Number(item.value ?? 0))} />
-        ))}
+        <MetricCard label="Pembelian TBS" value={formatCurrency(palmPurchaseTotal)} />
+        <MetricCard label="Penjualan Pabrik" value={formatCurrency(palmSalesTotal)} />
+        <MetricCard label="Pembelian Toko" value={formatCurrency(storePurchaseTotal)} />
+        <MetricCard label="Penjualan Toko" value={formatCurrency(storeSalesTotal)} />
       </div>
 
       <SectionCard
@@ -988,6 +1042,36 @@ function buildPeriodLabel(dateFrom?: string, dateTo?: string) {
   return "Periode semua data yang tersedia pada laporan ini";
 }
 
+function buildSnapshotDescription(total: number, shown: number, label: string) {
+  if (total <= shown) {
+    return `Menampilkan seluruh ${formatNumber(total, 0)} ${label} yang tersedia pada laporan ini.`;
+  }
+
+  return `Menampilkan ${formatNumber(shown, 0)} ${label} terbaru dari total ${formatNumber(total, 0)} data untuk follow-up cepat.`;
+}
+
+function ReportPrintStyles() {
+  return (
+    <style>{`
+      @media print {
+        @page {
+          size: A4 portrait;
+          margin: 12mm;
+        }
+
+        html, body {
+          background: #ffffff !important;
+        }
+
+        * {
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+      }
+    `}</style>
+  );
+}
+
 function filterRowsByDateRange<T extends Record<string, unknown>>(
   rows: T[],
   dateField: keyof T,
@@ -1010,33 +1094,67 @@ function filterRowsByDateRange<T extends Record<string, unknown>>(
 }
 
 function renderStockReport(data: Record<string, unknown>) {
-  const balances = ((data.balances as { items?: Array<Record<string, unknown>> } | undefined)?.items ?? []);
-  const movements = ((data.movements as { items?: Array<Record<string, unknown>> } | undefined)?.items ?? []);
-  const totalQuantity = balances.reduce((sum, item) => sum + Number(item.quantity ?? 0), 0);
-  const totalValue = balances.reduce(
-    (sum, item) => sum + Number(item.quantity ?? 0) * Number(item.averageCost ?? 0),
-    0,
+  const summary = (data.summary as {
+    totalRows?: number;
+    totalQuantity?: number;
+    totalValue?: number;
+    criticalCount?: number;
+  } | undefined) ?? {};
+  const balancesPage =
+    (data.balances as {
+      items?: Array<Record<string, unknown>>;
+      meta?: { total?: number };
+    } | undefined) ?? {};
+  const movementsPage =
+    (data.movements as {
+      items?: Array<Record<string, unknown>>;
+      meta?: { total?: number };
+    } | undefined) ?? {};
+  const balances = balancesPage.items ?? [];
+  const movements = movementsPage.items ?? [];
+  const balancesSnapshotLabel = buildSnapshotDescription(
+    balancesPage.meta?.total ?? balances.length,
+    balances.length,
+    "baris saldo stok",
   );
-  const criticalCount = balances.filter(
-    (item) => Number(item.quantity ?? 0) <= Number(item.minStock ?? 0),
-  ).length;
+  const movementsSnapshotLabel = buildSnapshotDescription(
+    movementsPage.meta?.total ?? movements.length,
+    movements.length,
+    "mutasi stok",
+  );
 
   return (
     <>
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <MetricCard label="Baris Saldo" value={formatNumber(balances.length, 0)} />
-        <MetricCard emphasis label="Qty Stok" value={formatNumber(totalQuantity)} />
-        <MetricCard label="Nilai Stok" value={formatCurrency(totalValue)} />
+        <MetricCard label="Baris Saldo" value={formatNumber(summary.totalRows ?? 0, 0)} />
+        <MetricCard emphasis label="Qty Stok" value={formatNumber(summary.totalQuantity ?? 0)} />
+        <MetricCard label="Nilai Stok" value={formatCurrency(summary.totalValue ?? 0)} />
         <MetricCard
           label="Stok Kritis"
-          value={formatNumber(criticalCount, 0)}
-          tone={criticalCount > 0 ? "warning" : "default"}
+          value={formatNumber(summary.criticalCount ?? 0, 0)}
+          tone={(summary.criticalCount ?? 0) > 0 ? "warning" : "default"}
         />
       </div>
 
       <SectionCard
-        title="Posisi Stok Saat Ini"
-        description="Snapshot saldo produk per gudang untuk pengecekan cepat owner dan admin stok."
+        title="Ringkasan Saldo Saat Ini"
+        description="Kartu KPI di atas dihitung dari seluruh saldo stok yang tersedia, sedangkan tabel di bawah menampilkan snapshot untuk penelusuran cepat."
+      >
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <MetricCard label="Total Baris Saldo" value={formatNumber(summary.totalRows ?? 0, 0)} />
+          <MetricCard label="Total Qty Tersedia" value={formatNumber(summary.totalQuantity ?? 0)} />
+          <MetricCard label="Nilai Persediaan" value={formatCurrency(summary.totalValue ?? 0)} />
+          <MetricCard
+            label="Produk Stok Kritis"
+            value={formatNumber(summary.criticalCount ?? 0, 0)}
+            tone={(summary.criticalCount ?? 0) > 0 ? "warning" : "default"}
+          />
+        </div>
+      </SectionCard>
+
+      <SectionCard
+        title="Posisi Stok Saat Ini (Snapshot)"
+        description={balancesSnapshotLabel}
       >
         <SimpleTable
           columnLabels={{
@@ -1066,8 +1184,8 @@ function renderStockReport(data: Record<string, unknown>) {
       </SectionCard>
 
       <SectionCard
-        title="Mutasi Terbaru"
-        description="Pergerakan stok terbaru untuk audit adjustment, transfer, dan penjualan."
+        title="Mutasi Stok Terbaru (Snapshot)"
+        description={movementsSnapshotLabel}
       >
         <SimpleTable
           columnLabels={{
@@ -1100,29 +1218,71 @@ function renderStockReport(data: Record<string, unknown>) {
 }
 
 function renderStockTakeReport(data: Record<string, unknown>) {
-  const stockTakes = ((data.stockTakes as { items?: Array<Record<string, unknown>> } | undefined)?.items ?? []);
-  const adjustments = ((data.adjustments as { items?: Array<Record<string, unknown>> } | undefined)?.items ?? []);
-  const totalVariance = stockTakes.reduce((sum, item) => sum + Number(item.varianceValue ?? 0), 0);
-  const approvedCount = stockTakes.filter((item) => String(item.status) === "approved").length;
-  const pendingAdjustments = adjustments.filter((item) => String(item.status) === "pending").length;
+  const stockTakeSummary = (data.stockTakeSummary as {
+    totalCount?: number;
+    approvedCount?: number;
+    totalVariance?: number;
+  } | undefined) ?? {};
+  const adjustmentSummary = (data.adjustmentSummary as {
+    totalCount?: number;
+    pendingCount?: number;
+  } | undefined) ?? {};
+  const stockTakePage =
+    (data.stockTakes as {
+      items?: Array<Record<string, unknown>>;
+      meta?: { total?: number };
+    } | undefined) ?? {};
+  const adjustmentPage =
+    (data.adjustments as {
+      items?: Array<Record<string, unknown>>;
+      meta?: { total?: number };
+    } | undefined) ?? {};
+  const stockTakes = stockTakePage.items ?? [];
+  const adjustments = adjustmentPage.items ?? [];
+  const stockTakeSnapshotLabel = buildSnapshotDescription(
+    stockTakePage.meta?.total ?? stockTakes.length,
+    stockTakes.length,
+    "dokumen stock take",
+  );
+  const adjustmentSnapshotLabel = buildSnapshotDescription(
+    adjustmentPage.meta?.total ?? adjustments.length,
+    adjustments.length,
+    "dokumen adjustment stok",
+  );
 
   return (
     <>
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <MetricCard label="Dokumen Opname" value={formatNumber(stockTakes.length, 0)} />
-        <MetricCard label="Adjustment" value={formatNumber(adjustments.length, 0)} />
-        <MetricCard label="Opname Disetujui" value={formatNumber(approvedCount, 0)} />
+        <MetricCard label="Dokumen Opname" value={formatNumber(stockTakeSummary.totalCount ?? 0, 0)} />
+        <MetricCard label="Adjustment" value={formatNumber(adjustmentSummary.totalCount ?? 0, 0)} />
+        <MetricCard label="Opname Disetujui" value={formatNumber(stockTakeSummary.approvedCount ?? 0, 0)} />
         <MetricCard
           emphasis
           label="Nilai Variance"
-          value={formatCurrency(totalVariance)}
-          tone={Math.abs(totalVariance) > 0 ? "warning" : "default"}
+          value={formatCurrency(stockTakeSummary.totalVariance ?? 0)}
+          tone={Math.abs(stockTakeSummary.totalVariance ?? 0) > 0 ? "warning" : "default"}
         />
       </div>
 
       <SectionCard
-        title="Dokumen Stock Take"
-        description="Histori stock take dengan status approval dan nilai selisih."
+        title="Ringkasan Kontrol Stok Saat Ini"
+        description="Kartu KPI di atas dihitung dari seluruh dokumen stock take dan adjustment, sedangkan tabel di bawah menampilkan snapshot terbaru untuk follow-up operasional."
+      >
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <MetricCard label="Total Stock Take" value={formatNumber(stockTakeSummary.totalCount ?? 0, 0)} />
+          <MetricCard label="Total Adjustment" value={formatNumber(adjustmentSummary.totalCount ?? 0, 0)} />
+          <MetricCard label="Stock Take Disetujui" value={formatNumber(stockTakeSummary.approvedCount ?? 0, 0)} />
+          <MetricCard
+            label="Adjustment Pending"
+            value={formatNumber(adjustmentSummary.pendingCount ?? 0, 0)}
+            tone={(adjustmentSummary.pendingCount ?? 0) > 0 ? "warning" : "default"}
+          />
+        </div>
+      </SectionCard>
+
+      <SectionCard
+        title="Dokumen Stock Take Terbaru (Snapshot)"
+        description={stockTakeSnapshotLabel}
       >
         <SimpleTable
           columnLabels={{
@@ -1153,8 +1313,8 @@ function renderStockTakeReport(data: Record<string, unknown>) {
       </SectionCard>
 
       <SectionCard
-        title="Adjustment Stok Terkait"
-        description="Dokumen adjustment yang terbentuk dari koreksi manual atau hasil stock take."
+        title="Adjustment Stok Terbaru (Snapshot)"
+        description={adjustmentSnapshotLabel}
       >
         <div className="mb-4 grid gap-4 md:grid-cols-2">
           <div className="rounded-2xl border border-border/80 bg-muted/20 px-4 py-4">
@@ -1162,7 +1322,7 @@ function renderStockTakeReport(data: Record<string, unknown>) {
               Pending Approval
             </div>
             <div className="mt-2 text-2xl font-semibold tracking-tight">
-              {formatNumber(pendingAdjustments, 0)}
+              {formatNumber(adjustmentSummary.pendingCount ?? 0, 0)}
             </div>
           </div>
         </div>
@@ -1201,33 +1361,26 @@ function renderStockTakeReport(data: Record<string, unknown>) {
 
 function renderMarginReport(data: Record<string, unknown>) {
   const palmSales = (data.palmSales as Array<Record<string, unknown>> | undefined) ?? [];
-  const palmPurchases = (data.palmPurchases as Array<Record<string, unknown>> | undefined) ?? [];
-  const purchaseMap = new Map(
-    palmPurchases.map((item) => [String(item.id), item]),
-  );
 
   const enrichedSales = palmSales.map((item) => {
-    const purchase = purchaseMap.get(String(item.referencePurchaseId ?? ""));
+    const totalSales = Number(item.totalSales ?? 0);
+    const margin = Number(item.margin ?? 0);
+    const stockCost = Math.max(totalSales - margin, 0);
     return {
       code: String(item.code ?? "-"),
       saleDate: item.saleDate as string | Date | null | undefined,
       factoryName: String(item.factoryName ?? "-"),
-      farmerName: String(purchase?.farmerName ?? "-"),
+      warehouseName: String(item.warehouseName ?? "-"),
       netWeightFinal: Number(item.netWeightFinal ?? 0),
-      totalSales: Number(item.totalSales ?? 0),
-      totalPurchase: Number(purchase?.totalPurchase ?? 0),
-      operationalCost: Number(purchase?.totalOperationalCost ?? 0),
-      margin: Number(item.margin ?? 0),
+      totalSales,
+      stockCost,
+      margin,
     };
   });
 
   const totalSales = enrichedSales.reduce((sum, item) => sum + item.totalSales, 0);
-  const totalPurchase = enrichedSales.reduce((sum, item) => sum + item.totalPurchase, 0);
+  const totalPurchase = enrichedSales.reduce((sum, item) => sum + item.stockCost, 0);
   const totalMargin = enrichedSales.reduce((sum, item) => sum + item.margin, 0);
-  const totalOperationalCost = enrichedSales.reduce(
-    (sum, item) => sum + item.operationalCost,
-    0,
-  );
   const groupedByFactory = Array.from(
     enrichedSales.reduce((map, item) => {
       const current = map.get(item.factoryName) ?? {
@@ -1235,13 +1388,13 @@ function renderMarginReport(data: Record<string, unknown>) {
         transactionCount: 0,
         netWeightFinal: 0,
         totalSales: 0,
-        totalPurchase: 0,
+        stockCost: 0,
         margin: 0,
       };
       current.transactionCount += 1;
       current.netWeightFinal += item.netWeightFinal;
       current.totalSales += item.totalSales;
-      current.totalPurchase += item.totalPurchase;
+      current.stockCost += item.stockCost;
       current.margin += item.margin;
       map.set(item.factoryName, current);
       return map;
@@ -1250,35 +1403,35 @@ function renderMarginReport(data: Record<string, unknown>) {
       transactionCount: number;
       netWeightFinal: number;
       totalSales: number;
-      totalPurchase: number;
+      stockCost: number;
       margin: number;
     }>()),
   )
     .map(([, value]) => value)
     .sort((left, right) => right.margin - left.margin);
-  const groupedByFarmer = Array.from(
+  const groupedByWarehouse = Array.from(
     enrichedSales.reduce((map, item) => {
-      const current = map.get(item.farmerName) ?? {
-        farmerName: item.farmerName,
+      const current = map.get(item.warehouseName) ?? {
+        warehouseName: item.warehouseName,
         transactionCount: 0,
         netWeightFinal: 0,
         totalSales: 0,
-        totalPurchase: 0,
+        stockCost: 0,
         margin: 0,
       };
       current.transactionCount += 1;
       current.netWeightFinal += item.netWeightFinal;
       current.totalSales += item.totalSales;
-      current.totalPurchase += item.totalPurchase;
+      current.stockCost += item.stockCost;
       current.margin += item.margin;
-      map.set(item.farmerName, current);
+      map.set(item.warehouseName, current);
       return map;
     }, new Map<string, {
-      farmerName: string;
+      warehouseName: string;
       transactionCount: number;
       netWeightFinal: number;
       totalSales: number;
-      totalPurchase: number;
+      stockCost: number;
       margin: number;
     }>()),
   )
@@ -1306,39 +1459,39 @@ function renderMarginReport(data: Record<string, unknown>) {
               transactionCount: "Transaksi",
               netWeightFinal: "Netto Final",
               totalSales: "Nilai Jual",
-              totalPurchase: "Nilai Beli",
+              stockCost: "Nilai Pokok",
               margin: "Margin",
             }}
-            columns={["factoryName", "transactionCount", "netWeightFinal", "totalSales", "totalPurchase", "margin"]}
-            numericColumns={["transactionCount", "netWeightFinal", "totalSales", "totalPurchase", "margin"]}
+            columns={["factoryName", "transactionCount", "netWeightFinal", "totalSales", "stockCost", "margin"]}
+            numericColumns={["transactionCount", "netWeightFinal", "totalSales", "stockCost", "margin"]}
             rows={groupedByFactory}
             cellRenderers={{
               totalSales: (value) => formatCurrency(Number(value ?? 0)),
-              totalPurchase: (value) => formatCurrency(Number(value ?? 0)),
+              stockCost: (value) => formatCurrency(Number(value ?? 0)),
               margin: (value) => formatCurrency(Number(value ?? 0)),
             }}
           />
         </SectionCard>
 
         <SectionCard
-          title="Margin per Petani"
-          description="Pantau kontribusi petani terhadap volume dan margin dari transaksi penjualan yang sudah terjadi."
+          title="Margin per Gudang Asal"
+          description="Karena stok TBS dikelola sebagai pool gudang, margin diringkas berdasarkan gudang asal penjualan."
         >
           <SimpleTable
             columnLabels={{
-              farmerName: "Petani",
+              warehouseName: "Gudang",
               transactionCount: "Transaksi",
               netWeightFinal: "Netto Final",
               totalSales: "Nilai Jual",
-              totalPurchase: "Nilai Beli",
+              stockCost: "Nilai Pokok",
               margin: "Margin",
             }}
-            columns={["farmerName", "transactionCount", "netWeightFinal", "totalSales", "totalPurchase", "margin"]}
-            numericColumns={["transactionCount", "netWeightFinal", "totalSales", "totalPurchase", "margin"]}
-            rows={groupedByFarmer}
+            columns={["warehouseName", "transactionCount", "netWeightFinal", "totalSales", "stockCost", "margin"]}
+            numericColumns={["transactionCount", "netWeightFinal", "totalSales", "stockCost", "margin"]}
+            rows={groupedByWarehouse}
             cellRenderers={{
               totalSales: (value) => formatCurrency(Number(value ?? 0)),
-              totalPurchase: (value) => formatCurrency(Number(value ?? 0)),
+              stockCost: (value) => formatCurrency(Number(value ?? 0)),
               margin: (value) => formatCurrency(Number(value ?? 0)),
             }}
           />
@@ -1350,7 +1503,7 @@ function renderMarginReport(data: Record<string, unknown>) {
         description="Snapshot margin transaksi penjualan TBS ke pabrik berdasarkan data penjualan aktif."
       >
         <div className="mb-4 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <MetricCard label="Biaya Operasional" value={formatCurrency(totalOperationalCost)} />
+          <MetricCard label="Nilai Pokok" value={formatCurrency(totalPurchase)} />
           <MetricCard
             label="Rata-rata Margin / Transaksi"
             value={formatCurrency(enrichedSales.length ? totalMargin / enrichedSales.length : 0)}
@@ -1374,23 +1527,21 @@ function renderMarginReport(data: Record<string, unknown>) {
             code: "Kode Sale",
             saleDate: "Tanggal",
             factoryName: "Pabrik",
-            farmerName: "Petani",
+            warehouseName: "Gudang Asal",
             netWeightFinal: "Netto Final",
             totalSales: "Nilai Jual",
-            totalPurchase: "Nilai Beli",
-            operationalCost: "Biaya Operasional",
+            stockCost: "Nilai Pokok",
             margin: "Margin",
           }}
-          columns={["code", "saleDate", "factoryName", "farmerName", "netWeightFinal", "totalSales", "totalPurchase", "operationalCost", "margin"]}
-          numericColumns={["netWeightFinal", "totalSales", "totalPurchase", "operationalCost", "margin"]}
+          columns={["code", "saleDate", "factoryName", "warehouseName", "netWeightFinal", "totalSales", "stockCost", "margin"]}
+          numericColumns={["netWeightFinal", "totalSales", "stockCost", "margin"]}
           rows={enrichedSales.map((item) => ({
             ...item,
             saleDate: formatDateTime(item.saleDate),
           }))}
           cellRenderers={{
             totalSales: (value) => formatCurrency(Number(value ?? 0)),
-            totalPurchase: (value) => formatCurrency(Number(value ?? 0)),
-            operationalCost: (value) => formatCurrency(Number(value ?? 0)),
+            stockCost: (value) => formatCurrency(Number(value ?? 0)),
             margin: (value) => formatCurrency(Number(value ?? 0)),
           }}
         />
@@ -1531,6 +1682,30 @@ function emptyFinanceSummary() {
     nearestReceivables: [],
     nearestSupplierPayables: [],
     topFarmerPayables: [],
+  };
+}
+
+function emptyStockSummary() {
+  return {
+    totalRows: 0,
+    totalQuantity: 0,
+    totalValue: 0,
+    criticalCount: 0,
+  };
+}
+
+function emptyStockTakeSummary() {
+  return {
+    totalCount: 0,
+    approvedCount: 0,
+    totalVariance: 0,
+  };
+}
+
+function emptyStockAdjustmentSummary() {
+  return {
+    totalCount: 0,
+    pendingCount: 0,
   };
 }
 

@@ -39,6 +39,7 @@ export default async function StoreEntityPage({
           transactionDate: formatDate(String(row.transactionDate)),
           totalAmount: String(row.totalAmount ?? 0),
           paymentStatus: String(row.paymentStatus ?? "unpaid"),
+          status: String(row.status ?? "active"),
         }
       : {
           id: row.id,
@@ -120,6 +121,33 @@ export default async function StoreEntityPage({
                       {formatPalmStatusLabel(String(value ?? "unpaid"))}
                     </Badge>
                   ),
+                  actions: (_, row) => {
+                    const paymentStatus = String(row.paymentStatus ?? "unpaid");
+                    const status = String(row.status ?? "active");
+                    const canReturn = status === "active" && paymentStatus === "unpaid";
+
+                    return (
+                      <div className="flex justify-end gap-2">
+                        <Button asChild size="sm" variant="outline">
+                          <Link href={`/store/purchases/${String(row.id)}`}>Lihat</Link>
+                        </Button>
+                        {canReturn ? (
+                          <Button asChild size="sm" variant="outline">
+                            <Link href={`/store/purchases/${String(row.id)}/returns/new`}>Retur</Link>
+                          </Button>
+                        ) : (
+                          <Button
+                            disabled
+                            size="sm"
+                            title="Retur hanya tersedia untuk pembelian aktif yang belum memiliki pembayaran."
+                            variant="outline"
+                          >
+                            Retur
+                          </Button>
+                        )}
+                      </div>
+                    );
+                  },
                 }
               : {
                   totalAmount: (value) => formatCurrency(Number(value ?? 0)),
@@ -143,6 +171,7 @@ export default async function StoreEntityPage({
                   transactionDate: "Tanggal",
                   totalAmount: "Total Transaksi",
                   paymentStatus: "Status Pembayaran",
+                  actions: "Aksi",
                 }
               : {
                   code: "Kode",

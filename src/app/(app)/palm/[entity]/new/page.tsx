@@ -28,13 +28,15 @@ export default async function NewPalmEntityPage({
     entity === "sales"
       ? getPalmSaleFormOptions().catch(() => ({
           factories: [],
-          purchases: [],
+          warehouses: [],
+          tbsPoolBalances: [],
           configs: [],
           factoryDefaults: {},
         }))
       : Promise.resolve({
           factories: [],
-          purchases: [],
+          warehouses: [],
+          tbsPoolBalances: [],
           configs: [],
           factoryDefaults: {},
         }),
@@ -56,16 +58,12 @@ export default async function NewPalmEntityPage({
           <PageHeader
             eyebrow="Palm Agent"
             title="Buat Penjualan TBS ke Pabrik"
-            description="Catat penjualan TBS ke pabrik dengan referensi pembelian, hasil timbangan, potongan, return, dan perhitungan margin."
+            description="Catat penjualan TBS ke pabrik dari pool stok gudang, berikut hasil timbangan, potongan, retur, dan perhitungan margin."
           />
           <PalmSaleForm
-            purchases={saleOptions.purchases.map((item) => ({
-              id: item.id,
-              code: item.code,
-              totalPurchase: item.totalPurchase,
-              totalOperationalCost: item.totalOperationalCost,
-            }))}
             factories={saleOptions.factories}
+            warehouses={saleOptions.warehouses}
+            tbsPoolBalances={saleOptions.tbsPoolBalances}
             deductionConfigs={saleOptions.configs.map((item) => ({
               id: item.id,
               code: item.code,

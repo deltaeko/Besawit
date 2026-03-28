@@ -57,6 +57,20 @@
       "when": 1774162800000,
       "tag": "0007_store_debt_offset",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1774602000000,
+      "tag": "0008_tbs_pool_stock",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1774688400000,
+      "tag": "0009_tbs_sale_reference_optional",
+      "breakpoints": true
     }
   ]
 }

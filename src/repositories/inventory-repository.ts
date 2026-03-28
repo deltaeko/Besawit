@@ -1,4 +1,4 @@
-import { and, count, desc, eq, getTableColumns, gte, lte, type SQL } from "drizzle-orm";
+import { and, count, desc, eq, getTableColumns, gte, lte, sql, type SQL } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 
 import { db } from "@/lib/db/client";
@@ -21,6 +21,20 @@ export async function getProductById(productId: string) {
     .where(eq(products.id, productId))
     .limit(1);
   return row ?? null;
+}
+
+export async function getProductByCode(code: string) {
+  const [row] = await db
+    .select()
+    .from(products)
+    .where(eq(products.code, code))
+    .limit(1);
+  return row ?? null;
+}
+
+export async function createProduct(values: typeof products.$inferInsert) {
+  const [row] = await db.insert(products).values(values).returning();
+  return row;
 }
 
 export async function getStockBalance(warehouseId: string, productId: string) {
@@ -82,6 +96,46 @@ export async function hasStockMovementHistory(warehouseId: string, productId: st
     );
 
   return Number(row?.value ?? 0) > 0;
+}
+
+export async function hasStockMovementByReference(
+  referenceType: typeof stockMovements.$inferSelect.referenceType,
+  referenceId: string,
+) {
+  const [row] = await db
+    .select({ value: count() })
+    .from(stockMovements)
+    .where(
+      and(
+        eq(stockMovements.referenceType, referenceType),
+        eq(stockMovements.referenceId, referenceId),
+      ),
+    );
+
+  return Number(row?.value ?? 0) > 0;
+}
+
+export async function listStockMovementsByReference(
+  referenceType: typeof stockMovements.$inferSelect.referenceType,
+  referenceId: string,
+) {
+  return db
+    .select({
+      ...getTableColumns(stockMovements),
+      productName: products.name,
+      productCode: products.code,
+      warehouseName: warehouses.name,
+    })
+    .from(stockMovements)
+    .leftJoin(products, eq(stockMovements.productId, products.id))
+    .leftJoin(warehouses, eq(stockMovements.warehouseId, warehouses.id))
+    .where(
+      and(
+        eq(stockMovements.referenceType, referenceType),
+        eq(stockMovements.referenceId, referenceId),
+      ),
+    )
+    .orderBy(desc(stockMovements.movementDate), desc(stockMovements.createdAt));
 }
 
 export async function listStockMovements(
@@ -250,6 +304,25 @@ export async function listStockBalancesPage(
   };
 }
 
+export async function summarizeStockBalances() {
+  const [row] = await db
+    .select({
+      totalRows: count(),
+      totalQuantity: sql<number>`coalesce(sum(${stockBalances.quantity}), 0)`,
+      totalValue: sql<number>`coalesce(sum(${stockBalances.quantity} * ${stockBalances.averageCost}), 0)`,
+      criticalCount: sql<number>`coalesce(sum(case when ${stockBalances.quantity} <= ${products.minStock} then 1 else 0 end), 0)`,
+    })
+    .from(stockBalances)
+    .leftJoin(products, eq(stockBalances.productId, products.id));
+
+  return {
+    totalRows: Number(row?.totalRows ?? 0),
+    totalQuantity: Number(row?.totalQuantity ?? 0),
+    totalValue: Number(row?.totalValue ?? 0),
+    criticalCount: Number(row?.criticalCount ?? 0),
+  };
+}
+
 export async function createStockTake(values: typeof stockTakes.$inferInsert) {
   const [row] = await db.insert(stockTakes).values(values).returning();
   return row;
@@ -310,6 +383,22 @@ export async function listStockTakesPage(
   return {
     items,
     total: Number(total ?? 0),
+  };
+}
+
+export async function summarizeStockTakes() {
+  const [row] = await db
+    .select({
+      totalCount: count(),
+      approvedCount: sql<number>`coalesce(sum(case when ${stockTakes.status} = 'approved' then 1 else 0 end), 0)`,
+      totalVariance: sql<number>`coalesce(sum(${stockTakes.varianceValue}), 0)`,
+    })
+    .from(stockTakes);
+
+  return {
+    totalCount: Number(row?.totalCount ?? 0),
+    approvedCount: Number(row?.approvedCount ?? 0),
+    totalVariance: Number(row?.totalVariance ?? 0),
   };
 }
 
@@ -422,6 +511,20 @@ export async function listStockAdjustmentsPage(
   return {
     items,
     total: Number(total ?? 0),
+  };
+}
+
+export async function summarizeStockAdjustments() {
+  const [row] = await db
+    .select({
+      totalCount: count(),
+      pendingCount: sql<number>`coalesce(sum(case when ${stockAdjustments.status} = 'pending' then 1 else 0 end), 0)`,
+    })
+    .from(stockAdjustments);
+
+  return {
+    totalCount: Number(row?.totalCount ?? 0),
+    pendingCount: Number(row?.pendingCount ?? 0),
   };
 }
 

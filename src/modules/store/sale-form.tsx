@@ -51,6 +51,11 @@ export function StoreSaleForm({
 }) {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
+  const defaultDueDate = useMemo(() => {
+    const nextYear = new Date();
+    nextYear.setFullYear(nextYear.getFullYear() + 1);
+    return nextYear.toISOString().slice(0, 10);
+  }, []);
   const form = useForm<SaleFormInput, unknown, SaleValues>({
     resolver: zodResolver(storeSaleSchema),
     defaultValues: {
@@ -59,6 +64,7 @@ export function StoreSaleForm({
       warehouseId: "",
       invoiceNumber: "",
       saleType: "cash",
+      dueDate: defaultDueDate,
       discount: 0,
       tax: 0,
       items: [{ productId: "", quantity: 1, unitPrice: 0 }],
@@ -188,6 +194,18 @@ export function StoreSaleForm({
             <div className="space-y-2 xl:col-span-2">
               <StoreFieldLabel htmlFor="invoiceNumber">Nomor Invoice</StoreFieldLabel>
               <Input id="invoiceNumber" placeholder="Opsional" {...form.register("invoiceNumber")} />
+            </div>
+            <div className="space-y-2 xl:col-span-2">
+              <StoreFieldLabel htmlFor="dueDate" required={saleType === "credit"}>
+                Jatuh Tempo Piutang
+              </StoreFieldLabel>
+              <Input id="dueDate" type="date" {...form.register("dueDate")} />
+              <StoreFieldError message={getErrorMessage(errors, "dueDate")} />
+              <StoreFieldHint>
+                {saleType === "credit"
+                  ? "Tanggal jatuh tempo akan disimpan pada piutang pelanggan toko."
+                  : "Isi bila ingin menyiapkan tanggal jatuh tempo saat penjualan diubah ke kredit."}
+              </StoreFieldHint>
             </div>
             <div className="xl:col-span-2 rounded-2xl border border-border/80 bg-muted/20 p-4 text-sm text-muted-foreground">
               <div className="mb-1 flex items-center gap-2 font-medium text-foreground">
@@ -336,6 +354,7 @@ export function StoreSaleForm({
         title="Ringkasan Penjualan"
         items={[
           { label: "Jenis Penjualan", value: saleType === "credit" ? "Kredit" : "Tunai" },
+          { label: "Jatuh Tempo", value: watched.dueDate || "-" },
           { label: "Subtotal Item", value: formatCurrency(totals.subtotal) },
           { label: "Diskon", value: formatCurrency(totals.discount) },
           { label: "Pajak", value: formatCurrency(totals.tax) },

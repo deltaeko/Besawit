@@ -5,6 +5,8 @@ import {
   customers,
   products,
   storePurchaseItems,
+  storePurchaseReturnItems,
+  storePurchaseReturns,
   storePurchases,
   storeSaleItems,
   storeSales,
@@ -14,18 +16,56 @@ import {
 
 export async function listStorePurchases(limit = 20) {
   return db
-    .select()
+    .select({
+      ...getTableColumns(storePurchases),
+      supplierName: suppliers.name,
+      warehouseName: warehouses.name,
+    })
     .from(storePurchases)
+    .leftJoin(suppliers, eq(storePurchases.supplierId, suppliers.id))
+    .leftJoin(warehouses, eq(storePurchases.warehouseId, warehouses.id))
     .orderBy(desc(storePurchases.transactionDate), desc(storePurchases.createdAt))
     .limit(limit);
 }
 
+export async function listAllStorePurchases() {
+  return db
+    .select({
+      ...getTableColumns(storePurchases),
+      supplierName: suppliers.name,
+      warehouseName: warehouses.name,
+    })
+    .from(storePurchases)
+    .leftJoin(suppliers, eq(storePurchases.supplierId, suppliers.id))
+    .leftJoin(warehouses, eq(storePurchases.warehouseId, warehouses.id))
+    .orderBy(desc(storePurchases.transactionDate), desc(storePurchases.createdAt));
+}
+
 export async function listStoreSales(limit = 20) {
   return db
-    .select()
+    .select({
+      ...getTableColumns(storeSales),
+      customerName: customers.name,
+      warehouseName: warehouses.name,
+    })
     .from(storeSales)
+    .leftJoin(customers, eq(storeSales.customerId, customers.id))
+    .leftJoin(warehouses, eq(storeSales.warehouseId, warehouses.id))
     .orderBy(desc(storeSales.transactionDate), desc(storeSales.createdAt))
     .limit(limit);
+}
+
+export async function listAllStoreSales() {
+  return db
+    .select({
+      ...getTableColumns(storeSales),
+      customerName: customers.name,
+      warehouseName: warehouses.name,
+    })
+    .from(storeSales)
+    .leftJoin(customers, eq(storeSales.customerId, customers.id))
+    .leftJoin(warehouses, eq(storeSales.warehouseId, warehouses.id))
+    .orderBy(desc(storeSales.transactionDate), desc(storeSales.createdAt));
 }
 
 export async function getStorePurchaseById(id: string) {
@@ -81,6 +121,59 @@ export async function createStorePurchaseItems(
   values: (typeof storePurchaseItems.$inferInsert)[],
 ) {
   return db.insert(storePurchaseItems).values(values).returning();
+}
+
+export async function listStorePurchaseItemsByPurchaseId(purchaseId: string) {
+  return db
+    .select({
+      ...getTableColumns(storePurchaseItems),
+      productCode: products.code,
+      productName: products.name,
+      productUnit: products.unit,
+    })
+    .from(storePurchaseItems)
+    .leftJoin(products, eq(storePurchaseItems.productId, products.id))
+    .where(eq(storePurchaseItems.purchaseId, purchaseId))
+    .orderBy(desc(storePurchaseItems.createdAt));
+}
+
+export async function createStorePurchaseReturn(
+  values: typeof storePurchaseReturns.$inferInsert,
+) {
+  const [row] = await db.insert(storePurchaseReturns).values(values).returning();
+  return row;
+}
+
+export async function createStorePurchaseReturnItems(
+  values: (typeof storePurchaseReturnItems.$inferInsert)[],
+) {
+  return db.insert(storePurchaseReturnItems).values(values).returning();
+}
+
+export async function listStorePurchaseReturnsByPurchaseId(purchaseId: string) {
+  return db
+    .select()
+    .from(storePurchaseReturns)
+    .where(eq(storePurchaseReturns.purchaseId, purchaseId))
+    .orderBy(desc(storePurchaseReturns.returnDate), desc(storePurchaseReturns.createdAt));
+}
+
+export async function listStorePurchaseReturnItemsByPurchaseId(purchaseId: string) {
+  return db
+    .select({
+      ...getTableColumns(storePurchaseReturnItems),
+      returnCode: storePurchaseReturns.code,
+      returnDate: storePurchaseReturns.returnDate,
+      returnStatus: storePurchaseReturns.status,
+      productCode: products.code,
+      productName: products.name,
+      productUnit: products.unit,
+    })
+    .from(storePurchaseReturnItems)
+    .innerJoin(storePurchaseReturns, eq(storePurchaseReturnItems.returnId, storePurchaseReturns.id))
+    .leftJoin(products, eq(storePurchaseReturnItems.productId, products.id))
+    .where(eq(storePurchaseReturns.purchaseId, purchaseId))
+    .orderBy(desc(storePurchaseReturns.returnDate), desc(storePurchaseReturnItems.createdAt));
 }
 
 export async function createStoreSale(values: typeof storeSales.$inferInsert) {

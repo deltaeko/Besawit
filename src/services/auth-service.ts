@@ -1,6 +1,7 @@
 import { compare } from "bcryptjs";
 import { eq } from "drizzle-orm";
 
+import { normalizeRolePermissions } from "@/lib/auth/permissions";
 import { db } from "@/lib/db/client";
 import { roles, users } from "@/lib/db/schema";
 
@@ -14,6 +15,7 @@ export async function authenticateUser(email: string, password: string) {
       isActive: users.isActive,
       roleCode: roles.code,
       roleName: roles.name,
+      permissions: roles.permissions,
     })
     .from(users)
     .innerJoin(roles, eq(users.roleId, roles.id))
@@ -30,4 +32,8 @@ export async function authenticateUser(email: string, password: string) {
   }
 
   return user;
+}
+
+export function resolveUserPermissions(user: { permissions?: unknown }) {
+  return normalizeRolePermissions(user.permissions);
 }

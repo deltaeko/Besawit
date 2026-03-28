@@ -150,10 +150,7 @@ export const roleSchema = z.object({
   code: requiredText(2, 50),
   name: requiredText(2, 100),
   description: optionalText(500),
-  permissions: z
-    .string()
-    .optional()
-    .transform((value) => (value?.trim() ? value.trim() : undefined)),
+  permissions: z.record(z.string(), z.coerce.boolean()).optional().default({}),
   isSystem: z.coerce.boolean().default(false),
 });
 

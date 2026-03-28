@@ -84,7 +84,7 @@ function SummaryField({
   return (
     <div
       className={cn(
-        "rounded-2xl border border-border/80 bg-card/80 p-4",
+        "rounded-2xl border border-border/80 bg-card/80 p-3.5 min-h-[128px]",
         emphasis && "border-primary/20 bg-primary/10",
       )}
     >
@@ -94,6 +94,23 @@ function SummaryField({
       <div className={cn("mt-2 font-semibold tracking-tight", emphasis ? "text-2xl" : "text-lg")}>
         {value}
       </div>
+    </div>
+  );
+}
+
+function SummaryRow({
+  label,
+  value,
+}: {
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="flex items-start justify-between gap-4 border-b border-border/60 py-2 last:border-b-0 last:pb-0">
+      <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+        {label}
+      </div>
+      <div className="text-right text-sm font-medium text-foreground">{value}</div>
     </div>
   );
 }
@@ -141,10 +158,12 @@ export function PaymentForm({
   payables,
   receivables,
   initialValues,
+  returnHref,
 }: {
   payables: PaymentReferenceOption[];
   receivables: PaymentReferenceOption[];
   initialValues?: Partial<PaymentFormInput>;
+  returnHref?: string | null;
 }) {
   const initialContext: PaymentContext = initialValues?.receivableId ? "receivable" : "payable";
   const [context, setContext] = useState<PaymentContext>(initialContext);
@@ -180,6 +199,7 @@ export function PaymentForm({
     method === "other"
       ? method
       : "cash";
+
   const selectedReference = useMemo(() => {
     const activeId = context === "payable" ? selectedPayableId : selectedReceivableId;
     return activeOptions.find((item) => item.id === activeId) ?? null;
@@ -199,11 +219,9 @@ export function PaymentForm({
     }
 
     if (previousReferenceId.current !== activeId) {
-      form.setValue(
-        "amount",
-        Number(selectedReference?.outstandingAmount ?? 0),
-        { shouldDirty: true },
-      );
+      form.setValue("amount", Number(selectedReference?.outstandingAmount ?? 0), {
+        shouldDirty: true,
+      });
       previousReferenceId.current = activeId;
     }
   }, [context, form, selectedPayableId, selectedReceivableId, selectedReference?.outstandingAmount]);
@@ -253,6 +271,12 @@ export function PaymentForm({
       return;
     }
 
+    if (returnHref) {
+      router.push(returnHref);
+      router.refresh();
+      return;
+    }
+
     form.reset({
       paymentDate: new Date().toISOString().slice(0, 10),
       direction: context === "receivable" ? "in" : "out",
@@ -271,12 +295,12 @@ export function PaymentForm({
 
   return (
     <Card>
-      <CardHeader className="space-y-4">
-        <div className="space-y-2">
+      <CardHeader className="space-y-3 pb-4">
+        <div className="space-y-1.5">
           <CardTitle>
             {context === "payable" ? "Catat Pembayaran Hutang" : "Catat Penerimaan Piutang"}
           </CardTitle>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm leading-6 text-muted-foreground">
             {context === "payable"
               ? "Gunakan form ini untuk mencatat pembayaran ke petani atau supplier terhadap hutang yang masih berjalan."
               : "Gunakan form ini untuk mencatat penerimaan dari pabrik atau customer terhadap piutang yang masih berjalan."}
@@ -298,35 +322,37 @@ export function PaymentForm({
         </div>
       </CardHeader>
 
-      <CardContent>
-        <form className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]" onSubmit={form.handleSubmit(onSubmit)}>
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="paymentDate">Tanggal</Label>
-              <Input id="paymentDate" type="date" {...form.register("paymentDate")} />
-              <FieldError message={errors.paymentDate?.message} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="method">Metode</Label>
-              <Select id="method" {...form.register("method")}>
-                <option value="cash">Tunai</option>
-                <option value="bank_transfer">Transfer Bank</option>
-                <option value="giro">Giro</option>
-                <option value="other">Lainnya</option>
-              </Select>
+      <CardContent className="pt-0">
+        <form
+          className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px]"
+          onSubmit={form.handleSubmit(onSubmit)}
+        >
+          <div className="space-y-4">
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="paymentDate">Tanggal</Label>
+                <Input id="paymentDate" type="date" {...form.register("paymentDate")} />
+                <FieldError message={errors.paymentDate?.message} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="method">Metode</Label>
+                <Select id="method" {...form.register("method")}>
+                  <option value="cash">Tunai</option>
+                  <option value="bank_transfer">Transfer Bank</option>
+                  <option value="giro">Giro</option>
+                  <option value="other">Lainnya</option>
+                </Select>
+              </div>
             </div>
 
             {context === "payable" ? (
-              <div className="space-y-2 md:col-span-2">
+              <div className="space-y-2">
                 <Label htmlFor="payableId">Hutang</Label>
-                <Select
-                  id="payableId"
-                  placeholder="Pilih hutang"
-                  {...form.register("payableId")}
-                >
+                <Select id="payableId" placeholder="Pilih hutang" {...form.register("payableId")}>
                   {payables.map((item) => (
                     <option key={item.id} value={item.id}>
-                      {item.code} • {item.partyName ?? "Tanpa pihak"} • Sisa {formatCurrency(item.outstandingAmount)}
+                      {item.code} - {item.partyName ?? "Tanpa pihak"} - Sisa{" "}
+                      {formatCurrency(item.outstandingAmount)}
                     </option>
                   ))}
                 </Select>
@@ -334,7 +360,7 @@ export function PaymentForm({
                 <FieldError message={errors.payableId?.message} />
               </div>
             ) : (
-              <div className="space-y-2 md:col-span-2">
+              <div className="space-y-2">
                 <Label htmlFor="receivableId">Piutang</Label>
                 <Select
                   id="receivableId"
@@ -343,7 +369,8 @@ export function PaymentForm({
                 >
                   {receivables.map((item) => (
                     <option key={item.id} value={item.id}>
-                      {item.code} • {item.partyName ?? "Tanpa pihak"} • Sisa {formatCurrency(item.outstandingAmount)}
+                      {item.code} - {item.partyName ?? "Tanpa pihak"} - Sisa{" "}
+                      {formatCurrency(item.outstandingAmount)}
                     </option>
                   ))}
                 </Select>
@@ -352,48 +379,52 @@ export function PaymentForm({
               </div>
             )}
 
-            <div className="space-y-2">
-              <Label htmlFor="amount">Nominal</Label>
-              <Input id="amount" min="0" step="0.01" type="number" {...form.register("amount")} />
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  onClick={() =>
-                    form.setValue("amount", Number(selectedReference?.outstandingAmount ?? 0), {
-                      shouldDirty: true,
-                    })
-                  }
-                  size="sm"
-                  type="button"
-                  variant="outline"
-                >
-                  Isi Sisa Penuh
-                </Button>
-                <Button
-                  onClick={() => form.setValue("amount", 0, { shouldDirty: true })}
-                  size="sm"
-                  type="button"
-                  variant="ghost"
-                >
-                  Kosongkan
-                </Button>
+            <div className="grid gap-4 lg:grid-cols-[minmax(0,0.48fr)_minmax(0,1fr)]">
+              <div className="space-y-2">
+                <Label htmlFor="amount">Nominal</Label>
+                <Input id="amount" min="0" step="0.01" type="number" {...form.register("amount")} />
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    onClick={() =>
+                      form.setValue("amount", Number(selectedReference?.outstandingAmount ?? 0), {
+                        shouldDirty: true,
+                      })
+                    }
+                    size="sm"
+                    type="button"
+                    variant="outline"
+                  >
+                    Isi Sisa Penuh
+                  </Button>
+                  <Button
+                    onClick={() => form.setValue("amount", 0, { shouldDirty: true })}
+                    size="sm"
+                    type="button"
+                    variant="ghost"
+                  >
+                    Kosongkan
+                  </Button>
+                </div>
+                <FieldError message={errors.amount?.message} />
               </div>
-              <FieldError message={errors.amount?.message} />
-            </div>
-            <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="notes">Catatan</Label>
-              <Textarea
-                id="notes"
-                placeholder={
-                  context === "payable"
-                    ? "Tambahkan catatan pembayaran, referensi transfer, atau keterangan administrasi lainnya."
-                    : "Tambahkan catatan penerimaan, referensi transfer masuk, atau keterangan administrasi lainnya."
-                }
-                {...form.register("notes")}
-              />
-              <FieldError message={errors.notes?.message} />
+
+              <div className="space-y-2">
+                <Label htmlFor="notes">Catatan</Label>
+                <Textarea
+                  id="notes"
+                  className="min-h-24"
+                  placeholder={
+                    context === "payable"
+                      ? "Tambahkan catatan pembayaran, referensi transfer, atau keterangan administrasi lainnya."
+                      : "Tambahkan catatan penerimaan, referensi transfer masuk, atau keterangan administrasi lainnya."
+                  }
+                  {...form.register("notes")}
+                />
+                <FieldError message={errors.notes?.message} />
+              </div>
             </div>
 
-            <div className="md:col-span-2">
+            <div>
               <div className="flex flex-wrap gap-3">
                 <Button
                   disabled={submitting}
@@ -418,7 +449,7 @@ export function PaymentForm({
             </div>
           </div>
 
-          <div className="space-y-4 self-start rounded-3xl border border-border/80 bg-muted/20 p-5">
+          <div className="space-y-3 self-start rounded-3xl border border-border/80 bg-muted/20 p-4">
             <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
               <Wallet className="size-4 text-primary" />
               Ringkasan Referensi
@@ -426,50 +457,44 @@ export function PaymentForm({
             <p className="text-sm leading-6 text-muted-foreground">
               Periksa referensi, outstanding, dan nominal yang akan dicatat sebelum menyimpan.
             </p>
-            <SummaryField
-              label={context === "payable" ? "Tipe Transaksi" : "Tipe Pencatatan"}
-              value={context === "payable" ? "Pembayaran Hutang" : "Penerimaan Piutang"}
-            />
-            <SummaryField
-              label="Referensi"
-              value={selectedReference?.code ?? "-"}
-            />
-            <SummaryField
-              label={context === "payable" ? "Pihak Hutang" : "Pihak Piutang"}
-              value={selectedReference?.partyName ?? "-"}
-            />
-            <SummaryField
-              label="Tipe Pihak"
-              value={getPartyTypeLabel(selectedReference?.partyType)}
-            />
-            <SummaryField
-              label="Referensi Transaksi"
-              value={selectedReference?.sourceCode ?? "-"}
-            />
+            <div className="rounded-2xl border border-border/80 bg-card/80 px-4 py-2">
+              <SummaryRow
+                label={context === "payable" ? "Tipe Transaksi" : "Tipe Pencatatan"}
+                value={context === "payable" ? "Pembayaran Hutang" : "Penerimaan Piutang"}
+              />
+              <SummaryRow label="Referensi" value={selectedReference?.code ?? "-"} />
+              <SummaryRow
+                label={context === "payable" ? "Pihak Hutang" : "Pihak Piutang"}
+                value={selectedReference?.partyName ?? "-"}
+              />
+              <SummaryRow
+                label="Tipe Pihak"
+                value={getPartyTypeLabel(selectedReference?.partyType)}
+              />
+              <SummaryRow
+                label="Referensi Transaksi"
+                value={selectedReference?.sourceCode ?? "-"}
+              />
+            </div>
             <SummaryField
               label="Outstanding Saat Ini"
               value={formatCurrency(selectedReference?.outstandingAmount ?? 0)}
               emphasis
             />
-            <SummaryField
-              label="Nominal Dicatat"
-              value={formatCurrency(amountNumber)}
-            />
-            <SummaryField
-              label="Sisa Setelah Pencatatan"
-              value={formatCurrency(remainingAfterPost)}
-            />
-            <div className="rounded-2xl border border-border/80 bg-card/80 p-4 text-sm text-muted-foreground">
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
+              <SummaryField label="Nominal Dicatat" value={formatCurrency(amountNumber)} />
+              <SummaryField
+                label="Sisa Setelah Pencatatan"
+                value={formatCurrency(remainingAfterPost)}
+              />
+            </div>
+            <div className="rounded-2xl border border-border/80 bg-card/80 p-4 min-h-[128px] text-sm text-muted-foreground">
               <div className="flex items-center gap-2 font-medium text-foreground">
                 <Landmark className="size-4 text-primary" />
                 Detail Administrasi
               </div>
-              <p className="mt-2 leading-6">
-                Metode: {getMethodLabel(methodValue)}
-              </p>
-              <p className="mt-1 leading-6">
-                Dicatat ke: {getLedgerLabel(methodValue)}
-              </p>
+              <p className="mt-2 leading-6">Metode: {getMethodLabel(methodValue)}</p>
+              <p className="mt-1 leading-6">Dicatat ke: {getLedgerLabel(methodValue)}</p>
               <p className="mt-1 leading-6">
                 Status referensi: {selectedReference ? getStatusLabel(selectedReference.status) : "-"}
               </p>

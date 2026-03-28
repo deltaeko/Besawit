@@ -1,9 +1,11 @@
 import { hashSync } from "bcryptjs";
 
+import { normalizeRolePermissions } from "@/lib/auth/permissions";
 import {
   createProductPriceHistory,
   createMasterRecord,
   findMasterByCode,
+  findCustomerByFarmerId,
   getMasterFormOptions,
   getMasterRecordById,
   hasMasterTransactions,
@@ -192,14 +194,8 @@ export async function changeProductPrice(
   };
 }
 
-function parsePermissionsJson(value?: string) {
-  if (!value) return {};
-
-  try {
-    return JSON.parse(value);
-  } catch {
-    throw new Error("Permissions JSON tidak valid.");
-  }
+function parseRolePermissions(value: unknown) {
+  return normalizeRolePermissions(value);
 }
 
 export async function createMaster(
@@ -219,12 +215,16 @@ export async function createMaster(
   let recordValues: Record<string, unknown> = parsed;
 
   if (entity === "users") {
+    if (!parsed.password) {
+      throw new Error("Password wajib diisi saat membuat pengguna.");
+    }
+
     recordValues = {
       roleId: parsed.roleId,
       fullName: parsed.fullName,
       email: parsed.email,
       phone: parsed.phone ?? null,
-      passwordHash: hashSync(String(parsed.password ?? "password123"), 10),
+      passwordHash: hashSync(String(parsed.password), 10),
       isActive: Boolean(parsed.isActive),
     };
   } else if (entity === "roles") {
@@ -232,7 +232,7 @@ export async function createMaster(
       code: parsed.code,
       name: parsed.name,
       description: parsed.description ?? null,
-      permissions: parsePermissionsJson(parsed.permissions as string | undefined),
+      permissions: parseRolePermissions(parsed.permissions),
       isSystem: Boolean(parsed.isSystem),
     };
   } else if (entity === "products") {
@@ -279,6 +279,24 @@ export async function createMaster(
   if (entity === "customers") {
     const isFarmer = Boolean(parsed.isFarmer);
     const existingFarmerId = parsed.farmerId as string | undefined;
+
+    if (isFarmer && existingFarmerId) {
+      const duplicateCustomer = await findCustomerByFarmerId(existingFarmerId);
+      if (duplicateCustomer) {
+        throw new Error("Petani ini sudah ditautkan ke pelanggan toko lain.");
+      }
+
+      const farmer = await getMasterRecordById("farmers", existingFarmerId);
+      if (!farmer) {
+        throw new Error("Petani terkait tidak ditemukan.");
+      }
+
+      recordValues = {
+        ...recordValues,
+        name: (farmer as { name?: string }).name ?? parsed.name,
+        farmerId: farmer.id,
+      };
+    }
 
     if (isFarmer && !existingFarmerId) {
       const farmerCode = await generateFarmerCode();
@@ -373,7 +391,7 @@ export async function updateMaster(
       code: parsed.code,
       name: parsed.name,
       description: parsed.description ?? null,
-      permissions: parsePermissionsJson(parsed.permissions as string | undefined),
+      permissions: parseRolePermissions(parsed.permissions),
       isSystem: Boolean(parsed.isSystem),
       updatedAt: new Date(),
     };
@@ -427,6 +445,24 @@ export async function updateMaster(
   if (entity === "customers") {
     const isFarmer = Boolean(parsed.isFarmer);
     const existingFarmerId = parsed.farmerId as string | undefined;
+
+    if (isFarmer && existingFarmerId) {
+      const duplicateCustomer = await findCustomerByFarmerId(existingFarmerId, id);
+      if (duplicateCustomer) {
+        throw new Error("Petani ini sudah ditautkan ke pelanggan toko lain.");
+      }
+
+      const farmer = await getMasterRecordById("farmers", existingFarmerId);
+      if (!farmer) {
+        throw new Error("Petani terkait tidak ditemukan.");
+      }
+
+      values = {
+        ...values,
+        name: (farmer as { name?: string }).name ?? parsed.name,
+        farmerId: farmer.id,
+      };
+    }
 
     if (isFarmer && !existingFarmerId) {
       const farmerCode = await generateFarmerCode();

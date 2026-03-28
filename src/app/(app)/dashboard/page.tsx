@@ -1,3 +1,4 @@
+import { connection } from "next/server";
 import Link from "next/link";
 import {
   AlertTriangle,
@@ -52,6 +53,8 @@ export default async function DashboardPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  await connection();
+
   const filters = await searchParams;
   const selectedDate = typeof filters.date === "string" ? filters.date : undefined;
 
@@ -60,7 +63,7 @@ export default async function DashboardPage({
       getTbsPurchaseDailySummary(selectedDate),
       getTbsSaleDailySummary(selectedDate),
       getFinanceInventorySummary(),
-      getDashboardSummary().catch(() => ({
+      getDashboardSummary(selectedDate).catch(() => ({
         kpis: [],
         recentTransactions: [],
       })),

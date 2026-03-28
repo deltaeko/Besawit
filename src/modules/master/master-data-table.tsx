@@ -8,7 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { formatCurrency, formatDate, formatNumber } from "@/lib/utils";
+import { formatCurrency, formatDate, formatDateTime, formatNumber } from "@/lib/utils";
 import { EntityActionMenu } from "@/modules/master/entity-action-menu";
 import type { MasterEntityConfig } from "@/modules/master/types";
 
@@ -19,6 +19,10 @@ type MasterRow = Record<string, unknown> & {
 
 function formatCellValue(key: string, value: unknown) {
   const normalizedKey = key.toLowerCase();
+  const isDateTimeField =
+    normalizedKey.includes("createdat") ||
+    normalizedKey.includes("updatedat") ||
+    normalizedKey.includes("date");
 
   if (key === "location" && typeof value === "object" && value) {
     const location = value as { village?: string | null; districtOrCity?: string | null };
@@ -35,6 +39,17 @@ function formatCellValue(key: string, value: unknown) {
     normalizedKey.includes("outstanding")
   ) {
     return formatCurrency(Number(value ?? 0));
+  }
+
+  if (value instanceof Date) {
+    return isDateTimeField ? formatDateTime(value) : formatDate(value);
+  }
+
+  if (typeof value === "string" && isDateTimeField) {
+    const parsedDate = new Date(value);
+    if (!Number.isNaN(parsedDate.getTime())) {
+      return formatDateTime(parsedDate);
+    }
   }
 
   if (typeof value === "string" && value.includes("T")) {
@@ -74,6 +89,11 @@ function renderCustomerLink(value: unknown) {
   );
 }
 
+function renderPermissionCount(value: unknown) {
+  const count = Number(value ?? 0);
+  return <Badge variant={count > 0 ? "success" : "neutral"}>{count} menu</Badge>;
+}
+
 export function MasterDataTable({
   entity,
   config,
@@ -103,6 +123,8 @@ export function MasterDataTable({
                     <TableCell key={`${row.id}-${column.key}`}>
                       {column.type === "status" ? (
                         <StatusBadge status={row.isActive ? "active" : "cancelled"} />
+                      ) : entity === "roles" && column.key === "permissionCount" ? (
+                        renderPermissionCount(row[column.key])
                       ) : column.key === "roleLabel" ? (
                         renderRoleBadge(row[column.key])
                       ) : entity === "customers" && column.key === "farmerName" ? (

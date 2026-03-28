@@ -35,6 +35,10 @@ type NamedOption = {
   name: string;
 };
 
+type DriverOption = NamedOption & {
+  primaryVehicleId?: string | null;
+};
+
 type VehicleOption = {
   id: string;
   plateNumber: string;
@@ -101,22 +105,41 @@ function InfoBlock({
   return (
     <div
       className={cn(
-        "rounded-2xl border bg-muted/25 p-4",
+        "min-h-[92px] rounded-2xl border border-border/80 bg-muted/20 p-3",
         emphasis && "border-primary/20 bg-primary/10",
       )}
     >
-      <div className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+      <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
         {label}
       </div>
       <div
         className={cn(
           "mt-2 font-semibold tracking-tight text-foreground",
-          emphasis ? "text-2xl" : "text-base",
+          emphasis ? "text-[1.6rem]" : "text-[1.3rem]",
         )}
       >
         {value}
       </div>
-      {helper ? <p className="mt-2 text-xs leading-5 text-muted-foreground">{helper}</p> : null}
+      {helper ? <p className="mt-1.5 text-xs leading-4.5 text-muted-foreground">{helper}</p> : null}
+    </div>
+  );
+}
+
+function SummaryRow({
+  label,
+  value,
+}: {
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="flex items-start justify-between gap-4 border-b border-border/60 py-2.5 last:border-b-0 last:pb-0">
+      <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+        {label}
+      </div>
+      <div className="max-w-[60%] text-right text-sm font-medium text-foreground">
+        {value}
+      </div>
     </div>
   );
 }
@@ -146,7 +169,7 @@ export function PalmPurchaseForm({
   transactionCode?: string | null;
   transactionStatus?: string | null;
   farmers: NamedOption[];
-  driverOptions: NamedOption[];
+  driverOptions: DriverOption[];
   vehicles: VehicleOption[];
   warehouses: NamedOption[];
   farmerStoreDebtMap: Record<string, FarmerStoreDebtSummary>;
@@ -182,6 +205,8 @@ export function PalmPurchaseForm({
       notes: initialValues?.notes ?? "",
     },
   });
+
+  const driverField = form.register("driverId");
 
   const [
     farmerId = "",
@@ -364,7 +389,11 @@ export function PalmPurchaseForm({
     );
 
     if (submitIntent === "save_payment" && nextId) {
-      router.push(`/finance/payments?sourceType=tbs_purchase&sourceId=${nextId}`);
+      router.push(
+        `/finance/payments?sourceType=tbs_purchase&sourceId=${nextId}&returnTo=${encodeURIComponent(
+          `/palm/purchases/${nextId}`,
+        )}`,
+      );
       router.refresh();
       return;
     }
@@ -383,21 +412,21 @@ export function PalmPurchaseForm({
   >;
 
   return (
-    <div className="space-y-5">
-      <div className="rounded-2xl border border-border/80 bg-card p-5 shadow-sm">
-        <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-start xl:gap-6">
-          <div className="space-y-3">
+    <div className="space-y-4">
+      <div className="rounded-2xl border border-border/80 bg-card px-5 py-4 shadow-sm">
+        <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-start xl:gap-5">
+          <div className="space-y-2.5">
             <div className="font-mono text-xs uppercase tracking-[0.3em] text-primary">
               Agen Sawit
             </div>
             <div>
-              <h1 className="text-[1.65rem] font-semibold tracking-tight md:text-3xl">
+              <h1 className="text-[1.55rem] font-semibold tracking-tight md:text-[2rem]">
                 {mode === "create"
                   ? "Buat Transaksi Pembelian"
                   : "Ubah Transaksi Pembelian"}
               </h1>
             </div>
-            <div className="flex flex-wrap items-center gap-2 pt-1">
+            <div className="flex flex-wrap items-center gap-2 pt-0.5">
               {transactionCode ? (
                 <div className="rounded-full border border-border/70 bg-muted/20 px-3 py-1 text-xs font-medium text-muted-foreground">
                   {transactionCode}
@@ -427,16 +456,15 @@ export function PalmPurchaseForm({
       </div>
 
       <form
-        className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px]"
+        className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_336px]"
         id={formId}
         onSubmit={form.handleSubmit(onSubmit)}
       >
-        <div className="space-y-6">
+        <div className="space-y-4">
           <SectionCard
-            description="Tetapkan tanggal transaksi, petani, dan relasi operasional utama."
             title="Informasi Utama"
           >
-            <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
+            <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_300px]">
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
                   <FieldLabel htmlFor="purchaseDate" required>
@@ -508,7 +536,20 @@ export function PalmPurchaseForm({
                   <Select
                     id="driverId"
                     placeholder="Pilih sopir"
-                    {...form.register("driverId")}
+                    {...driverField}
+                    onChange={(event) => {
+                      driverField.onChange(event);
+                      const selectedDriver = driverOptions.find(
+                        (item) => item.id === event.target.value,
+                      );
+
+                      if (selectedDriver?.primaryVehicleId) {
+                        form.setValue("vehicleId", selectedDriver.primaryVehicleId, {
+                          shouldDirty: true,
+                          shouldValidate: true,
+                        });
+                      }
+                    }}
                   >
                     {driverOptions.map((item) => (
                       <option key={item.id} value={item.id}>
@@ -516,7 +557,6 @@ export function PalmPurchaseForm({
                       </option>
                     ))}
                   </Select>
-                  <FieldHint>Daftar sopir berasal dari master Personel Armada dengan peran Sopir.</FieldHint>
                   <FieldError message={getErrorMessage(errors, "driverId")} />
                 </div>
                 <div className="space-y-2">
@@ -551,94 +591,83 @@ export function PalmPurchaseForm({
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-border/80 bg-muted/20 p-4">
-                <div className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
+              <div className="rounded-2xl border border-border/80 bg-muted/20 px-4 py-3">
+                <div className="mb-2 text-xs uppercase tracking-[0.18em] text-muted-foreground">
                   Ringkasan Petani
                 </div>
-                <div className="mt-3 grid gap-3">
-                  <div>
-                    <div className="text-sm font-semibold text-foreground">
-                      {formatCurrency(calculations.storeDebtSummary.totalOutstanding)}
-                    </div>
-                    <div className="text-xs text-muted-foreground">Hutang toko aktif</div>
-                  </div>
-                  <div>
-                    <div className="text-sm font-semibold text-foreground">
-                      {calculations.storeDebtSummary.receivableCount}
-                    </div>
-                    <div className="text-xs text-muted-foreground">Jumlah piutang</div>
-                  </div>
-                  <div>
-                    <div className="text-sm font-semibold text-foreground">
-                      {formatDate(calculations.storeDebtSummary.nearestDueDate)}
-                    </div>
-                    <div className="text-xs text-muted-foreground">Jatuh tempo terdekat</div>
-                  </div>
-                </div>
+                <SummaryRow
+                  label="Hutang Toko Aktif"
+                  value={formatCurrency(calculations.storeDebtSummary.totalOutstanding)}
+                />
+                <SummaryRow
+                  label="Jumlah Piutang"
+                  value={String(calculations.storeDebtSummary.receivableCount)}
+                />
+                <SummaryRow
+                  label="Jatuh Tempo Terdekat"
+                  value={formatDate(calculations.storeDebtSummary.nearestDueDate)}
+                />
               </div>
-
-            </div>
-          </SectionCard>
-
-          <SectionCard
-            description="Masukkan hasil timbang aktual. Berat bersih dihitung otomatis oleh sistem."
-            title="Data Timbangan"
-          >
-            <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_280px]">
-              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                <div className="space-y-2">
-                  <FieldLabel htmlFor="grossWeight" required>
-                    Berat Kotor
-                  </FieldLabel>
-                  <Input
-                    id="grossWeight"
-                    min="0"
-                    step="0.01"
-                    type="number"
-                    {...form.register("grossWeight")}
-                  />
-                  <FieldError message={getErrorMessage(errors, "grossWeight")} />
-                </div>
-                <div className="space-y-2">
-                  <FieldLabel htmlFor="tareWeight" required>
-                    Berat Tara
-                  </FieldLabel>
-                  <Input
-                    id="tareWeight"
-                    min="0"
-                    step="0.01"
-                    type="number"
-                    {...form.register("tareWeight")}
-                  />
-                  <FieldError message={getErrorMessage(errors, "tareWeight")} />
-                </div>
-                <div className="space-y-2 xl:col-span-1">
-                  <FieldLabel htmlFor="netWeight">Berat Bersih</FieldLabel>
-                  <Input
-                    id="netWeight"
-                    readOnly
-                    value={formatNumber(calculations.netWeight)}
-                  />
-                  <FieldHint>Berat Bersih = Berat Kotor - Berat Tara</FieldHint>
-                </div>
-              </div>
-              <div className="rounded-3xl border border-border/80 bg-muted/25 p-5">
-                <div className="flex items-start gap-3">
-                  <Scale className="mt-1 size-5 text-primary" />
-                  <div className="space-y-2">
-                    <div className="text-sm font-semibold text-foreground">
-                      Verifikasi Timbangan
-                    </div>
-                    <p className="text-sm leading-6 text-muted-foreground">
-                      Sistem akan menolak nilai yang tidak logis, termasuk berat tara yang
-                      lebih besar dari berat kotor.
-                    </p>
-                    <div className="rounded-2xl border bg-card/90 p-4">
-                      <div className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
-                        Berat Bersih Saat Ini
+              <div className="xl:col-span-2">
+                <div className="rounded-2xl border border-border/70 bg-muted/10 p-4">
+                  <div className="mb-4 flex items-center gap-2 text-sm font-semibold text-foreground">
+                    <Scale className="size-4 text-primary" />
+                    Data Timbangan
+                  </div>
+                  <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_280px]">
+                    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                      <div className="space-y-2">
+                        <FieldLabel htmlFor="grossWeight" required>
+                          Berat Kotor
+                        </FieldLabel>
+                        <Input
+                          id="grossWeight"
+                          min="0"
+                          step="0.01"
+                          type="number"
+                          {...form.register("grossWeight")}
+                        />
+                        <FieldError message={getErrorMessage(errors, "grossWeight")} />
                       </div>
-                      <div className="mt-2 text-2xl font-semibold tracking-tight">
-                        {formatNumber(calculations.netWeight)} kg
+                      <div className="space-y-2">
+                        <FieldLabel htmlFor="tareWeight" required>
+                          Berat Tara
+                        </FieldLabel>
+                        <Input
+                          id="tareWeight"
+                          min="0"
+                          step="0.01"
+                          type="number"
+                          {...form.register("tareWeight")}
+                        />
+                        <FieldError message={getErrorMessage(errors, "tareWeight")} />
+                      </div>
+                      <div className="space-y-2 xl:col-span-1">
+                        <FieldLabel htmlFor="netWeight">Berat Bersih</FieldLabel>
+                        <Input
+                          id="netWeight"
+                          readOnly
+                          value={formatNumber(calculations.netWeight)}
+                        />
+                        <FieldHint>Berat Bersih = Berat Kotor - Berat Tara</FieldHint>
+                      </div>
+                    </div>
+                    <div className="rounded-3xl border border-border/80 bg-muted/25 p-4">
+                      <div className="flex items-start gap-3">
+                        <Scale className="mt-1 size-5 text-primary" />
+                        <div className="space-y-2.5">
+                          <div className="text-sm font-semibold text-foreground">
+                            Verifikasi Timbangan
+                          </div>
+                          <div className="rounded-2xl border border-border/80 bg-card/90 p-4">
+                            <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                              Berat Bersih Saat Ini
+                            </div>
+                            <div className="mt-3 text-[2rem] font-semibold tracking-tight">
+                              {formatNumber(calculations.netWeight)} kg
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -668,7 +697,7 @@ export function PalmPurchaseForm({
             </button>
 
             {showStoreDebtSection ? (
-              <div className="mt-5 grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
+              <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1fr)_304px]">
                 <div className="space-y-4">
                   <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                     <div className="space-y-2">
@@ -801,10 +830,10 @@ export function PalmPurchaseForm({
                   </div>
                 </div>
 
-                <div className="rounded-3xl border border-border/80 bg-muted/25 p-5">
+                <div className="rounded-3xl border border-border/80 bg-muted/25 p-4">
                   <div className="flex items-start gap-3">
                     <Wallet className="mt-1 size-5 text-primary" />
-                    <div className="space-y-4">
+                    <div className="space-y-3">
                       <div>
                         <div className="text-sm font-semibold text-foreground">
                           Ringkasan Potongan
@@ -848,10 +877,9 @@ export function PalmPurchaseForm({
           </SectionCard>
 
           <SectionCard
-            description="Harga pembelian dan biaya operasional dihitung otomatis agar admin tidak perlu menghitung manual."
             title="Harga & Perhitungan"
           >
-            <div className="grid gap-6 xl:grid-cols-[minmax(0,0.95fr)_minmax(360px,1.05fr)]">
+            <div className="grid gap-4 xl:grid-cols-[minmax(0,0.95fr)_minmax(340px,1.05fr)]">
               <div className="space-y-4">
                 <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
@@ -866,7 +894,6 @@ export function PalmPurchaseForm({
                     {...form.register("buyingPricePerKg")}
                   />
                   <FieldError message={getErrorMessage(errors, "buyingPricePerKg")} />
-                  <FieldHint>Masukkan harga beli TBS per kilogram.</FieldHint>
                 </div>
                 <div className="space-y-2">
                   <FieldLabel htmlFor="transportCost">Biaya Angkut</FieldLabel>
@@ -902,25 +929,23 @@ export function PalmPurchaseForm({
                   <FieldError message={getErrorMessage(errors, "otherCost")} />
                 </div>
               </div>
-                <div className="rounded-2xl border border-border/80 bg-muted/20 p-4 text-sm text-muted-foreground">
-                  <div className="font-medium text-foreground">
-                    Total biaya operasional saat ini: {formatCurrency(calculations.operationalCost)}
-                  </div>
-                  <p className="mt-2 leading-6">
-                    Nilai ini dicatat untuk kebutuhan operasional dan analisis margin, sementara hutang pembelian tetap mengikuti total akhir transaksi.
-                  </p>
+                <div className="rounded-2xl border border-border/80 bg-muted/20 px-4 py-3">
+                  <SummaryRow
+                    label="Biaya Operasional Saat Ini"
+                    value={formatCurrency(calculations.operationalCost)}
+                  />
                 </div>
               </div>
 
-              <div className="rounded-3xl border border-border/80 bg-muted/20 p-5">
+              <div className="rounded-3xl border border-border/80 bg-muted/20 p-3">
                 <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
                   <Calculator className="size-4 text-primary" />
                   Alur Perhitungan
                 </div>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                  Sistem menghitung total pembelian secara otomatis agar admin bisa fokus memverifikasi angka, bukan menghitung manual.
+                <p className="mt-1.5 text-sm leading-5 text-muted-foreground">
+                  Nilai pembelian dihitung otomatis dari berat bersih, harga, biaya, dan potongan.
                 </p>
-                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                <div className="mt-2.5 grid gap-2.5 sm:grid-cols-2">
                   <InfoBlock
                     label="Total Pembelian"
                     value={formatCurrency(calculations.totalPurchase)}
@@ -953,8 +978,8 @@ export function PalmPurchaseForm({
             description="Informasi pembayaran ditampilkan sebagai referensi. Pencatatan pembayaran tetap dilakukan pada modul Finance."
             title="Status & Pembayaran"
           >
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-              <InfoBlock
+            <div className="rounded-2xl border border-border/80 bg-card/80 px-4 py-3">
+              <SummaryRow
                 label="Status Transaksi"
                 value={
                   mode === "create"
@@ -962,42 +987,28 @@ export function PalmPurchaseForm({
                     : formatPalmStatusLabel(currentTransactionStatus)
                 }
               />
-              <InfoBlock
+              <SummaryRow
                 label="Status Pembayaran"
                 value={formatPalmStatusLabel(effectivePaymentStatus)}
               />
-              <InfoBlock
+              <SummaryRow
                 label="Sudah Dibayar"
                 value={formatCurrency(calculations.paidAmount)}
               />
-              <InfoBlock
-                emphasis
+              <SummaryRow
                 label="Sisa Hutang"
                 value={formatCurrency(calculations.outstandingAmount)}
               />
             </div>
-            <div className="mt-4 rounded-2xl border border-border/80 bg-card/80 p-4 text-sm leading-6 text-muted-foreground">
-              <div className="flex items-start gap-3">
-                <Wallet className="mt-0.5 size-4 text-primary" />
-                <div>
-                  {paymentSnapshot?.payableCode ? (
-                    <p className="font-medium text-foreground">
-                      Referensi hutang aktif: {paymentSnapshot.payableCode}
-                    </p>
-                  ) : (
-                    <p className="font-medium text-foreground">
-                      Hutang dibuat otomatis setelah transaksi disimpan.
-                    </p>
-                  )}
-                  <p className="mt-1">
-                    Jika Anda ingin langsung mencatat pembayaran, gunakan aksi{" "}
-                    <span className="font-medium text-foreground">
-                      Simpan & Catat Pembayaran
-                    </span>
-                    .
-                  </p>
-                </div>
-              </div>
+            <div className="mt-3 rounded-2xl border border-border/80 bg-card/80 px-4 py-3">
+              <SummaryRow
+                label="Referensi Hutang"
+                value={paymentSnapshot?.payableCode ?? "Otomatis setelah disimpan"}
+              />
+              <SummaryRow
+                label="Aksi Lanjutan"
+                value="Gunakan Simpan & Catat Pembayaran"
+              />
             </div>
             {calculations.hasPaymentConflict ? (
               <div className="mt-4 rounded-2xl border border-destructive/20 bg-destructive/5 p-4 text-sm text-destructive">
@@ -1013,7 +1024,6 @@ export function PalmPurchaseForm({
           </SectionCard>
 
           <SectionCard
-            description="Catatan tambahan membantu audit dan tindak lanjut operasional."
             title="Catatan Tambahan"
           >
             <div className="space-y-2">
@@ -1021,15 +1031,30 @@ export function PalmPurchaseForm({
               <Textarea
                 id="notes"
                 placeholder="Tambahkan informasi penting seperti kondisi muatan, catatan timbangan, atau arahan pembayaran."
+                rows={3}
                 {...form.register("notes")}
               />
-              <FieldHint>
-                Biarkan kosong jika tidak ada catatan tambahan. Sistem akan
-                menampilkan status catatan kosong pada halaman detail.
-              </FieldHint>
               <FieldError message={getErrorMessage(errors, "notes")} />
             </div>
           </SectionCard>
+
+          <div className="rounded-2xl border border-border/80 bg-card px-4 py-3 shadow-sm">
+            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+              <div className="text-sm text-muted-foreground">
+                Periksa kembali petani, hasil timbang, potongan, dan total akhir sebelum
+                menyimpan transaksi.
+              </div>
+              <div className="md:flex-shrink-0">
+                <PalmPurchaseFormActions
+                  formId={formId}
+                  mode={mode}
+                  onCancel={handleCancel}
+                  onIntentChange={setSubmitIntent}
+                  submitting={submitting}
+                />
+              </div>
+            </div>
+          </div>
         </div>
 
         <PalmPurchaseFormSummary

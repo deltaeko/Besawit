@@ -8,8 +8,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatCurrency, formatDateTime, formatNumber } from "@/lib/utils";
 import { MasterPagination } from "@/modules/master/master-pagination";
-import { getMasterList } from "@/services/master-service";
-import { getStockBalancePage } from "@/services/inventory-service";
+import {
+  ensureTbsPoolProduct,
+  getInventoryStockFilterOptions,
+  getStockBalancePage,
+} from "@/services/inventory-service";
 
 export default async function InventoryStockPage({
   searchParams,
@@ -23,7 +26,7 @@ export default async function InventoryStockPage({
   const warehouseId = typeof query.warehouseId === "string" ? query.warehouseId : "";
   const lowStockOnly = typeof query.lowStock === "string" ? query.lowStock === "1" : false;
 
-  const [balancesResult, products, warehouses] = await Promise.all([
+  const [balancesResult, filterOptions, tbsPoolProduct] = await Promise.all([
     getStockBalancePage(page, pageSize, {
       productId: productId || undefined,
       warehouseId: warehouseId || undefined,
@@ -32,14 +35,35 @@ export default async function InventoryStockPage({
       items: [],
       meta: { page: 1, pageSize: 20, total: 0, totalPages: 1 },
     })),
-    getMasterList("products", { status: "active", pageSize: 50 }).then((result) => result.items).catch(() => []),
-    getMasterList("warehouses", { status: "active", pageSize: 50 }).then((result) => result.items).catch(() => []),
+    getInventoryStockFilterOptions().catch(() => ({
+      products: [],
+      warehouses: [],
+      tbsPoolProductId: "",
+    })),
+    ensureTbsPoolProduct(),
   ]);
+  const tbsPoolBalancesResult = await getStockBalancePage(1, 100, {
+    productId: tbsPoolProduct.id,
+  }).catch(() => ({
+    items: [],
+    meta: { page: 1, pageSize: 100, total: 0, totalPages: 1 },
+  }));
+  const products = filterOptions.products;
+  const warehouses = filterOptions.warehouses;
 
   const balances = balancesResult.items;
+  const tbsPoolBalances = tbsPoolBalancesResult.items.map((item) => ({
+    warehouseName: item.warehouseName ?? item.warehouseCode ?? "-",
+    quantity: Number(item.quantity ?? 0),
+    averageCost: Number(item.averageCost ?? 0),
+    unit: item.unit ?? "kg",
+  }));
 
   const rows = balances.map((item) => ({
-    product: item.productName ?? item.productCode ?? "-",
+    product:
+      item.productId === tbsPoolProduct.id
+        ? "TBS Pool (Sistem)"
+        : item.productName ?? item.productCode ?? "-",
     warehouse: item.warehouseName ?? item.warehouseCode ?? "-",
     quantityValue: Number(item.quantity),
     quantity: `${formatNumber(item.quantity)} ${item.unit ?? ""}`.trim(),
@@ -52,6 +76,7 @@ export default async function InventoryStockPage({
 
   const criticalCount = rows.filter((row) => row.quantityValue <= row.minStockValue).length;
   const totalQuantity = rows.reduce((sum, row) => sum + row.quantityValue, 0);
+  const totalTbsPoolQuantity = tbsPoolBalances.reduce((sum, item) => sum + item.quantity, 0);
   const paginationQuery = new URLSearchParams();
   paginationQuery.set("productId", productId);
   paginationQuery.set("warehouseId", warehouseId);
@@ -73,8 +98,8 @@ export default async function InventoryStockPage({
               <label className="text-sm font-medium">Produk</label>
               <Select defaultValue={productId} name="productId" placeholder="Semua produk">
                 {products.map((item) => (
-                  <option key={String((item as { id: string }).id)} value={String((item as { id: string }).id)}>
-                    {String((item as { name: string }).name)}
+                  <option key={item.id} value={item.id}>
+                    {item.name}
                   </option>
                 ))}
               </Select>
@@ -83,8 +108,8 @@ export default async function InventoryStockPage({
               <label className="text-sm font-medium">Gudang</label>
               <Select defaultValue={warehouseId} name="warehouseId" placeholder="Semua gudang">
                 {warehouses.map((item) => (
-                  <option key={String((item as { id: string }).id)} value={String((item as { id: string }).id)}>
-                    {String((item as { name: string }).name)}
+                  <option key={item.id} value={item.id}>
+                    {item.name}
                   </option>
                 ))}
               </Select>
@@ -132,6 +157,52 @@ export default async function InventoryStockPage({
           </>
         }
       />
+
+      <div className="rounded-3xl border border-border/70 bg-card shadow-sm">
+        <div className="border-b border-border/70 px-6 py-4">
+          <div className="text-base font-semibold text-foreground">Posisi Stok TBS Pool</div>
+          <div className="mt-1 text-sm text-muted-foreground">
+            Saldo stok fisik TBS campuran per gudang untuk operasional pembelian dan penjualan ke pabrik.
+          </div>
+        </div>
+        <div className="grid gap-4 px-6 py-5 md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+          <div className="rounded-2xl border border-border/70 bg-muted/20 px-4 py-4">
+            <div className="text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
+              Total TBS Tersedia
+            </div>
+            <div className="mt-3 text-3xl font-semibold tracking-tight text-foreground">
+              {formatNumber(totalTbsPoolQuantity)} kg
+            </div>
+            <div className="mt-2 text-sm text-muted-foreground">
+              Saldo gabungan sawit yang siap dialokasikan ke penjualan pabrik.
+            </div>
+          </div>
+          <div className="rounded-2xl border border-border/70 bg-background/70">
+            {tbsPoolBalances.length ? (
+              tbsPoolBalances.map((item, index) => (
+                <div
+                  key={`${item.warehouseName}-${index}`}
+                  className="flex items-center justify-between gap-4 px-4 py-3 text-sm not-last:border-b not-last:border-border/70"
+                >
+                  <div>
+                    <div className="font-medium text-foreground">{item.warehouseName}</div>
+                    <div className="mt-1 text-xs text-muted-foreground">
+                      Avg cost {formatCurrency(item.averageCost)}
+                    </div>
+                  </div>
+                  <div className="text-right font-semibold tabular-nums text-foreground">
+                    {formatNumber(item.quantity)} {item.unit}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="px-4 py-6 text-sm text-muted-foreground">
+                Belum ada saldo TBS pool yang terbentuk.
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
 
       <SimpleTable
         cellRenderers={{

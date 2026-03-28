@@ -3,17 +3,21 @@ import Decimal from "decimal.js";
 import { env } from "@/lib/env";
 import { stockAdjustmentSchema, stockTakeSchema } from "@/lib/validation/inventory";
 import {
+  createProduct,
   createStockAdjustment,
   createStockAdjustmentItems,
   createStockMovement,
   createStockTake,
   createStockTakeItems,
   getProductById,
+  getProductByCode,
   getStockMovementById,
   getStockAdjustmentById,
   hasStockMovementHistory,
+  hasStockMovementByReference,
   getStockBalance,
   getStockTakeById,
+  listStockMovementsByReference,
   listStockAdjustmentsPage,
   listStockBalancesPage,
   listStockMovementsPage,
@@ -24,6 +28,9 @@ import {
   listStockMovements,
   listStockTakeItems,
   listStockTakes,
+  summarizeStockAdjustments,
+  summarizeStockBalances,
+  summarizeStockTakes,
   updateStockTake,
   updateStockAdjustment,
   updateStockAdjustmentItem,
@@ -52,6 +59,8 @@ export async function applyStockMovement(input: {
   referenceType:
     | "store_purchase"
     | "store_sale"
+    | "tbs_purchase"
+    | "tbs_sale"
     | "stock_take"
     | "stock_adjustment"
     | "manual";
@@ -127,6 +136,122 @@ export async function applyStockMovement(input: {
   });
 }
 
+export async function getInventoryStockBalance(warehouseId: string, productId: string) {
+  return getStockBalance(warehouseId, productId);
+}
+
+const TBS_POOL_PRODUCT_CODE = "SYS-TBS-POOL";
+
+export async function ensureTbsPoolProduct() {
+  const existing = await getProductByCode(TBS_POOL_PRODUCT_CODE);
+  if (existing) return existing;
+
+  return createProduct({
+    code: TBS_POOL_PRODUCT_CODE,
+    sku: null,
+    name: "TBS Pool",
+    unit: "kg",
+    purchasePrice: "0.00",
+    sellingPrice: "0.00",
+    minStock: "0.00",
+    allowNegativeStock: false,
+    notes: "Produk internal sistem untuk pooled stock TBS.",
+    isActive: false,
+  });
+}
+
+export async function getInventoryStockFilterOptions() {
+  const [warehouses, balances, tbsPoolProduct] = await Promise.all([
+    getMasterList("warehouses", { status: "active", pageSize: 50 }).then((result) => result.items),
+    listStockBalances(1000).catch(() => []),
+    ensureTbsPoolProduct(),
+  ]);
+
+  const productMap = new Map<
+    string,
+    {
+      id: string;
+      name: string;
+      unit: string;
+      isSystem?: boolean;
+    }
+  >();
+
+  for (const item of balances) {
+    const productId = String((item as { productId: string }).productId);
+    const productName = String((item as { productName?: string; productCode?: string }).productName ?? (item as { productCode?: string }).productCode ?? "-");
+    const unit = String((item as { unit?: string }).unit ?? "");
+
+    productMap.set(productId, {
+      id: productId,
+      name: productId === tbsPoolProduct.id ? "TBS Pool (Sistem)" : productName,
+      unit,
+      isSystem: productId === tbsPoolProduct.id,
+    });
+  }
+
+  if (!productMap.has(tbsPoolProduct.id)) {
+    productMap.set(tbsPoolProduct.id, {
+      id: tbsPoolProduct.id,
+      name: "TBS Pool (Sistem)",
+      unit: String(tbsPoolProduct.unit ?? "kg"),
+      isSystem: true,
+    });
+  }
+
+  return {
+    products: Array.from(productMap.values()).sort((a, b) => {
+      if (a.isSystem && !b.isSystem) return -1;
+      if (!a.isSystem && b.isSystem) return 1;
+      return a.name.localeCompare(b.name, "id");
+    }),
+    warehouses: warehouses.map((item) => ({
+      id: String((item as { id: string }).id),
+      name: String((item as { name: string }).name),
+    })),
+    tbsPoolProductId: tbsPoolProduct.id,
+  };
+}
+
+export async function hasReferenceStockMovement(
+  referenceType: "tbs_purchase" | "tbs_sale" | "store_purchase" | "store_sale" | "stock_take" | "stock_adjustment" | "payment" | "manual",
+  referenceId: string,
+) {
+  return hasStockMovementByReference(referenceType, referenceId);
+}
+
+export async function reverseReferenceStockMovements(
+  referenceType: "tbs_purchase" | "tbs_sale" | "store_purchase" | "store_sale" | "stock_take" | "stock_adjustment" | "manual",
+  referenceId: string,
+  actorId?: string | null,
+  notes?: string,
+) {
+  const movements = await listStockMovementsByReference(referenceType, referenceId);
+
+  for (const movement of movements) {
+    const reversalMovementType =
+      movement.movementType === "purchase_in" || movement.movementType === "adjustment_in" || movement.movementType === "transfer_in" || movement.movementType === "opening_balance"
+        ? "adjustment_out"
+        : "adjustment_in";
+
+    await applyStockMovement({
+      warehouseId: movement.warehouseId,
+      productId: movement.productId,
+      referenceType,
+      referenceId,
+      movementType: reversalMovementType,
+      reason: "correction",
+      counterpartyWarehouseId: movement.counterpartyWarehouseId,
+      quantity: Number(movement.quantity),
+      unitCost: Number(movement.unitCost),
+      notes: notes ?? `Reversal movement untuk ${referenceType}`,
+      createdBy: actorId,
+    });
+  }
+
+  return movements.length;
+}
+
 export async function getStockMovementList(
   limit = 50,
   filters?: {
@@ -169,6 +294,10 @@ export async function getStockBalancePage(
   };
 }
 
+export async function getStockBalanceSummary() {
+  return summarizeStockBalances();
+}
+
 export async function getStockTakeList(limit = 50) {
   return listStockTakes(limit);
 }
@@ -196,6 +325,10 @@ export async function getStockTakePage(
   };
 }
 
+export async function getStockTakeSummary() {
+  return summarizeStockTakes();
+}
+
 export async function getStockAdjustmentList(limit = 50) {
   return listStockAdjustments(limit);
 }
@@ -221,6 +354,10 @@ export async function getStockAdjustmentPage(
       totalPages: Math.max(Math.ceil(result.total / safePageSize), 1),
     },
   };
+}
+
+export async function getStockAdjustmentSummary() {
+  return summarizeStockAdjustments();
 }
 
 export async function getStockMovementPage(

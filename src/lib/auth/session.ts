@@ -2,16 +2,20 @@ import { cookies } from "next/headers";
 import { SignJWT, jwtVerify } from "jose";
 
 import { env } from "@/lib/env";
+import type { RolePermissionMap } from "@/lib/auth/permissions";
 import type { AppRole } from "@/types/domain";
 
 const SESSION_COOKIE = "besawit_session";
 const secret = new TextEncoder().encode(env.SESSION_SECRET);
+const useSecureCookie =
+  env.NODE_ENV === "production" && env.APP_URL.startsWith("https://");
 
 export type SessionPayload = {
   sub: string;
   role: AppRole;
   email: string;
   name: string;
+  permissions: RolePermissionMap;
 };
 
 export async function createSession(payload: SessionPayload) {
@@ -26,7 +30,7 @@ export async function createSession(payload: SessionPayload) {
   cookieStore.set(SESSION_COOKIE, token, {
     httpOnly: true,
     sameSite: "lax",
-    secure: env.NODE_ENV === "production",
+    secure: useSecureCookie,
     path: "/",
     maxAge: 60 * 60 * 24 * 7,
   });

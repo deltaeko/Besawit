@@ -40,7 +40,7 @@ export function formatDateTime(value?: Date | string | null) {
   if (!value) return "-";
   const date = value instanceof Date ? value : new Date(value);
   if (Number.isNaN(date.getTime())) return "-";
-  return format(date, "dd MMM yyyy HH:mm");
+  return format(date, "EEE MMM dd yyyy HH:mm:ss");
 }
 
 export function toSlug(value: string) {

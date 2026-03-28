@@ -18,6 +18,7 @@ export type MasterListColumn = {
 export type MasterFieldType =
   | "text"
   | "textarea"
+  | "permissions"
   | "switch"
   | "number"
   | "date"

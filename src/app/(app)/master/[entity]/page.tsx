@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { EmptyState } from "@/components/shared/empty-state";
 import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
+import { getEffectivePermissions } from "@/lib/auth/permissions";
 import { masterEntityConfig } from "@/modules/master/config";
 import { MasterDataTable } from "@/modules/master/master-data-table";
 import { isMasterEntity } from "@/modules/master/helpers";
@@ -66,6 +67,19 @@ export default async function MasterEntityPage({
         ...row,
         roleLabel,
         primaryVehicleLabel,
+      };
+    }
+
+    if (entity === "roles") {
+      const permissions = getEffectivePermissions(
+        String(row.code ?? ""),
+        row.permissions as Record<string, boolean> | undefined,
+      );
+
+      return {
+        ...row,
+        permissions,
+        permissionCount: Object.keys(permissions).length,
       };
     }
 

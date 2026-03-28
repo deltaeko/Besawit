@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
+import { appPermissionDefinitions, type RolePermissionMap } from "@/lib/auth/permissions";
 import { SectionCard } from "@/components/shared/section-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -65,6 +66,30 @@ export function MasterForm({
     resolver: zodResolver(schema as never) as never,
     defaultValues,
   });
+  const isCustomer = entity === "customers";
+  const isFarmerCustomer = Boolean(form.watch("isFarmer"));
+  const selectedFarmerId = String(form.watch("farmerId") ?? "");
+  const rolePermissions = (form.watch("permissions") as RolePermissionMap | undefined) ?? {};
+
+  useEffect(() => {
+    if (!isCustomer || !isFarmerCustomer || !selectedFarmerId) return;
+
+    const farmerOptions = options.farmers ?? [];
+    const selectedFarmer = farmerOptions.find((item) => item.id === selectedFarmerId);
+    if (!selectedFarmer) return;
+
+    const farmerName = selectedFarmer.label
+      .split(" â€¢ ")[0]
+      .split(" • ")[0]
+      .trim();
+
+    if (!farmerName) return;
+
+    form.setValue("name", farmerName, {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
+  }, [form, isCustomer, isFarmerCustomer, options.farmers, selectedFarmerId]);
 
   useEffect(() => {
     if (mode !== "create") return;
@@ -147,6 +172,70 @@ export function MasterForm({
                 );
               }
 
+              if (field.type === "permissions") {
+                const permissionGroups = appPermissionDefinitions.reduce<
+                  Record<string, Array<(typeof appPermissionDefinitions)[number]>>
+                >((acc, item) => {
+                  acc[item.group] = [...(acc[item.group] ?? []), item];
+                  return acc;
+                }, {});
+
+                return (
+                  <div className="space-y-4 md:col-span-2" key={field.name}>
+                    <Label>{field.label}</Label>
+                    <div className="space-y-4">
+                      {Object.entries(permissionGroups).map(([group, items]) => (
+                        <div className="rounded-2xl border border-border/80 bg-muted/20 p-4" key={group}>
+                          <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+                            {group}
+                          </div>
+                          <div className="mt-3 grid gap-2 md:grid-cols-2">
+                            {items.map((permission) => {
+                              const checked = Boolean(rolePermissions[permission.key]);
+
+                              return (
+                                <label
+                                  className="flex items-start gap-3 rounded-xl border border-border/70 bg-background px-3 py-2.5"
+                                  key={permission.key}
+                                >
+                                  <input
+                                    checked={checked}
+                                    className="mt-1 size-4"
+                                    onChange={(event) => {
+                                      const nextPermissions = {
+                                        ...rolePermissions,
+                                        [permission.key]: event.target.checked,
+                                      };
+
+                                      form.setValue("permissions", nextPermissions, {
+                                        shouldDirty: true,
+                                        shouldValidate: true,
+                                      });
+                                    }}
+                                    type="checkbox"
+                                  />
+                                  <div>
+                                    <div className="text-sm font-medium text-foreground">
+                                      {permission.label}
+                                    </div>
+                                    <div className="text-xs text-muted-foreground">
+                                      {permission.routePrefix}
+                                    </div>
+                                  </div>
+                                </label>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    {errorMessage ? (
+                      <p className="text-xs text-destructive">{errorMessage}</p>
+                    ) : null}
+                  </div>
+                );
+              }
+
               if (field.type === "switch") {
                 return (
                   <div className="space-y-2" key={field.name}>
@@ -199,8 +288,16 @@ export function MasterForm({
                   <Input
                     id={field.name}
                     placeholder={field.placeholder}
-                    readOnly={field.name === "code"}
-                    className={field.name === "code" ? "bg-muted/70 text-muted-foreground" : undefined}
+                    readOnly={
+                      field.name === "code" ||
+                      (isCustomer && field.name === "name" && isFarmerCustomer && Boolean(selectedFarmerId))
+                    }
+                    className={
+                      field.name === "code" ||
+                      (isCustomer && field.name === "name" && isFarmerCustomer && Boolean(selectedFarmerId))
+                        ? "bg-muted/70 text-muted-foreground"
+                        : undefined
+                    }
                     type={
                       field.type === "number"
                         ? "number"
@@ -214,6 +311,16 @@ export function MasterForm({
                     }
                     {...form.register(field.name)}
                   />
+                  {entity === "users" && field.name === "password" && mode === "create" ? (
+                    <p className="text-xs text-muted-foreground">
+                      Password wajib diisi saat membuat pengguna baru.
+                    </p>
+                  ) : null}
+                  {isCustomer && field.name === "name" && isFarmerCustomer && Boolean(selectedFarmerId) ? (
+                    <p className="text-xs text-muted-foreground">
+                      Nama pelanggan otomatis mengikuti nama petani terkait.
+                    </p>
+                  ) : null}
                   {errorMessage ? (
                     <p className="text-xs text-destructive">{errorMessage}</p>
                   ) : null}

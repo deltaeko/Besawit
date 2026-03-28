@@ -3,6 +3,7 @@ import { jwtVerify } from "jose";
 
 import { canAccessPath } from "@/lib/auth/access";
 import { env } from "@/lib/env";
+import type { RolePermissionMap } from "@/lib/auth/permissions";
 import type { AppRole } from "@/types/domain";
 
 const publicPaths = ["/login"];
@@ -33,6 +34,7 @@ export async function middleware(request: NextRequest) {
   try {
     const { payload } = await jwtVerify(token, secret);
     const role = payload.role as AppRole;
+    const permissions = payload.permissions as RolePermissionMap | undefined;
 
     if (pathname === "/") {
       return NextResponse.redirect(new URL("/dashboard", request.url));
@@ -42,7 +44,7 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL("/dashboard", request.url));
     }
 
-    if (!canAccessPath(role, pathname)) {
+    if (!canAccessPath(role, permissions, pathname)) {
       return NextResponse.redirect(new URL("/dashboard", request.url));
     }
 

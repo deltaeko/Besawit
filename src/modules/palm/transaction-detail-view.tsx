@@ -108,6 +108,11 @@ export type PalmTransactionDetailViewModel = {
   code: string;
   transactionStatus: string;
   paymentStatus: string;
+  stockNotice?: {
+    title: string;
+    description: string;
+    tone?: "default" | "success" | "warning";
+  };
   summaryMetrics: Array<{
     label: string;
     value: string;
@@ -174,6 +179,21 @@ export function PalmTransactionDetailView({
           </div>
         </div>
       </div>
+
+      {view.stockNotice ? (
+        <div
+          className={`rounded-2xl border px-4 py-3 text-sm ${
+            view.stockNotice.tone === "success"
+              ? "border-green-200 bg-green-50/70"
+              : view.stockNotice.tone === "warning"
+                ? "border-amber-200 bg-amber-50/70"
+                : "border-border/70 bg-muted/10"
+          }`}
+        >
+          <div className="font-semibold text-foreground">{view.stockNotice.title}</div>
+          <div className="mt-1 text-muted-foreground">{view.stockNotice.description}</div>
+        </div>
+      ) : null}
 
       <div className="grid gap-3 lg:grid-cols-12">
         {view.summaryMetrics.map((metric) => (

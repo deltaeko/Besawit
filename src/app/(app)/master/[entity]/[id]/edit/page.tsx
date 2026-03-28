@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 
 import { PageHeader } from "@/components/shared/page-header";
+import { getEffectivePermissions } from "@/lib/auth/permissions";
 import { masterEntityConfig } from "@/modules/master/config";
 import { isMasterEntity } from "@/modules/master/helpers";
 import { MasterForm } from "@/modules/master/master-form";
@@ -32,6 +33,14 @@ export default async function EditMasterEntityPage({
           priceEffectiveFrom: "",
           priceChangeNote: "",
         }
+      : entity === "roles"
+        ? {
+            ...(record as Record<string, unknown>),
+            permissions: getEffectivePermissions(
+              String((record as Record<string, unknown>).code ?? ""),
+              (record as Record<string, unknown>).permissions as Record<string, boolean> | undefined,
+            ),
+          }
       : (record as Record<string, unknown>);
 
   return (

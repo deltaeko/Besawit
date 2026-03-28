@@ -37,8 +37,8 @@ export function SimpleTable({
   const isCompact = density === "compact";
 
   return (
-    <Card className="shadow-sm">
-      <CardContent className="overflow-x-auto p-0">
+    <Card className="shadow-sm print:break-inside-avoid print:shadow-none">
+      <CardContent className="overflow-x-auto p-0 print:overflow-visible">
         <Table>
           <TableHeader>
             <TableRow>
@@ -47,7 +47,7 @@ export function SimpleTable({
                   className={cn(
                     isCompact
                       ? "h-10 whitespace-nowrap text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground"
-                      : "h-11 whitespace-nowrap text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground",
+                      : "h-11 whitespace-nowrap text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground print:h-9 print:text-[10px]",
                     numericColumns.includes(column) && "text-right",
                   )}
                   key={column}
@@ -83,7 +83,7 @@ export function SimpleTable({
                   return (
                     <TableCell
                       className={cn(
-                        isCompact ? "py-2.5 align-middle" : "py-3.5 align-middle",
+                        isCompact ? "py-2.5 align-middle" : "py-3.5 align-middle print:py-2",
                         numericColumns.includes(column) && "text-right tabular-nums",
                       )}
                       key={`${index}-${column}`}

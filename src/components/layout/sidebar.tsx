@@ -6,10 +6,17 @@ import { ChevronDown, ChevronRight } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { appNavigation, type NavigationItem } from "@/components/layout/navigation";
+import { canAccessPermission, type RolePermissionMap } from "@/lib/auth/permissions";
 import { cn } from "@/lib/utils";
 import type { AppRole } from "@/types/domain";
 
-export function AppSidebar({ role }: { role: AppRole }) {
+export function AppSidebar({
+  role,
+  permissions,
+}: {
+  role: AppRole;
+  permissions: RolePermissionMap;
+}) {
   const pathname = usePathname();
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
 
@@ -19,17 +26,19 @@ export function AppSidebar({ role }: { role: AppRole }) {
         .map((item) => ({
           ...item,
           children:
-            item.children?.filter((child) => child.roles.some((childRole) => childRole === role)) ??
+            item.children?.filter((child) => canAccessPermission(role, permissions, child.permission)) ??
             [],
         }))
         .filter(
-          (item) => item.roles.some((itemRole) => itemRole === role) || (item.children?.length ?? 0) > 0,
+          (item) =>
+            (item.permission ? canAccessPermission(role, permissions, item.permission) : false) ||
+            (item.children?.length ?? 0) > 0,
         )
         .reduce<Record<string, NavigationItem[]>>((acc, item) => {
           acc[item.group] = [...(acc[item.group] ?? []), item];
           return acc;
         }, {}),
-    [role],
+    [permissions, role],
   );
 
   function toggleGroup(title: string) {

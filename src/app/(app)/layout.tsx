@@ -18,6 +18,7 @@ export default async function PrivateLayout({
     <AppShell
       user={{
         fullName: session.name,
+        permissions: session.permissions,
         role: session.role,
       }}
     >

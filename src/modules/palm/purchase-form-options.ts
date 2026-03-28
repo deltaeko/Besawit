@@ -31,6 +31,8 @@ export async function getPalmPurchaseFormOptions() {
       .map((item) => ({
         id: (item as { id: string }).id,
         name: (item as { name: string }).name,
+        primaryVehicleId:
+          (item as { primaryVehicleId?: string | null }).primaryVehicleId ?? null,
       })),
     vehicles: vehicles.map((item) => ({
       id: (item as { id: string }).id,

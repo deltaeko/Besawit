@@ -7,6 +7,7 @@ import { AuditLogPanel } from "@/components/shared/audit-log-panel";
 import { formatCurrency, formatDate, formatNumber } from "@/lib/utils";
 import { isPalmEntity } from "@/modules/palm/helpers";
 import { PalmTransactionDetailActions } from "@/modules/palm/transaction-detail-actions";
+import { hasActiveTbsSalesByReferencePurchaseId } from "@/repositories/palm-repository";
 import {
   PalmTransactionDetailView,
   type PalmTransactionDetailViewModel,
@@ -16,6 +17,7 @@ import {
   getPayableDetail,
   getReceivableByReference,
 } from "@/services/finance-service";
+import { hasReferenceStockMovement } from "@/services/inventory-service";
 import { getPalmPurchase, getPalmSale } from "@/services/palm-service";
 import { getAuditLogsByEntity } from "@/services/audit-service";
 
@@ -42,9 +44,11 @@ export default async function PalmDetailPage({
   if (!isPalmEntity(entity)) notFound();
 
   if (entity === "purchases") {
-    const [purchase, payable] = await Promise.all([
+    const [purchase, payable, hasStockMovement, hasActiveLinkedSale] = await Promise.all([
       getPalmPurchase(id).catch(() => null),
       getPayableByReference("tbs_purchase", id).catch(() => null),
+      hasReferenceStockMovement("tbs_purchase", id).catch(() => false),
+      hasActiveTbsSalesByReferencePurchaseId(id).catch(() => false),
     ]);
     const auditLogs = await getAuditLogsByEntity("tbs_purchases", id, 20).catch(() => []);
 
@@ -60,6 +64,14 @@ export default async function PalmDetailPage({
       code: purchase.code,
       transactionStatus: purchase.status,
       paymentStatus: purchase.paymentStatus,
+      stockNotice: hasStockMovement
+        ? {
+            title: "Transaksi ini sudah membentuk stok TBS",
+            description:
+              "Gudang, hasil timbang, dan harga beli tidak lagi diubah langsung dari transaksi. Gunakan adjustment stok bila perlu koreksi operasional.",
+            tone: "success",
+          }
+        : undefined,
       summaryMetrics: [
         {
           label: "Total Akhir",
@@ -222,21 +234,49 @@ export default async function PalmDetailPage({
       ],
     };
 
+    const purchaseReturnTo = encodeURIComponent(`/palm/purchases/${id}`);
+    const purchaseEditDisabledReason =
+      purchase.status !== "active"
+        ? "Transaksi yang sudah dibatalkan tidak bisa diubah."
+        : hasStockMovement
+          ? "Pembelian TBS ini sudah membentuk stok. Koreksi gudang, timbangan, atau harga harus lewat adjustment stok."
+          : null;
+    const purchaseVoidDisabledReason =
+      purchase.status !== "active"
+        ? "Transaksi ini sudah tidak aktif."
+        : Number(payable?.paidAmount ?? 0) > 0
+          ? "Transaksi yang sudah memiliki pembayaran tidak bisa dibatalkan otomatis."
+          : hasActiveLinkedSale
+            ? "Pembelian ini sudah dipakai pada penjualan aktif ke pabrik."
+            : null;
+
     return (
       <div className="space-y-6">
         <PageHeader
+          stackAction
           action={
           <PalmTransactionDetailActions
             backHref="/palm/purchases"
             documentHref={`/palm/purchases/${id}/weigh-slip`}
             documentLabel="Preview Slip Timbang"
-            editHref={`/palm/purchases/${id}/edit`}
-            paymentHref={payable ? `/finance/payments?payableId=${payable.id}` : "/finance/payments"}
+            editDisabledReason={purchaseEditDisabledReason}
+            editHref={purchaseEditDisabledReason ? undefined : `/palm/purchases/${id}/edit`}
+            paymentStatus={purchase.paymentStatus}
+            transactionStatus={purchase.status}
+            paymentHref={
+              payable
+                ? `/finance/payments?payableId=${payable.id}&returnTo=${purchaseReturnTo}`
+                : `/finance/payments?returnTo=${purchaseReturnTo}`
+            }
+            voidAction={{
+              apiPath: `/api/palm/purchases/${id}/void`,
+              disabledReason: purchaseVoidDisabledReason,
+              label: "Void Pembelian",
+            }}
           />
         }
           eyebrow="Agen Sawit"
           title="Detail Transaksi Pembelian"
-          description="Halaman ini digunakan untuk audit transaksi, verifikasi timbangan, dan tindak lanjut pembayaran petani."
         />
         <PalmTransactionDetailView view={view} />
         <AuditLogPanel items={auditLogs} />
@@ -335,6 +375,12 @@ export default async function PalmDetailPage({
     code: sale.code,
     transactionStatus: sale.status,
     paymentStatus: sale.paymentStatus,
+    stockNotice: {
+      title: "Penjualan ini mengurangi stok TBS pool",
+      description:
+        "Sistem mengeluarkan stok fisik sawit campuran dari gudang asal berdasarkan berat bersih final penjualan ke pabrik.",
+      tone: "success",
+    },
     summaryMetrics: [
       {
         label: "Total Akhir",
@@ -358,12 +404,16 @@ export default async function PalmDetailPage({
         fields: [
           { label: "Tanggal", value: formatDate(String(sale.saleDate)) },
           {
-            label: "Referensi Pembelian",
-            value: String((sale as Record<string, unknown>).referencePurchaseCode ?? "-"),
+            label: "Gudang Asal",
+            value: String((sale as Record<string, unknown>).warehouseName ?? "-"),
           },
           {
             label: "Pabrik",
             value: String((sale as Record<string, unknown>).factoryName ?? "-"),
+          },
+          {
+            label: "Sumber Stok",
+            value: "Pool stok TBS gudang",
           },
         ],
       },
@@ -477,23 +527,42 @@ export default async function PalmDetailPage({
         },
         {
           label: "Referensi Dokumen",
-          value: String((sale as Record<string, unknown>).referencePurchaseCode ?? "-"),
+          value: "-",
         },
       ],
   };
 
+  const saleReturnTo = encodeURIComponent(`/palm/sales/${id}`);
+  const saleVoidDisabledReason =
+    sale.status !== "active"
+      ? "Transaksi ini sudah tidak aktif."
+      : Number(receivable?.paidAmount ?? 0) > 0
+        ? "Penjualan yang sudah memiliki penerimaan tidak bisa dibatalkan otomatis."
+        : null;
+
   return (
     <div className="space-y-6">
       <PageHeader
+        stackAction
         action={
           <PalmTransactionDetailActions
             backHref="/palm/sales"
-            paymentHref={receivable ? `/finance/payments?receivableId=${receivable.id}` : "/finance/payments"}
+            paymentStatus={sale.paymentStatus}
+            transactionStatus={sale.status}
+            paymentHref={
+              receivable
+                ? `/finance/payments?receivableId=${receivable.id}&returnTo=${saleReturnTo}`
+                : `/finance/payments?returnTo=${saleReturnTo}`
+            }
+            voidAction={{
+              apiPath: `/api/palm/sales/${id}/void`,
+              disabledReason: saleVoidDisabledReason,
+              label: "Void Penjualan",
+            }}
           />
         }
         eyebrow="Agen Sawit"
         title="Detail Penjualan TBS ke Pabrik"
-        description="Halaman ini digunakan untuk audit transaksi, verifikasi perhitungan potongan, dan tindak lanjut penagihan pabrik."
       />
       <PalmTransactionDetailView view={view} />
       <AuditLogPanel items={auditLogs} />
