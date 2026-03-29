@@ -1,5 +1,12 @@
 import type { AppRole } from "@/types/domain";
 
+type AppPermissionDefinition = {
+  key: string;
+  group: string;
+  label: string;
+  routePrefix?: string;
+};
+
 export const appPermissionDefinitions = [
   { key: "dashboard.view", group: "Dashboard", label: "Dashboard", routePrefix: "/dashboard" },
   { key: "master.farmers", group: "Master Data", label: "Petani", routePrefix: "/master/farmers" },
@@ -46,12 +53,140 @@ export const appPermissionDefinitions = [
     label: "Histori Mutasi",
     routePrefix: "/inventory/movements",
   },
-  { key: "finance.view", group: "Finance", label: "Finance", routePrefix: "/finance" },
-  { key: "reports.view", group: "Reports", label: "Reports", routePrefix: "/reports" },
-] as const;
+  {
+    key: "finance.payables.view",
+    group: "Finance",
+    label: "Hutang",
+    routePrefix: "/finance/payables",
+  },
+  {
+    key: "finance.receivables.view",
+    group: "Finance",
+    label: "Piutang",
+    routePrefix: "/finance/receivables",
+  },
+  {
+    key: "finance.payments.view",
+    group: "Finance",
+    label: "Pembayaran & Penerimaan",
+    routePrefix: "/finance/payments",
+  },
+  {
+    key: "finance.cash_ledger.view",
+    group: "Finance",
+    label: "Cash Ledger",
+    routePrefix: "/finance/cash-ledger",
+  },
+  {
+    key: "reports.transactions.view",
+    group: "Reports",
+    label: "Laporan Transaksi",
+    routePrefix: "/reports/transactions",
+  },
+  {
+    key: "reports.margin.view",
+    group: "Reports",
+    label: "Laporan Margin",
+    routePrefix: "/reports/margin",
+  },
+  {
+    key: "reports.payables.view",
+    group: "Reports",
+    label: "Laporan Hutang",
+    routePrefix: "/reports/payables",
+  },
+  {
+    key: "reports.receivables.view",
+    group: "Reports",
+    label: "Laporan Piutang",
+    routePrefix: "/reports/receivables",
+  },
+  {
+    key: "reports.profit_loss.view",
+    group: "Reports",
+    label: "Laporan Laba Rugi",
+    routePrefix: "/reports/profit-loss",
+  },
+  {
+    key: "reports.stock.view",
+    group: "Reports",
+    label: "Laporan Stok",
+    routePrefix: "/reports/stock",
+  },
+  {
+    key: "reports.stock_take.view",
+    group: "Reports",
+    label: "Laporan Stock Take",
+    routePrefix: "/reports/stock-take",
+  },
+  {
+    key: "reports.returns.view",
+    group: "Reports",
+    label: "Laporan Retur",
+    routePrefix: "/reports/returns",
+  },
+  {
+    key: "reports.deductions.view",
+    group: "Reports",
+    label: "Laporan Potongan",
+    routePrefix: "/reports/deductions",
+  },
+  {
+    key: "finance.payments.manage",
+    group: "Aksi Sensitif",
+    label: "Catat Pembayaran & Penerimaan",
+    routePrefix: "",
+  },
+  {
+    key: "palm.purchases.void",
+    group: "Aksi Sensitif",
+    label: "Void Pembelian TBS",
+    routePrefix: "",
+  },
+  {
+    key: "palm.sales.void",
+    group: "Aksi Sensitif",
+    label: "Void Penjualan TBS",
+    routePrefix: "",
+  },
+  {
+    key: "store.purchases.return",
+    group: "Aksi Sensitif",
+    label: "Retur Pembelian Barang",
+    routePrefix: "",
+  },
+  {
+    key: "store.purchases.void",
+    group: "Aksi Sensitif",
+    label: "Void Pembelian Barang",
+    routePrefix: "",
+  },
+  {
+    key: "inventory.stock_takes.approve",
+    group: "Aksi Sensitif",
+    label: "Approve Stock Take",
+    routePrefix: "",
+  },
+  {
+    key: "inventory.adjustments.approve",
+    group: "Aksi Sensitif",
+    label: "Approve Adjustment",
+    routePrefix: "",
+  },
+] as const satisfies readonly AppPermissionDefinition[];
 
 export type AppPermissionKey = (typeof appPermissionDefinitions)[number]["key"];
 export type RolePermissionMap = Partial<Record<AppPermissionKey, boolean>>;
+export const actionPermissionKeys = [
+  "finance.payments.manage",
+  "palm.purchases.void",
+  "palm.sales.void",
+  "store.purchases.return",
+  "store.purchases.void",
+  "inventory.stock_takes.approve",
+  "inventory.adjustments.approve",
+] as const;
+export type AppActionPermissionKey = (typeof actionPermissionKeys)[number];
 
 const defaultPermissionsByRole: Record<string, AppPermissionKey[]> = {
   owner: appPermissionDefinitions.map((item) => item.key),
@@ -90,6 +225,7 @@ const defaultPermissionsByRole: Record<string, AppPermissionKey[]> = {
     "master.roles",
     "store.purchases",
     "store.sales",
+    "store.purchases.return",
     "inventory.stock",
     "inventory.stock_takes",
     "inventory.adjustments",
@@ -102,8 +238,20 @@ const defaultPermissionsByRole: Record<string, AppPermissionKey[]> = {
     "store.purchases",
     "store.sales",
     "inventory.movements",
-    "finance.view",
-    "reports.view",
+    "finance.payables.view",
+    "finance.receivables.view",
+    "finance.payments.view",
+    "finance.cash_ledger.view",
+    "finance.payments.manage",
+    "reports.transactions.view",
+    "reports.margin.view",
+    "reports.payables.view",
+    "reports.receivables.view",
+    "reports.profit_loss.view",
+    "reports.stock.view",
+    "reports.stock_take.view",
+    "reports.returns.view",
+    "reports.deductions.view",
   ],
   supervisor: [
     "dashboard.view",
@@ -126,8 +274,26 @@ const defaultPermissionsByRole: Record<string, AppPermissionKey[]> = {
     "inventory.stock_takes",
     "inventory.adjustments",
     "inventory.movements",
-    "finance.view",
-    "reports.view",
+    "finance.payables.view",
+    "finance.receivables.view",
+    "finance.payments.view",
+    "finance.cash_ledger.view",
+    "reports.transactions.view",
+    "reports.margin.view",
+    "reports.payables.view",
+    "reports.receivables.view",
+    "reports.profit_loss.view",
+    "reports.stock.view",
+    "reports.stock_take.view",
+    "reports.returns.view",
+    "reports.deductions.view",
+    "finance.payments.manage",
+    "palm.purchases.void",
+    "palm.sales.void",
+    "store.purchases.return",
+    "store.purchases.void",
+    "inventory.stock_takes.approve",
+    "inventory.adjustments.approve",
   ],
 };
 
@@ -151,7 +317,32 @@ export function getEffectivePermissions(
   permissions?: RolePermissionMap | null,
 ): RolePermissionMap {
   const normalized = normalizeRolePermissions(permissions);
-  return Object.keys(normalized).length ? normalized : getDefaultPermissionsForRole(role);
+  if (!Object.keys(normalized).length) {
+    return getDefaultPermissionsForRole(role);
+  }
+
+  const effectivePermissions = { ...normalized } as Record<string, boolean>;
+
+  if (effectivePermissions["finance.view"]) {
+    effectivePermissions["finance.payables.view"] = true;
+    effectivePermissions["finance.receivables.view"] = true;
+    effectivePermissions["finance.payments.view"] = true;
+    effectivePermissions["finance.cash_ledger.view"] = true;
+  }
+
+  if (effectivePermissions["reports.view"]) {
+    effectivePermissions["reports.transactions.view"] = true;
+    effectivePermissions["reports.margin.view"] = true;
+    effectivePermissions["reports.payables.view"] = true;
+    effectivePermissions["reports.receivables.view"] = true;
+    effectivePermissions["reports.profit_loss.view"] = true;
+    effectivePermissions["reports.stock.view"] = true;
+    effectivePermissions["reports.stock_take.view"] = true;
+    effectivePermissions["reports.returns.view"] = true;
+    effectivePermissions["reports.deductions.view"] = true;
+  }
+
+  return effectivePermissions as RolePermissionMap;
 }
 
 export function canAccessPermission(
@@ -163,8 +354,23 @@ export function canAccessPermission(
   return Boolean(effectivePermissions[key]);
 }
 
+export function canPerformAction(
+  role: AppRole,
+  permissions: RolePermissionMap | undefined | null,
+  key: AppActionPermissionKey,
+) {
+  return canAccessPermission(role, permissions, key);
+}
+
 export function findPermissionByPath(pathname: string) {
   return appPermissionDefinitions
+    .filter(
+      (
+        item,
+      ): item is (typeof appPermissionDefinitions)[number] & {
+        routePrefix: string;
+      } => Boolean(item.routePrefix),
+    )
     .slice()
     .sort((a, b) => b.routePrefix.length - a.routePrefix.length)
     .find((item) => pathname.startsWith(item.routePrefix));

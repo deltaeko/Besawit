@@ -25,6 +25,8 @@ export function PalmTransactionDetailActions({
   editHref,
   editDisabledReason,
   paymentHref,
+  paymentLabel = "Catat Pembayaran",
+  paymentDisabledReason,
   paymentStatus,
   transactionStatus,
   documentHref,
@@ -36,6 +38,8 @@ export function PalmTransactionDetailActions({
   editHref?: string;
   editDisabledReason?: string | null;
   paymentHref: string;
+  paymentLabel?: string;
+  paymentDisabledReason?: string | null;
   paymentStatus?: string | null;
   transactionStatus?: string | null;
   documentHref?: string;
@@ -53,8 +57,9 @@ export function PalmTransactionDetailActions({
 }) {
   const router = useRouter();
   const [voiding, setVoiding] = useState(false);
-  const isPaymentLocked =
+  const isPaymentStatusLocked =
     paymentStatus === "paid" || transactionStatus === "void" || transactionStatus === "cancelled";
+  const isPaymentLocked = isPaymentStatusLocked || Boolean(paymentDisabledReason);
   const isEditLocked = !editHref || Boolean(editDisabledReason);
   const isVoidLocked = !voidAction || Boolean(voidAction.disabledReason);
   const isExtraLocked = !extraAction || Boolean(extraAction.disabledReason);
@@ -103,15 +108,20 @@ export function PalmTransactionDetailActions({
         </Button>
       )}
       {isPaymentLocked ? (
-        <Button disabled size="sm" variant="default">
+        <Button
+          disabled
+          size="sm"
+          title={paymentDisabledReason ?? "Dokumen ini tidak bisa diproses lagi."}
+          variant="default"
+        >
           <CreditCard className="size-4" />
-          {formatPalmStatusLabel(paymentStatus ?? "paid")}
+          {isPaymentStatusLocked ? formatPalmStatusLabel(paymentStatus ?? "paid") : paymentLabel}
         </Button>
       ) : (
         <Button asChild size="sm" variant="default">
           <Link href={paymentHref}>
             <CreditCard className="size-4" />
-            Catat Pembayaran
+            {paymentLabel}
           </Link>
         </Button>
       )}

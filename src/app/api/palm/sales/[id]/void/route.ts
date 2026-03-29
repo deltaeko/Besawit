@@ -1,16 +1,18 @@
 import { NextResponse } from "next/server";
 
-import { getSession } from "@/lib/auth/session";
+import { requireActionPermission } from "@/lib/auth/action-guard";
 import { voidPalmSale } from "@/services/palm-service";
 
 export async function POST(
   _request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const auth = await requireActionPermission("palm.sales.void");
+  if (auth.response) return auth.response;
+
   try {
-    const session = await getSession();
     const { id } = await params;
-    const result = await voidPalmSale(id, session?.sub ?? null);
+    const result = await voidPalmSale(id, auth.session?.sub ?? null);
 
     return NextResponse.json({ ok: true, data: result });
   } catch (error) {

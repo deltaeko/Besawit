@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq, getTableColumns } from "drizzle-orm";
+import { and, asc, count, desc, eq, getTableColumns, gte, ilike, lte, or } from "drizzle-orm";
 
 import { db } from "@/lib/db/client";
 import {
@@ -70,8 +70,43 @@ export async function listAllTbsSales() {
     .orderBy(desc(tbsSales.saleDate), desc(tbsSales.createdAt));
 }
 
-export async function listTbsPurchasesPage(page: number, pageSize: number) {
+export async function listTbsPurchasesPage(
+  page: number,
+  pageSize: number,
+  filters?: {
+    q?: string;
+    paymentStatus?: string;
+    dateFrom?: Date;
+    dateTo?: Date;
+  },
+) {
   const offset = (page - 1) * pageSize;
+  const conditions = [];
+
+  if (filters?.q?.trim()) {
+    const q = `%${filters.q.trim()}%`;
+    conditions.push(
+      or(
+        ilike(tbsPurchases.code, q),
+        ilike(farmers.name, q),
+        ilike(transportPersonnel.name, q),
+      ),
+    );
+  }
+
+  if (filters?.paymentStatus && filters.paymentStatus !== "all") {
+    conditions.push(eq(tbsPurchases.paymentStatus, filters.paymentStatus as never));
+  }
+
+  if (filters?.dateFrom) {
+    conditions.push(gte(tbsPurchases.purchaseDate, filters.dateFrom));
+  }
+
+  if (filters?.dateTo) {
+    conditions.push(lte(tbsPurchases.purchaseDate, filters.dateTo));
+  }
+
+  const whereClause = conditions.length ? and(...conditions) : undefined;
 
   const [items, [{ value: total }]] = await Promise.all([
     db
@@ -83,10 +118,16 @@ export async function listTbsPurchasesPage(page: number, pageSize: number) {
       .from(tbsPurchases)
       .leftJoin(farmers, eq(tbsPurchases.farmerId, farmers.id))
       .leftJoin(transportPersonnel, eq(tbsPurchases.driverId, transportPersonnel.id))
+      .where(whereClause)
       .orderBy(desc(tbsPurchases.purchaseDate), desc(tbsPurchases.createdAt))
       .limit(pageSize)
       .offset(offset),
-    db.select({ value: count() }).from(tbsPurchases),
+    db
+      .select({ value: count() })
+      .from(tbsPurchases)
+      .leftJoin(farmers, eq(tbsPurchases.farmerId, farmers.id))
+      .leftJoin(transportPersonnel, eq(tbsPurchases.driverId, transportPersonnel.id))
+      .where(whereClause),
   ]);
 
   return {
@@ -95,8 +136,43 @@ export async function listTbsPurchasesPage(page: number, pageSize: number) {
   };
 }
 
-export async function listTbsSalesPage(page: number, pageSize: number) {
+export async function listTbsSalesPage(
+  page: number,
+  pageSize: number,
+  filters?: {
+    q?: string;
+    paymentStatus?: string;
+    dateFrom?: Date;
+    dateTo?: Date;
+  },
+) {
   const offset = (page - 1) * pageSize;
+  const conditions = [];
+
+  if (filters?.q?.trim()) {
+    const q = `%${filters.q.trim()}%`;
+    conditions.push(
+      or(
+        ilike(tbsSales.code, q),
+        ilike(factories.name, q),
+        ilike(warehouses.name, q),
+      ),
+    );
+  }
+
+  if (filters?.paymentStatus && filters.paymentStatus !== "all") {
+    conditions.push(eq(tbsSales.paymentStatus, filters.paymentStatus as never));
+  }
+
+  if (filters?.dateFrom) {
+    conditions.push(gte(tbsSales.saleDate, filters.dateFrom));
+  }
+
+  if (filters?.dateTo) {
+    conditions.push(lte(tbsSales.saleDate, filters.dateTo));
+  }
+
+  const whereClause = conditions.length ? and(...conditions) : undefined;
 
   const [items, [{ value: total }]] = await Promise.all([
     db
@@ -108,10 +184,16 @@ export async function listTbsSalesPage(page: number, pageSize: number) {
       .from(tbsSales)
       .leftJoin(factories, eq(tbsSales.factoryId, factories.id))
       .leftJoin(warehouses, eq(tbsSales.warehouseId, warehouses.id))
+      .where(whereClause)
       .orderBy(desc(tbsSales.saleDate), desc(tbsSales.createdAt))
       .limit(pageSize)
       .offset(offset),
-    db.select({ value: count() }).from(tbsSales),
+    db
+      .select({ value: count() })
+      .from(tbsSales)
+      .leftJoin(factories, eq(tbsSales.factoryId, factories.id))
+      .leftJoin(warehouses, eq(tbsSales.warehouseId, warehouses.id))
+      .where(whereClause),
   ]);
 
   return {
@@ -244,6 +326,24 @@ export async function hasActiveTbsSalesByReferencePurchaseId(referencePurchaseId
       and(
         eq(tbsSales.referencePurchaseId, referencePurchaseId),
         eq(tbsSales.status, "active"),
+      ),
+    );
+
+  return Number(row?.value ?? 0) > 0;
+}
+
+export async function hasActiveTbsSalesInWarehouseSince(
+  warehouseId: string,
+  since: Date,
+) {
+  const [row] = await db
+    .select({ value: count() })
+    .from(tbsSales)
+    .where(
+      and(
+        eq(tbsSales.warehouseId, warehouseId),
+        eq(tbsSales.status, "active"),
+        gte(tbsSales.createdAt, since),
       ),
     );
 

@@ -21,8 +21,8 @@ export function LoginForm() {
   const form = useForm<LoginValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: "owner@besawit.local",
-      password: "password123",
+      email: "",
+      password: "",
     },
   });
 
@@ -55,7 +55,7 @@ export function LoginForm() {
       <CardHeader>
         <CardTitle>Masuk ke Besawit</CardTitle>
         <CardDescription>
-          Gunakan akun seeded untuk mulai operasional dan pengujian modul.
+          Masukkan akun yang telah diberikan administrator untuk mulai bekerja.
         </CardDescription>
       </CardHeader>
       <CardContent>

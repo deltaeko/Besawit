@@ -301,9 +301,6 @@ function getHeaderActions(reportData: ReportData) {
     return (
       <div className="flex flex-wrap gap-2 print:hidden">
         <BrowserPrintButton label="Cetak Laporan" />
-        <Button disabled size="sm" type="button" variant="outline">
-          Export PDF
-        </Button>
         <Button asChild size="sm" variant="outline">
           <Link href="/finance/payables">
             Buka Modul Hutang
@@ -318,9 +315,6 @@ function getHeaderActions(reportData: ReportData) {
     return (
       <div className="flex flex-wrap gap-2 print:hidden">
         <BrowserPrintButton label="Cetak Laporan" />
-        <Button disabled size="sm" type="button" variant="outline">
-          Export PDF
-        </Button>
         <Button asChild size="sm" variant="outline">
           <Link href="/finance/receivables">
             Buka Modul Piutang
@@ -335,9 +329,6 @@ function getHeaderActions(reportData: ReportData) {
     return (
       <div className="flex flex-wrap gap-2 print:hidden">
         <BrowserPrintButton label="Cetak Laporan" />
-        <Button disabled size="sm" type="button" variant="outline">
-          Export PDF
-        </Button>
         <Button asChild size="sm" variant="outline">
           <Link href="/finance/payments">Lihat Payments</Link>
         </Button>
@@ -351,9 +342,6 @@ function getHeaderActions(reportData: ReportData) {
   return (
     <div className="flex flex-wrap gap-2 print:hidden">
       <BrowserPrintButton label="Cetak Laporan" />
-      <Button disabled size="sm" type="button" variant="outline">
-        Export PDF
-      </Button>
     </div>
   );
 }

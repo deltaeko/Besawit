@@ -29,25 +29,6 @@ import {
   getTbsSaleDailySummary,
 } from "@/services/dashboard-service";
 
-const kpiLabelMap: Record<string, string> = {
-  "TBS Purchase": "Pembelian TBS",
-  "TBS Sales": "Penjualan TBS",
-  Margin: "Margin",
-  Payables: "Hutang",
-  Receivables: "Piutang",
-  "Low Stock Items": "Stok Kritis",
-  "Stock Take Variance": "Selisih Stok Opname",
-};
-
-const coveredKpiLabels = new Set([
-  "TBS Purchase",
-  "TBS Sales",
-  "Margin",
-  "Payables",
-  "Receivables",
-  "Low Stock Items",
-]);
-
 export default async function DashboardPage({
   searchParams,
 }: {
@@ -64,7 +45,7 @@ export default async function DashboardPage({
       getTbsSaleDailySummary(selectedDate),
       getFinanceInventorySummary(),
       getDashboardSummary(selectedDate).catch(() => ({
-        kpis: [],
+        stockTakeVariance: 0,
         recentTransactions: [],
       })),
     ]);
@@ -82,7 +63,7 @@ export default async function DashboardPage({
     },
     {
       label: "Margin Hari Ini",
-      value: snapshot.kpis.find((item) => item.label === "Margin")?.value ?? 0,
+      value: saleDailySummary.metrics.margin,
       currency: true,
     },
     {
@@ -359,16 +340,11 @@ export default async function DashboardPage({
           </p>
         </div>
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          {snapshot.kpis
-            .filter((kpi) => !coveredKpiLabels.has(kpi.label))
-            .map((kpi) => (
-              <KpiCard
-                key={kpi.label}
-                currency={!["Low Stock Items"].includes(kpi.label)}
-                label={kpiLabelMap[kpi.label] ?? kpi.label}
-                value={Number(kpi.value)}
-              />
-            ))}
+          <KpiCard
+            currency
+            label="Selisih Stok Opname"
+            value={Number(snapshot.stockTakeVariance)}
+          />
         </div>
       </section>
     </div>

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { FileDown, Printer } from "lucide-react";
+import { Printer } from "lucide-react";
 
 import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
@@ -34,17 +34,9 @@ export default async function StoreSaleInvoicePreviewPage({
                 Print
               </Link>
             </Button>
-            <Button disabled type="button" variant="outline">
-              <FileDown className="size-4" />
-              Export PDF
-            </Button>
           </div>
         }
       />
-
-      <div className="rounded-2xl border border-dashed border-border/80 bg-muted/20 p-4 text-sm text-muted-foreground">
-        Export PDF belum diaktifkan karena infrastruktur generator PDF belum tersedia di aplikasi saat ini. Preview ini tetap siap dicetak melalui browser.
-      </div>
 
       <StoreSaleInvoiceDocument invoice={invoice} mode="preview" printedAt={new Date()} />
     </div>

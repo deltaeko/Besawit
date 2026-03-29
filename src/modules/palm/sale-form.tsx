@@ -8,7 +8,6 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 import { SectionCard } from "@/components/shared/section-card";
-import { SummaryPanel } from "@/components/shared/summary-panel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,6 +15,7 @@ import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { formatCurrency, formatNumber } from "@/lib/utils";
 import { palmSaleSchema } from "@/lib/validation/palm";
+import { PalmSaleFormSummary } from "@/modules/palm/sale-form-summary";
 
 type SaleFormInput = z.input<typeof palmSaleSchema>;
 type SaleValues = z.output<typeof palmSaleSchema>;
@@ -405,34 +405,21 @@ export function PalmSaleForm({
         </SectionCard>
       </div>
 
-      <SummaryPanel
-        title="Ringkasan Penjualan"
-        items={[
-          {
-            label: "Stok TBS Gudang",
-            value: selectedWarehouseId
-              ? formatWeight(Number(selectedTbsPoolBalance?.quantity ?? 0))
-              : "-",
-          },
-          {
-            label: "Rata-rata Biaya Pool",
-            value: formatCurrency(Number(selectedTbsPoolBalance?.averageCost ?? 0)),
-          },
-          { label: "Jatuh Tempo Piutang", value: values.dueDate || "-" },
-          { label: "Berat Bersih Awal", value: formatWeight(summary.netInitial) },
-          { label: "Potongan Berat", value: formatWeight(summary.totalDeductionWeight) },
-          { label: "Potongan Nominal", value: formatCurrency(summary.totalDeductionAmount) },
-          { label: "Berat Bersih Final", value: formatWeight(summary.netFinal) },
-          { label: "Nilai Bruto Penjualan", value: formatCurrency(summary.grossSalesAmount) },
-          { label: "Nilai Penjualan Akhir", value: formatCurrency(summary.totalSales) },
-          { label: "Estimasi Nilai Pokok", value: formatCurrency(summary.estimatedCost) },
-          { label: "Margin", value: formatCurrency(summary.margin) },
-        ]}
-        footer={
-          <Button className="w-full" disabled={submitting} type="submit">
-            {submitting ? "Menyimpan..." : "Simpan Penjualan"}
-          </Button>
+      <PalmSaleFormSummary
+        averageCostLabel={formatCurrency(Number(selectedTbsPoolBalance?.averageCost ?? 0))}
+        deductionNominalLabel={formatCurrency(summary.totalDeductionAmount)}
+        deductionWeightLabel={formatWeight(summary.totalDeductionWeight)}
+        dueDateLabel={values.dueDate || "-"}
+        estimatedCostLabel={formatCurrency(summary.estimatedCost)}
+        grossSalesLabel={formatCurrency(summary.grossSalesAmount)}
+        marginLabel={formatCurrency(summary.margin)}
+        netFinalLabel={formatWeight(summary.netFinal)}
+        netInitialLabel={formatWeight(summary.netInitial)}
+        stockBalanceLabel={
+          selectedWarehouseId ? formatWeight(Number(selectedTbsPoolBalance?.quantity ?? 0)) : "-"
         }
+        submitting={submitting}
+        totalSalesLabel={formatCurrency(summary.totalSales)}
       />
     </form>
   );

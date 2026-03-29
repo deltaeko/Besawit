@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { PageHeader } from "@/components/shared/page-header";
@@ -52,7 +52,7 @@ export default async function MasterDetailPage({
           primaryVehicleLabel:
             [baseRecordView.primaryVehiclePlateNumber, baseRecordView.primaryVehicleCode]
               .filter(Boolean)
-              .join(" • ") || "-",
+              .join(" - ") || "-",
         }
       : entity === "roles"
         ? {
@@ -130,12 +130,12 @@ export default async function MasterDetailPage({
 
       {entity === "roles" ? (
         <SectionCard
-          title="Ringkasan Akses Menu"
-          description="Jumlah menu yang bisa diakses oleh role ini beserta pembagian grup utamanya."
+          title="Ringkasan Hak Akses"
+          description="Jumlah halaman dan aksi sensitif yang bisa diakses oleh role ini beserta pembagian grup utamanya."
         >
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-[220px_minmax(0,1fr)]">
             <div className="rounded-2xl border bg-primary/10 p-4">
-              <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Total Menu Aktif</div>
+              <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Total Akses Aktif</div>
               <div className="mt-2 text-3xl font-semibold">{Object.keys(rolePermissions).length}</div>
             </div>
             <div className="rounded-2xl border bg-muted/20 p-4">
@@ -144,12 +144,12 @@ export default async function MasterDetailPage({
                   {Object.entries(permissionGroups).map(([group, items]) => (
                     <div className="rounded-xl border border-border/70 bg-background px-3 py-2.5" key={group}>
                       <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">{group}</div>
-                      <div className="mt-1 text-sm font-semibold text-foreground">{items.length} menu aktif</div>
+                      <div className="mt-1 text-sm font-semibold text-foreground">{items.length} akses aktif</div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="text-sm text-muted-foreground">Belum ada akses menu yang dipilih.</div>
+                <div className="text-sm text-muted-foreground">Belum ada hak akses yang dipilih.</div>
               )}
             </div>
           </div>
@@ -477,3 +477,4 @@ export default async function MasterDetailPage({
     </div>
   );
 }
+

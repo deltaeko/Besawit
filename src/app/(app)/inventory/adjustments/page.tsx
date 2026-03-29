@@ -6,6 +6,8 @@ import { SimpleTable } from "@/components/shared/simple-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
+import { canPerformAction } from "@/lib/auth/permissions";
+import { getSession } from "@/lib/auth/session";
 import { formatCurrency, formatDateTime, formatNumber } from "@/lib/utils";
 import { MasterPagination } from "@/modules/master/master-pagination";
 import { ApproveAdjustmentButton } from "@/modules/inventory/approve-adjustment-button";
@@ -34,6 +36,10 @@ export default async function InventoryAdjustmentsPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  const session = await getSession();
+  const canApproveAdjustment = Boolean(
+    session && canPerformAction(session.role, session.permissions, "inventory.adjustments.approve"),
+  );
   const query = await searchParams;
   const warehouseId = typeof query.warehouseId === "string" ? query.warehouseId : "";
   const status = typeof query.status === "string" ? query.status : "";
@@ -173,8 +179,15 @@ export default async function InventoryAdjustmentsPage({
           ),
           totalVarianceValue: (value) => formatCurrency(Number(value ?? 0)),
           actions: (_, row) =>
-            row.status === "pending" ? (
+            row.status === "pending" && canApproveAdjustment ? (
               <ApproveAdjustmentButton adjustmentId={String(row.id)} />
+            ) : row.status === "pending" ? (
+              <span
+                className="text-sm text-muted-foreground"
+                title="Anda tidak memiliki hak akses untuk approve adjustment."
+              >
+                Tidak diizinkan
+              </span>
             ) : (
               <span className="text-sm text-muted-foreground">-</span>
             ),

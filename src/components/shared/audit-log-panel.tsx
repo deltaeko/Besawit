@@ -51,7 +51,7 @@ export function AuditLogPanel({ items }: { items: AuditLogItem[] }) {
                   </div>
                   <div className="text-[11px] text-muted-foreground">
                     {item.actorName ?? "Sistem"}
-                    {item.actorEmail ? ` • ${item.actorEmail}` : ""}
+                    {item.actorEmail ? ` - ${item.actorEmail}` : ""}
                   </div>
                 </div>
               </div>

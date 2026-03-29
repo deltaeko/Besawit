@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { EmptyState } from "@/components/shared/empty-state";
@@ -61,7 +61,7 @@ export default async function MasterEntityPage({
       const roleLabel =
         role === "driver" ? "Sopir" : role === "co_driver" ? "Kernet" : role === "helper" ? "Helper" : "-";
       const primaryVehicleLabel =
-        [row.primaryVehiclePlateNumber, row.primaryVehicleCode].filter(Boolean).join(" • ") || "-";
+        [row.primaryVehiclePlateNumber, row.primaryVehicleCode].filter(Boolean).join(" - ") || "-";
 
       return {
         ...row,
@@ -169,3 +169,4 @@ export default async function MasterEntityPage({
     </div>
   );
 }
+

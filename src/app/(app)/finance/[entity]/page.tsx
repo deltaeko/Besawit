@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+﻿import { notFound } from "next/navigation";
 import { CircleDollarSign, FileClock, ReceiptText, Wallet } from "lucide-react";
 
 import { FilterBar } from "@/components/shared/filter-bar";
@@ -267,7 +267,7 @@ export default async function FinanceEntityPage({
             </div>
             <div className="flex items-center gap-2 rounded-xl border border-border/70 bg-muted/20 px-3 py-2 text-sm text-muted-foreground">
               <FileClock className="size-4" />
-              Open {totals.open} • Partial {totals.partial} • Lunas {totals.paid}
+              Aktif {totals.open} | Parsial {totals.partial} | Lunas {totals.paid}
             </div>
           </>
         }
@@ -359,3 +359,4 @@ export default async function FinanceEntityPage({
     </div>
   );
 }
+

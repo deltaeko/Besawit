@@ -7,6 +7,8 @@ import { SectionCard } from "@/components/shared/section-card";
 import { SimpleTable } from "@/components/shared/simple-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { canPerformAction } from "@/lib/auth/permissions";
+import { getSession } from "@/lib/auth/session";
 import { formatCurrency, formatDateTime, formatNumber } from "@/lib/utils";
 import { formatPalmStatusLabel, resolvePalmStatusBadgeVariant } from "@/modules/palm/status-utils";
 import { getStockAdjustmentByStockTake, getStockTakeDetail } from "@/services/inventory-service";
@@ -42,6 +44,10 @@ export default async function StockTakeDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const session = await getSession();
+  const canApproveStockTake = Boolean(
+    session && canPerformAction(session.role, session.permissions, "inventory.stock_takes.approve"),
+  );
   const stockTake = await getStockTakeDetail(id).catch(() => null);
 
   if (!stockTake) notFound();
@@ -65,13 +71,22 @@ export default async function StockTakeDetailPage({
                 Kembali
               </Link>
             </Button>
-            {stockTake.status === "submitted" ? (
+            {stockTake.status === "submitted" && canApproveStockTake ? (
               <form action={`/api/inventory/stock-takes/${id}/approve`} method="post">
                 <Button type="submit">
                   <ClipboardCheck className="size-4" />
                   Approve
                 </Button>
               </form>
+            ) : stockTake.status === "submitted" ? (
+              <Button
+                disabled
+                title="Anda tidak memiliki hak akses untuk approve stock take."
+                type="button"
+              >
+                <ClipboardCheck className="size-4" />
+                Approve
+              </Button>
             ) : null}
           </div>
         }

@@ -8,11 +8,13 @@ import { PageHeader } from "@/components/shared/page-header";
 import { SimpleTable } from "@/components/shared/simple-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
 import { formatCurrency, formatDate, formatNumber } from "@/lib/utils";
 import { MasterPagination } from "@/modules/master/master-pagination";
 import { isPalmEntity } from "@/modules/palm/helpers";
 import { formatPalmStatusLabel, resolvePalmStatusBadgeVariant } from "@/modules/palm/status-utils";
-import { getPalmPurchasePage, getPalmSalePage } from "@/services/palm-service";
+import { getPalmPurchasePageWithFilters, getPalmSalePageWithFilters } from "@/services/palm-service";
 
 export default async function PalmEntityPage({
   params,
@@ -27,12 +29,27 @@ export default async function PalmEntityPage({
 
   const isPurchase = entity === "purchases";
   const page = typeof filters.page === "string" ? Number(filters.page) : 1;
+  const pageSize = typeof filters.pageSize === "string" ? Number(filters.pageSize) : 20;
+  const q = typeof filters.q === "string" ? filters.q : "";
+  const paymentStatus = typeof filters.paymentStatus === "string" ? filters.paymentStatus : "all";
+  const dateFrom = typeof filters.dateFrom === "string" ? filters.dateFrom : "";
+  const dateTo = typeof filters.dateTo === "string" ? filters.dateTo : "";
   const result = isPurchase
-    ? await getPalmPurchasePage(page, 20).catch(() => ({
+    ? await getPalmPurchasePageWithFilters(page, pageSize, {
+        q,
+        paymentStatus,
+        dateFrom,
+        dateTo,
+      }).catch(() => ({
         items: [],
         meta: { page: 1, pageSize: 20, total: 0, totalPages: 1 },
       }))
-    : await getPalmSalePage(page, 20).catch(() => ({
+    : await getPalmSalePageWithFilters(page, pageSize, {
+        q,
+        paymentStatus,
+        dateFrom,
+        dateTo,
+      }).catch(() => ({
         items: [],
         meta: { page: 1, pageSize: 20, total: 0, totalPages: 1 },
       }));
@@ -119,12 +136,31 @@ export default async function PalmEntityPage({
           </>
         }
         right={
-          <div className="flex items-center gap-3 text-sm text-muted-foreground">
-            <div className="flex items-center gap-2 rounded-xl border border-border/70 bg-muted/20 px-3 py-2">
+          <>
+            <form className="grid w-full gap-3 xl:grid-cols-[minmax(220px,1.2fr)_180px_180px_180px_120px_auto] xl:items-end">
+              <Input defaultValue={q} name="q" placeholder={isPurchase ? "Cari kode, petani, sopir" : "Cari kode, pabrik, gudang"} />
+              <Select defaultValue={paymentStatus} name="paymentStatus">
+                <option value="all">Semua status</option>
+                <option value="unpaid">Belum Dibayar</option>
+                <option value="partial">Sebagian</option>
+                <option value="paid">Lunas</option>
+                <option value="overdue">Lewat Jatuh Tempo</option>
+                <option value="cancelled">Dibatalkan</option>
+              </Select>
+              <Input defaultValue={dateFrom} name="dateFrom" type="date" />
+              <Input defaultValue={dateTo} name="dateTo" type="date" />
+              <Select defaultValue={String(result.meta.pageSize)} name="pageSize">
+                <option value="10">10 / halaman</option>
+                <option value="20">20 / halaman</option>
+                <option value="50">50 / halaman</option>
+              </Select>
+              <Button type="submit">Terapkan</Button>
+            </form>
+            <div className="flex items-center gap-2 rounded-xl border border-border/70 bg-muted/20 px-3 py-2 text-sm text-muted-foreground">
               <Wallet className="size-4" />
               Halaman {result.meta.page} dari {result.meta.totalPages}
             </div>
-          </div>
+          </>
         }
       />
 

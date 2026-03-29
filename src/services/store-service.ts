@@ -13,15 +13,19 @@ import {
   createStoreSale,
   createStoreSaleItems,
   getStorePurchaseById,
+  getStorePurchaseReturnById,
   getStoreSaleById,
   listAllStorePurchases,
   listAllStoreSales,
   listStorePurchaseItemsByPurchaseId,
   listStorePurchaseReturnItemsByPurchaseId,
+  listStorePurchaseReturnItemsByReturnId,
   listStorePurchaseReturnsByPurchaseId,
   listStorePurchases,
+  listStorePurchasesPage,
   listStoreSaleItemsBySaleId,
   listStoreSales,
+  listStoreSalesPage,
   updateStorePurchase,
 } from "@/repositories/store-repository";
 import { logAudit } from "@/services/audit-service";
@@ -33,7 +37,12 @@ import {
   getPayableByReference,
   syncPayableAmountBySource,
 } from "@/services/finance-service";
-import { applyStockMovement, hasReferenceStockMovement, reverseReferenceStockMovements } from "@/services/inventory-service";
+import {
+  applyStockMovement,
+  getReferenceStockReversalStatus,
+  hasReferenceStockMovement,
+  reverseReferenceStockMovements,
+} from "@/services/inventory-service";
 
 function appendVoidNote(existingNotes?: string | null) {
   const prefix = existingNotes?.trim() ? `${existingNotes.trim()}\n\n` : "";
@@ -46,6 +55,80 @@ export async function getStorePurchaseList(limit = 20) {
 
 export async function getStoreSaleList(limit = 20) {
   return listStoreSales(limit);
+}
+
+function toStartOfDay(value?: string) {
+  if (!value) return undefined;
+  const parsed = new Date(`${value}T00:00:00`);
+  return Number.isNaN(parsed.getTime()) ? undefined : parsed;
+}
+
+function toEndOfDay(value?: string) {
+  if (!value) return undefined;
+  const parsed = new Date(`${value}T23:59:59.999`);
+  return Number.isNaN(parsed.getTime()) ? undefined : parsed;
+}
+
+export async function getStorePurchasePage(
+  page = 1,
+  pageSize = 20,
+  filters?: {
+    q?: string;
+    paymentStatus?: string;
+    dateFrom?: string;
+    dateTo?: string;
+  },
+) {
+  const safePage = Number.isFinite(page) ? Math.max(1, page) : 1;
+  const safePageSize = Number.isFinite(pageSize) ? Math.min(Math.max(pageSize, 10), 50) : 20;
+  const result = await listStorePurchasesPage(safePage, safePageSize, {
+    q: filters?.q?.trim() || undefined,
+    paymentStatus: filters?.paymentStatus || undefined,
+    dateFrom: toStartOfDay(filters?.dateFrom),
+    dateTo: toEndOfDay(filters?.dateTo),
+  });
+
+  return {
+    items: result.items,
+    meta: {
+      page: safePage,
+      pageSize: safePageSize,
+      total: result.total,
+      totalPages: Math.max(Math.ceil(result.total / safePageSize), 1),
+    },
+  };
+}
+
+export async function getStoreSalePage(
+  page = 1,
+  pageSize = 20,
+  filters?: {
+    q?: string;
+    paymentStatus?: string;
+    saleType?: string;
+    dateFrom?: string;
+    dateTo?: string;
+  },
+) {
+  const safePage = Number.isFinite(page) ? Math.max(1, page) : 1;
+  const safePageSize = Number.isFinite(pageSize) ? Math.min(Math.max(pageSize, 10), 50) : 20;
+  const result = await listStoreSalesPage(safePage, safePageSize, {
+    q: filters?.q?.trim() || undefined,
+    paymentStatus: filters?.paymentStatus || undefined,
+    saleType: filters?.saleType || undefined,
+    dateFrom: toStartOfDay(filters?.dateFrom),
+    dateTo: toEndOfDay(filters?.dateTo),
+  });
+
+  return {
+    items: result.items,
+    meta: {
+      page: safePage,
+      pageSize: safePageSize,
+      total: result.total,
+      totalPages: Math.max(Math.ceil(result.total / safePageSize), 1),
+    },
+  };
 }
 
 export async function getAllStorePurchaseList() {
@@ -84,6 +167,18 @@ export async function getStorePurchaseInvoice(id: string) {
 
   return {
     purchase,
+    items,
+  };
+}
+
+export async function getStorePurchaseReturnDocument(id: string) {
+  const storeReturn = await getStorePurchaseReturnById(id);
+  if (!storeReturn) return null;
+
+  const items = await listStorePurchaseReturnItemsByReturnId(id);
+
+  return {
+    storeReturn,
     items,
   };
 }
@@ -294,6 +389,14 @@ export async function voidStorePurchase(id: string, actorId?: string | null) {
   const payable = await getPayableByReference("store_purchase", id);
   if (payable && new Decimal(payable.paidAmount).gt(0)) {
     throw new Error("Pembelian yang sudah memiliki pembayaran tidak bisa dibatalkan otomatis.");
+  }
+
+  const reversalStatus = await getReferenceStockReversalStatus("store_purchase", id);
+  if (!reversalStatus.canReverse) {
+    const blocker = reversalStatus.blockers[0];
+    throw new Error(
+      `Pembelian barang ini tidak bisa dibatalkan karena saldo stok ${blocker.productName} di ${blocker.warehouseName} tinggal ${blocker.availableQty.toFixed(2)}, sedangkan reversal membutuhkan ${blocker.requiredQty.toFixed(2)}.`,
+    );
   }
 
   if (await hasReferenceStockMovement("store_purchase", id)) {

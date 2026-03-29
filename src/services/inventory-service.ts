@@ -252,6 +252,78 @@ export async function reverseReferenceStockMovements(
   return movements.length;
 }
 
+export async function getReferenceStockReversalStatus(
+  referenceType: "tbs_purchase" | "tbs_sale" | "store_purchase" | "store_sale" | "stock_take" | "stock_adjustment" | "manual",
+  referenceId: string,
+) {
+  const movements = await listStockMovementsByReference(referenceType, referenceId);
+
+  const requirements = new Map<
+    string,
+    {
+      warehouseId: string;
+      warehouseName: string;
+      productId: string;
+      productName: string;
+      requiredQty: Decimal;
+    }
+  >();
+
+  for (const movement of movements) {
+    const reversalMovementType =
+      movement.movementType === "purchase_in" ||
+      movement.movementType === "adjustment_in" ||
+      movement.movementType === "transfer_in" ||
+      movement.movementType === "opening_balance"
+        ? "adjustment_out"
+        : "adjustment_in";
+
+    if (!reversalMovementType.endsWith("_out")) continue;
+
+    const key = `${movement.warehouseId}:${movement.productId}`;
+    const requiredQty = new Decimal(requirements.get(key)?.requiredQty ?? 0).plus(movement.quantity);
+
+    requirements.set(key, {
+      warehouseId: movement.warehouseId,
+      warehouseName: movement.warehouseName ?? "Gudang",
+      productId: movement.productId,
+      productName: movement.productName ?? movement.productCode ?? "Produk",
+      requiredQty,
+    });
+  }
+
+  const blockers: Array<{
+    warehouseId: string;
+    warehouseName: string;
+    productId: string;
+    productName: string;
+    requiredQty: number;
+    availableQty: number;
+  }> = [];
+
+  for (const requirement of requirements.values()) {
+    const balance = await getStockBalance(requirement.warehouseId, requirement.productId);
+    const availableQty = new Decimal(balance?.quantity ?? 0);
+
+    if (availableQty.lt(requirement.requiredQty)) {
+      blockers.push({
+        warehouseId: requirement.warehouseId,
+        warehouseName: requirement.warehouseName,
+        productId: requirement.productId,
+        productName: requirement.productName,
+        requiredQty: Number(requirement.requiredQty.toFixed(2)),
+        availableQty: Number(availableQty.toFixed(2)),
+      });
+    }
+  }
+
+  return {
+    canReverse: blockers.length === 0,
+    blockers,
+    movementCount: movements.length,
+  };
+}
+
 export async function getStockMovementList(
   limit = 50,
   filters?: {

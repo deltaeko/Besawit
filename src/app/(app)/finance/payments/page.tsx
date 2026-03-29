@@ -1,4 +1,5 @@
 import { ArrowDownLeft, ArrowUpRight, Landmark, ReceiptText } from "lucide-react";
+import { redirect } from "next/navigation";
 
 import { FilterBar } from "@/components/shared/filter-bar";
 import { PageHeader } from "@/components/shared/page-header";
@@ -7,6 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
+import { canPerformAction } from "@/lib/auth/permissions";
+import { getSession } from "@/lib/auth/session";
 import { formatCurrency, formatDateTime, formatNumber } from "@/lib/utils";
 import { MasterPagination } from "@/modules/master/master-pagination";
 import { PaymentForm } from "@/modules/finance/payment-form";
@@ -39,6 +42,11 @@ export default async function PaymentsPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  const session = await getSession();
+  if (!session || !canPerformAction(session.role, session.permissions, "finance.payments.manage")) {
+    redirect("/dashboard");
+  }
+
   const query = await searchParams;
   const sourceType = typeof query.sourceType === "string" ? query.sourceType : "";
   const sourceId = typeof query.sourceId === "string" ? query.sourceId : "";

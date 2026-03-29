@@ -4,32 +4,32 @@ import { Printer } from "lucide-react";
 
 import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
-import { WeighSlipDocument } from "@/modules/palm/weigh-slip-document";
-import { getPalmPurchase } from "@/services/palm-service";
+import { PalmSaleDocument } from "@/modules/palm/palm-sale-document";
+import { getPalmSale } from "@/services/palm-service";
 
-export default async function PalmPurchaseWeighSlipPreviewPage({
+export default async function PalmSaleDocumentPreviewPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const purchase = await getPalmPurchase(id).catch(() => null);
+  const sale = await getPalmSale(id).catch(() => null);
 
-  if (!purchase) notFound();
+  if (!sale) notFound();
 
   return (
     <div className="space-y-6">
       <PageHeader
         eyebrow="Agen Sawit"
-        title="Preview Slip Timbang Petani"
-        description="Tinjau data timbang pembelian TBS sebelum slip dicetak untuk petani atau arsip lapangan."
+        title="Preview Dokumen Penjualan TBS"
+        description="Tinjau tonase, potongan, return, dan nilai transaksi penjualan ke pabrik sebelum dicetak."
         action={
           <div className="flex flex-wrap gap-3">
             <Button asChild variant="outline">
-              <Link href={`/palm/purchases/${id}`}>Kembali</Link>
+              <Link href={`/palm/sales/${id}`}>Kembali</Link>
             </Button>
             <Button asChild variant="outline">
-              <Link href={`/print/palm-purchases/${id}/weigh-slip`} target="_blank">
+              <Link href={`/print/palm-sales/${id}/document`} target="_blank">
                 <Printer className="size-4" />
                 Print
               </Link>
@@ -38,7 +38,7 @@ export default async function PalmPurchaseWeighSlipPreviewPage({
         }
       />
 
-      <WeighSlipDocument mode="preview" printedAt={new Date()} purchase={purchase as Record<string, unknown>} />
+      <PalmSaleDocument mode="preview" printedAt={new Date()} sale={sale as Record<string, unknown>} />
     </div>
   );
 }

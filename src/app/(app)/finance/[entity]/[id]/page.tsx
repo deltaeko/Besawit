@@ -7,6 +7,8 @@ import { SectionCard } from "@/components/shared/section-card";
 import { SimpleTable } from "@/components/shared/simple-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { canPerformAction } from "@/lib/auth/permissions";
+import { getSession } from "@/lib/auth/session";
 import { formatCurrency, formatDate, formatDateTime, formatNumber } from "@/lib/utils";
 import { formatPalmStatusLabel, resolvePalmStatusBadgeVariant } from "@/modules/palm/status-utils";
 import { getPayableDetail, getReceivableDetail } from "@/services/finance-service";
@@ -183,6 +185,38 @@ function SummaryList({
   );
 }
 
+function FinanceActionButton({
+  href,
+  label,
+  disabled,
+  disabledLabel,
+  disabledReason,
+}: {
+  href: string;
+  label: string;
+  disabled: boolean;
+  disabledLabel: string;
+  disabledReason?: string;
+}) {
+  if (disabled) {
+    return (
+      <Button disabled title={disabledReason ?? "Dokumen ini tidak bisa diproses lagi."}>
+        <Wallet className="size-4" />
+        {disabledLabel}
+      </Button>
+    );
+  }
+
+  return (
+    <Button asChild>
+      <Link href={href}>
+        <Wallet className="size-4" />
+        {label}
+      </Link>
+    </Button>
+  );
+}
+
 export default async function FinanceDetailPage({
   params,
 }: {
@@ -190,6 +224,10 @@ export default async function FinanceDetailPage({
 }) {
   const { entity, id } = await params;
   if (!["payables", "receivables"].includes(entity)) notFound();
+  const session = await getSession();
+  const canManagePayments = Boolean(
+    session && canPerformAction(session.role, session.permissions, "finance.payments.manage"),
+  );
 
   if (entity === "payables") {
     const data = await getPayableDetail(id).catch(() => null);
@@ -203,6 +241,14 @@ export default async function FinanceDetailPage({
         : payable.partyType === "supplier"
           ? "Supplier"
           : "Pihak";
+    const canPostPayment =
+      (payable.status === "unpaid" || payable.status === "partial" || payable.status === "overdue") &&
+      Number(payable.outstandingAmount ?? 0) > 0;
+    const paymentDisabledReason = !canManagePayments
+      ? "Anda tidak memiliki hak akses untuk mencatat pembayaran."
+      : payable.status === "cancelled"
+        ? "Dokumen ini sudah ditutup."
+        : "Dokumen ini sudah lunas.";
 
     return (
       <div className="space-y-6">
@@ -232,12 +278,13 @@ export default async function FinanceDetailPage({
                   </Link>
                 </Button>
               ) : null}
-              <Button asChild>
-                <Link href={`/finance/payments?payableId=${payable.id}`}>
-                  <Wallet className="size-4" />
-                  Catat Pembayaran
-                </Link>
-              </Button>
+              <FinanceActionButton
+                disabled={!canPostPayment || !canManagePayments}
+                disabledLabel={payable.status === "cancelled" ? "Ditutup" : "Lunas"}
+                disabledReason={paymentDisabledReason}
+                href={`/finance/payments?payableId=${payable.id}`}
+                label="Catat Pembayaran"
+              />
             </div>
           }
         />
@@ -413,6 +460,16 @@ export default async function FinanceDetailPage({
       ? `${receivable.farmerName} (${receivable.farmerCode})`
       : receivable.farmerName
     : null;
+  const canPostReceipt =
+    (receivable.status === "unpaid" ||
+      receivable.status === "partial" ||
+      receivable.status === "overdue") &&
+    Number(receivable.outstandingAmount ?? 0) > 0;
+  const receiptDisabledReason = !canManagePayments
+    ? "Anda tidak memiliki hak akses untuk mencatat penerimaan."
+    : receivable.status === "cancelled"
+      ? "Dokumen ini sudah ditutup."
+      : "Dokumen ini sudah lunas.";
 
   return (
     <div className="space-y-6">
@@ -436,12 +493,13 @@ export default async function FinanceDetailPage({
                 </Link>
               </Button>
             ) : null}
-            <Button asChild>
-              <Link href={`/finance/payments?receivableId=${receivable.id}`}>
-                <Wallet className="size-4" />
-                Catat Penerimaan
-              </Link>
-            </Button>
+          <FinanceActionButton
+            disabled={!canPostReceipt || !canManagePayments}
+            disabledLabel={receivable.status === "cancelled" ? "Ditutup" : "Lunas"}
+            disabledReason={receiptDisabledReason}
+            href={`/finance/payments?receivableId=${receivable.id}`}
+            label="Catat Penerimaan"
+          />
           </div>
         }
       />

@@ -4,6 +4,8 @@ import { notFound, redirect } from "next/navigation";
 import { EmptyState } from "@/components/shared/empty-state";
 import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
+import { canPerformAction } from "@/lib/auth/permissions";
+import { getSession } from "@/lib/auth/session";
 import { StorePurchaseReturnForm } from "@/modules/store/store-purchase-return-form";
 import { getStorePurchaseReturnFormData } from "@/services/store-service";
 
@@ -13,6 +15,11 @@ export default async function NewStorePurchaseReturnPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const session = await getSession();
+  if (!session || !canPerformAction(session.role, session.permissions, "store.purchases.return")) {
+    redirect(`/store/purchases/${id}`);
+  }
+
   const context = await getStorePurchaseReturnFormData(id).catch(() => null);
 
   if (!context) notFound();

@@ -43,7 +43,7 @@ export default async function ProductPriceManagementPage({
               <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Produk</div>
               <div className="mt-2 text-xl font-semibold">{String(productView.name ?? "-")}</div>
               <div className="mt-1 text-sm text-muted-foreground">
-                {String(productView.unit ?? "-")} {productView.categoryName ? `• ${String(productView.categoryName)}` : ""}
+                {String(productView.unit ?? "-")} {productView.categoryName ? `- ${String(productView.categoryName)}` : ""}
               </div>
             </div>
             <div className="rounded-2xl border border-border/70 bg-background/70 px-4 py-3 text-right">

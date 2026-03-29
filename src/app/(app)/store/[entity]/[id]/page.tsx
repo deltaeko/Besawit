@@ -4,14 +4,24 @@ import { ArrowLeft, FileText, Receipt, Wallet, Warehouse } from "lucide-react";
 
 import { PageHeader } from "@/components/shared/page-header";
 import { SectionCard } from "@/components/shared/section-card";
+import { SimpleTable } from "@/components/shared/simple-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { canPerformAction } from "@/lib/auth/permissions";
+import { getSession } from "@/lib/auth/session";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { PalmTransactionDetailActions } from "@/modules/palm/transaction-detail-actions";
 import { formatPalmStatusLabel, resolvePalmStatusBadgeVariant } from "@/modules/palm/status-utils";
 import { isStoreEntity } from "@/modules/store/helpers";
 import { getPayableByReference, getReceivableByReference } from "@/services/finance-service";
-import { getStorePurchase, getStorePurchaseReturnFormData, getStoreSale } from "@/services/store-service";
+import { getReferenceStockReversalStatus } from "@/services/inventory-service";
+import {
+  getStorePurchase,
+  getStorePurchaseInvoice,
+  getStorePurchaseReturnFormData,
+  getStoreSale,
+  getStoreSaleInvoice,
+} from "@/services/store-service";
 
 function MetricCard({
   label,
@@ -47,6 +57,56 @@ function DetailRow({ label, value }: { label: string; value: string }) {
   );
 }
 
+function StoreItemTable({
+  rows,
+}: {
+  rows: Array<{
+    id: string;
+    productCode?: string | null;
+    productName?: string | null;
+    productUnit?: string | null;
+    quantity: string | number;
+    unitCost?: string | number;
+    unitPrice?: string | number;
+    lineTotal: string | number;
+  }>;
+}) {
+  return (
+    <SimpleTable
+      cellRenderers={{
+        unitCost: (value) => formatCurrency(Number(value ?? 0)),
+        unitPrice: (value) => formatCurrency(Number(value ?? 0)),
+        lineTotal: (value) => formatCurrency(Number(value ?? 0)),
+      }}
+      columnLabels={{
+        productCode: "Kode",
+        productName: "Produk",
+        productUnit: "Unit",
+        quantity: "Qty",
+        unitCost: "Harga Beli",
+        unitPrice: "Harga Jual",
+        lineTotal: "Total",
+      }}
+      columns={
+        rows[0]
+          ? Object.keys(rows[0]).filter((key) => key !== "id")
+          : ["productCode", "productName", "productUnit", "quantity", "unitPrice", "lineTotal"]
+      }
+      numericColumns={["quantity", "unitCost", "unitPrice", "lineTotal"]}
+      rows={rows.map((item) => ({
+        id: item.id,
+        productCode: item.productCode ?? "-",
+        productName: item.productName ?? "-",
+        productUnit: item.productUnit ?? "-",
+        quantity: Number(item.quantity ?? 0),
+        unitCost: item.unitCost != null ? Number(item.unitCost) : undefined,
+        unitPrice: item.unitPrice != null ? Number(item.unitPrice) : undefined,
+        lineTotal: Number(item.lineTotal ?? 0),
+      }))}
+    />
+  );
+}
+
 export default async function StoreDetailPage({
   params,
 }: {
@@ -54,6 +114,16 @@ export default async function StoreDetailPage({
 }) {
   const { entity, id } = await params;
   if (!isStoreEntity(entity)) notFound();
+  const session = await getSession();
+  const canManagePayments = Boolean(
+    session && canPerformAction(session.role, session.permissions, "finance.payments.manage"),
+  );
+  const canReturnStorePurchase = Boolean(
+    session && canPerformAction(session.role, session.permissions, "store.purchases.return"),
+  );
+  const canVoidStorePurchase = Boolean(
+    session && canPerformAction(session.role, session.permissions, "store.purchases.void"),
+  );
 
   const data =
     entity === "purchases"
@@ -68,8 +138,18 @@ export default async function StoreDetailPage({
   const financeReference = isPurchase
     ? await getPayableByReference("store_purchase", id).catch(() => null)
     : await getReceivableByReference("store_sale", id).catch(() => null);
+  const document = isPurchase
+    ? await getStorePurchaseInvoice(id).catch(() => null)
+    : await getStoreSaleInvoice(id).catch(() => null);
   const purchaseReturnContext = isPurchase
     ? await getStorePurchaseReturnFormData(id).catch(() => null)
+    : null;
+  const purchaseReversalStatus = isPurchase
+    ? await getReferenceStockReversalStatus("store_purchase", id).catch(() => ({
+        canReverse: true,
+        blockers: [],
+        movementCount: 0,
+      }))
     : null;
   const canPostFinance =
     transactionStatus === "active" &&
@@ -93,11 +173,19 @@ export default async function StoreDetailPage({
                 ? "Transaksi pembelian toko belum mendukung ubah langsung."
                 : "Transaksi penjualan toko belum mendukung ubah langsung."
             }
+            paymentDisabledReason={
+              canManagePayments
+                ? null
+                : isPurchase
+                  ? "Anda tidak memiliki hak akses untuk mencatat pembayaran."
+                  : "Anda tidak memiliki hak akses untuk mencatat penerimaan."
+            }
             paymentHref={
               isPurchase
                 ? `/finance/payments?payableId=${financeReference?.id}&returnTo=${returnTo}`
                 : `/finance/payments?receivableId=${financeReference?.id}&returnTo=${returnTo}`
             }
+            paymentLabel={isPurchase ? "Catat Pembayaran" : "Catat Penerimaan"}
             paymentStatus={paymentStatus}
             transactionStatus={transactionStatus}
             extraAction={
@@ -108,6 +196,8 @@ export default async function StoreDetailPage({
                     disabledReason:
                       transactionStatus !== "active"
                         ? "Hanya pembelian aktif yang bisa diretur."
+                        : !canReturnStorePurchase
+                          ? "Anda tidak memiliki hak akses untuk retur pembelian."
                         : Number(financeReference?.paidAmount ?? 0) > 0
                           ? "Retur pembelian saat ini hanya didukung sebelum ada pembayaran supplier."
                           : purchaseReturnContext && !purchaseReturnContext.summary.hasReturnableItems
@@ -123,8 +213,12 @@ export default async function StoreDetailPage({
                     disabledReason:
                       transactionStatus !== "active"
                         ? "Hanya transaksi aktif yang bisa dibatalkan."
+                        : !canVoidStorePurchase
+                          ? "Anda tidak memiliki hak akses untuk void pembelian barang."
                         : paymentStatus === "partial" || paymentStatus === "paid"
                           ? "Pembelian yang sudah memiliki pembayaran tidak bisa dibatalkan otomatis."
+                          : purchaseReversalStatus && !purchaseReversalStatus.canReverse
+                            ? `Saldo stok ${purchaseReversalStatus.blockers[0]?.productName ?? "produk"} di ${purchaseReversalStatus.blockers[0]?.warehouseName ?? "gudang"} tidak cukup untuk reversal.`
                           : null,
                     label: "Void Pembelian",
                   }
@@ -200,6 +294,17 @@ export default async function StoreDetailPage({
             </div>
           </SectionCard>
 
+          <SectionCard
+            title={isPurchase ? "Item Pembelian" : "Item Penjualan"}
+            description={
+              isPurchase
+                ? "Daftar barang yang dibeli dari supplier pada dokumen ini."
+                : "Daftar barang yang dijual pada dokumen ini."
+            }
+          >
+            <StoreItemTable rows={document?.items ?? []} />
+          </SectionCard>
+
           {isPurchase ? (
             <SectionCard
               title="Ringkasan Retur"
@@ -228,7 +333,12 @@ export default async function StoreDetailPage({
                       className="flex flex-wrap items-center justify-between gap-3 border-b border-border/70 pb-3 text-sm last:border-b-0 last:pb-0"
                     >
                       <div>
-                        <div className="font-semibold text-foreground">{item.code}</div>
+                        <Link
+                          className="font-semibold text-primary hover:underline"
+                          href={`/store/purchase-returns/${item.id}`}
+                        >
+                          {item.code}
+                        </Link>
                         <div className="text-muted-foreground">{formatDate(String(item.returnDate))}</div>
                       </div>
                       <div className="font-semibold text-foreground">

@@ -873,7 +873,7 @@ export async function getMasterFormOptions() {
     db
       .select({
         id: vehicles.id,
-        label: sql<string>`concat(${vehicles.plateNumber}, ' • ', coalesce(${vehicles.type}, '-'))`,
+        label: sql<string>`concat(${vehicles.plateNumber}, ' - ', coalesce(${vehicles.type}, '-'))`,
       })
       .from(vehicles)
       .where(eq(vehicles.isActive, true))
@@ -881,7 +881,7 @@ export async function getMasterFormOptions() {
     db
       .select({
         id: farmers.id,
-        label: sql<string>`concat(${farmers.name}, ' • ', ${farmers.code})`,
+        label: sql<string>`concat(${farmers.name}, ' - ', ${farmers.code})`,
       })
       .from(farmers)
       .where(eq(farmers.isActive, true))

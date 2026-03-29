@@ -8,7 +8,7 @@ import {
   createTbsSaleReturns,
   getTbsPurchaseById,
   getTbsSaleById,
-  hasActiveTbsSalesByReferencePurchaseId,
+  hasActiveTbsSalesInWarehouseSince,
   listAllTbsPurchases,
   listAllTbsSales,
   listActiveTbsDeductionConfigs,
@@ -40,6 +40,7 @@ import {
 import {
   applyStockMovement,
   ensureTbsPoolProduct,
+  getReferenceStockReversalStatus,
   getInventoryStockBalance,
   getStockBalancePage,
   hasReferenceStockMovement,
@@ -177,9 +178,39 @@ export async function getAllPalmSaleList() {
 }
 
 export async function getPalmPurchasePage(page = 1, pageSize = 20) {
+  return getPalmPurchasePageWithFilters(page, pageSize);
+}
+
+function toStartOfDay(value?: string) {
+  if (!value) return undefined;
+  const parsed = new Date(`${value}T00:00:00`);
+  return Number.isNaN(parsed.getTime()) ? undefined : parsed;
+}
+
+function toEndOfDay(value?: string) {
+  if (!value) return undefined;
+  const parsed = new Date(`${value}T23:59:59.999`);
+  return Number.isNaN(parsed.getTime()) ? undefined : parsed;
+}
+
+export async function getPalmPurchasePageWithFilters(
+  page = 1,
+  pageSize = 20,
+  filters?: {
+    q?: string;
+    paymentStatus?: string;
+    dateFrom?: string;
+    dateTo?: string;
+  },
+) {
   const safePage = Number.isFinite(page) ? Math.max(1, page) : 1;
   const safePageSize = Number.isFinite(pageSize) ? Math.min(Math.max(pageSize, 10), 50) : 20;
-  const result = await listTbsPurchasesPage(safePage, safePageSize);
+  const result = await listTbsPurchasesPage(safePage, safePageSize, {
+    q: filters?.q?.trim() || undefined,
+    paymentStatus: filters?.paymentStatus || undefined,
+    dateFrom: toStartOfDay(filters?.dateFrom),
+    dateTo: toEndOfDay(filters?.dateTo),
+  });
 
   return {
     items: result.items,
@@ -193,9 +224,27 @@ export async function getPalmPurchasePage(page = 1, pageSize = 20) {
 }
 
 export async function getPalmSalePage(page = 1, pageSize = 20) {
+  return getPalmSalePageWithFilters(page, pageSize);
+}
+
+export async function getPalmSalePageWithFilters(
+  page = 1,
+  pageSize = 20,
+  filters?: {
+    q?: string;
+    paymentStatus?: string;
+    dateFrom?: string;
+    dateTo?: string;
+  },
+) {
   const safePage = Number.isFinite(page) ? Math.max(1, page) : 1;
   const safePageSize = Number.isFinite(pageSize) ? Math.min(Math.max(pageSize, 10), 50) : 20;
-  const result = await listTbsSalesPage(safePage, safePageSize);
+  const result = await listTbsSalesPage(safePage, safePageSize, {
+    q: filters?.q?.trim() || undefined,
+    paymentStatus: filters?.paymentStatus || undefined,
+    dateFrom: toStartOfDay(filters?.dateFrom),
+    dateTo: toEndOfDay(filters?.dateTo),
+  });
 
   return {
     items: result.items,
@@ -656,15 +705,25 @@ export async function voidPalmPurchase(id: string, actorId?: string | null) {
     throw new Error("Hanya transaksi pembelian aktif yang bisa dibatalkan.");
   }
 
-  const [payable, hasActiveLinkedSale, storeDebtOffset] = await Promise.all([
+  const [payable, hasActiveLinkedSaleInPool, storeDebtOffset] = await Promise.all([
     getPayableByReference("tbs_purchase", id),
-    hasActiveTbsSalesByReferencePurchaseId(id),
+    existing.warehouseId
+      ? hasActiveTbsSalesInWarehouseSince(existing.warehouseId, existing.createdAt)
+      : Promise.resolve(false),
     getTbsPurchaseStoreOffsetDetail(id).catch(() => null),
   ]);
+  const reversalStatus = await getReferenceStockReversalStatus("tbs_purchase", id);
 
-  if (hasActiveLinkedSale) {
+  if (hasActiveLinkedSaleInPool) {
     throw new Error(
-      "Pembelian TBS ini sudah dipakai pada penjualan aktif ke pabrik dan tidak bisa dibatalkan.",
+      "Pembelian TBS ini tidak bisa dibatalkan karena gudang asalnya sudah memiliki penjualan TBS aktif setelah transaksi ini. Gunakan koreksi stok/manual reversal yang terkontrol untuk penyesuaian pooled stock.",
+    );
+  }
+
+  if (!reversalStatus.canReverse) {
+    const blocker = reversalStatus.blockers[0];
+    throw new Error(
+      `Pembelian TBS ini tidak bisa dibatalkan karena saldo stok ${blocker.productName} di ${blocker.warehouseName} tinggal ${blocker.availableQty.toFixed(2)} kg, sedangkan reversal membutuhkan ${blocker.requiredQty.toFixed(2)} kg.`,
     );
   }
 

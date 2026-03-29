@@ -24,6 +24,7 @@ export type MasterFieldType =
   | "date"
   | "email"
   | "select"
+  | "searchable-select"
   | "password";
 
 export type MasterFormField = {

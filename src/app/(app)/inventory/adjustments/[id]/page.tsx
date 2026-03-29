@@ -8,6 +8,8 @@ import { SectionCard } from "@/components/shared/section-card";
 import { SimpleTable } from "@/components/shared/simple-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { canPerformAction } from "@/lib/auth/permissions";
+import { getSession } from "@/lib/auth/session";
 import { formatCurrency, formatDateTime, formatNumber } from "@/lib/utils";
 import { formatPalmStatusLabel, resolvePalmStatusBadgeVariant } from "@/modules/palm/status-utils";
 import { getAuditLogsByEntity } from "@/services/audit-service";
@@ -93,6 +95,10 @@ export default async function InventoryAdjustmentDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const session = await getSession();
+  const canApproveAdjustment = Boolean(
+    session && canPerformAction(session.role, session.permissions, "inventory.adjustments.approve"),
+  );
   const [detail, options, auditLogs] = await Promise.all([
     getStockAdjustmentDetail(id).catch(() => null),
     getInventoryAdjustmentFormOptions().catch(() => ({
@@ -126,13 +132,22 @@ export default async function InventoryAdjustmentDetailPage({
                 Kembali
               </Link>
             </Button>
-            {adjustment.status === "pending" ? (
+            {adjustment.status === "pending" && canApproveAdjustment ? (
               <form action={`/api/inventory/adjustments/${id}/approve`} method="post">
                 <Button type="submit">
                   <ClipboardCheck className="size-4" />
                   Approve
                 </Button>
               </form>
+            ) : adjustment.status === "pending" ? (
+              <Button
+                disabled
+                title="Anda tidak memiliki hak akses untuk approve adjustment."
+                type="button"
+              >
+                <ClipboardCheck className="size-4" />
+                Approve
+              </Button>
             ) : null}
           </div>
         }

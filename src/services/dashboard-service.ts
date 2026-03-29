@@ -77,6 +77,7 @@ type TbsSaleAggregateRow = {
   totalSales: number;
   returnWeight: number;
   totalDeduction: number;
+  margin: number;
 };
 
 async function getTbsPurchaseAggregate(start: Date, end: Date) {
@@ -106,6 +107,52 @@ async function getTbsPurchaseAggregate(start: Date, end: Date) {
   } satisfies TbsPurchaseAggregateRow;
 }
 
+async function getTbsPurchaseAggregateComparison(
+  currentStart: Date,
+  currentEnd: Date,
+  previousStart: Date,
+  previousEnd: Date,
+) {
+  const [row] = await db
+    .select({
+      currentTransactionCount: sql<number>`coalesce(sum(case when ${tbsPurchases.purchaseDate} >= ${currentStart} and ${tbsPurchases.purchaseDate} < ${currentEnd} then 1 else 0 end), 0)`,
+      currentGrossWeight: sql<number>`coalesce(sum(case when ${tbsPurchases.purchaseDate} >= ${currentStart} and ${tbsPurchases.purchaseDate} < ${currentEnd} then ${tbsPurchases.grossWeight} else 0 end), 0)`,
+      currentTareWeight: sql<number>`coalesce(sum(case when ${tbsPurchases.purchaseDate} >= ${currentStart} and ${tbsPurchases.purchaseDate} < ${currentEnd} then ${tbsPurchases.tareWeight} else 0 end), 0)`,
+      currentNetWeight: sql<number>`coalesce(sum(case when ${tbsPurchases.purchaseDate} >= ${currentStart} and ${tbsPurchases.purchaseDate} < ${currentEnd} then ${tbsPurchases.netWeight} else 0 end), 0)`,
+      currentTotalPurchase: sql<number>`coalesce(sum(case when ${tbsPurchases.purchaseDate} >= ${currentStart} and ${tbsPurchases.purchaseDate} < ${currentEnd} then ${tbsPurchases.totalPurchase} else 0 end), 0)`,
+      previousTransactionCount: sql<number>`coalesce(sum(case when ${tbsPurchases.purchaseDate} >= ${previousStart} and ${tbsPurchases.purchaseDate} < ${previousEnd} then 1 else 0 end), 0)`,
+      previousGrossWeight: sql<number>`coalesce(sum(case when ${tbsPurchases.purchaseDate} >= ${previousStart} and ${tbsPurchases.purchaseDate} < ${previousEnd} then ${tbsPurchases.grossWeight} else 0 end), 0)`,
+      previousTareWeight: sql<number>`coalesce(sum(case when ${tbsPurchases.purchaseDate} >= ${previousStart} and ${tbsPurchases.purchaseDate} < ${previousEnd} then ${tbsPurchases.tareWeight} else 0 end), 0)`,
+      previousNetWeight: sql<number>`coalesce(sum(case when ${tbsPurchases.purchaseDate} >= ${previousStart} and ${tbsPurchases.purchaseDate} < ${previousEnd} then ${tbsPurchases.netWeight} else 0 end), 0)`,
+      previousTotalPurchase: sql<number>`coalesce(sum(case when ${tbsPurchases.purchaseDate} >= ${previousStart} and ${tbsPurchases.purchaseDate} < ${previousEnd} then ${tbsPurchases.totalPurchase} else 0 end), 0)`,
+    })
+    .from(tbsPurchases)
+    .where(
+      and(
+        eq(tbsPurchases.status, "active"),
+        gte(tbsPurchases.purchaseDate, previousStart),
+        lt(tbsPurchases.purchaseDate, currentEnd),
+      ),
+    );
+
+  return {
+    current: {
+      transactionCount: toNumber(row?.currentTransactionCount),
+      grossWeight: toNumber(row?.currentGrossWeight),
+      tareWeight: toNumber(row?.currentTareWeight),
+      netWeight: toNumber(row?.currentNetWeight),
+      totalPurchase: toNumber(row?.currentTotalPurchase),
+    } satisfies TbsPurchaseAggregateRow,
+    previous: {
+      transactionCount: toNumber(row?.previousTransactionCount),
+      grossWeight: toNumber(row?.previousGrossWeight),
+      tareWeight: toNumber(row?.previousTareWeight),
+      netWeight: toNumber(row?.previousNetWeight),
+      totalPurchase: toNumber(row?.previousTotalPurchase),
+    } satisfies TbsPurchaseAggregateRow,
+  };
+}
+
 async function getTbsPurchaseDeductionAggregate(start: Date, end: Date) {
   const [row] = await db
     .select({
@@ -130,6 +177,41 @@ async function getTbsPurchaseDeductionAggregate(start: Date, end: Date) {
   };
 }
 
+async function getTbsPurchaseDeductionAggregateComparison(
+  currentStart: Date,
+  currentEnd: Date,
+  previousStart: Date,
+  previousEnd: Date,
+) {
+  const [row] = await db
+    .select({
+      currentTotalDeduction: sql<number>`coalesce(sum(case when ${tbsPurchases.purchaseDate} >= ${currentStart} and ${tbsPurchases.purchaseDate} < ${currentEnd} then ${tbsSales.totalDeduction} else 0 end), 0)`,
+      previousTotalDeduction: sql<number>`coalesce(sum(case when ${tbsPurchases.purchaseDate} >= ${previousStart} and ${tbsPurchases.purchaseDate} < ${previousEnd} then ${tbsSales.totalDeduction} else 0 end), 0)`,
+    })
+    .from(tbsSales)
+    .innerJoin(
+      tbsPurchases,
+      eq(tbsSales.referencePurchaseId, tbsPurchases.id),
+    )
+    .where(
+      and(
+        eq(tbsSales.status, "active"),
+        eq(tbsPurchases.status, "active"),
+        gte(tbsPurchases.purchaseDate, previousStart),
+        lt(tbsPurchases.purchaseDate, currentEnd),
+      ),
+    );
+
+  return {
+    current: {
+      totalDeduction: toNumber(row?.currentTotalDeduction),
+    },
+    previous: {
+      totalDeduction: toNumber(row?.previousTotalDeduction),
+    },
+  };
+}
+
 async function getTbsSaleAggregate(start: Date, end: Date) {
   const [row] = await db
     .select({
@@ -138,6 +220,7 @@ async function getTbsSaleAggregate(start: Date, end: Date) {
       totalSales: sql<number>`coalesce(sum(${tbsSales.totalSales}), 0)`,
       returnWeight: sql<number>`coalesce(sum(${tbsSales.returnWeight}), 0)`,
       totalDeduction: sql<number>`coalesce(sum(${tbsSales.totalDeduction}), 0)`,
+      margin: sql<number>`coalesce(sum(${tbsSales.margin}), 0)`,
     })
     .from(tbsSales)
     .where(
@@ -154,7 +237,58 @@ async function getTbsSaleAggregate(start: Date, end: Date) {
     totalSales: toNumber(row?.totalSales),
     returnWeight: toNumber(row?.returnWeight),
     totalDeduction: toNumber(row?.totalDeduction),
+    margin: toNumber(row?.margin),
   } satisfies TbsSaleAggregateRow;
+}
+
+async function getTbsSaleAggregateComparison(
+  currentStart: Date,
+  currentEnd: Date,
+  previousStart: Date,
+  previousEnd: Date,
+) {
+  const [row] = await db
+    .select({
+      currentTransactionCount: sql<number>`coalesce(sum(case when ${tbsSales.saleDate} >= ${currentStart} and ${tbsSales.saleDate} < ${currentEnd} then 1 else 0 end), 0)`,
+      currentNetWeightFinal: sql<number>`coalesce(sum(case when ${tbsSales.saleDate} >= ${currentStart} and ${tbsSales.saleDate} < ${currentEnd} then ${tbsSales.netWeightFinal} else 0 end), 0)`,
+      currentTotalSales: sql<number>`coalesce(sum(case when ${tbsSales.saleDate} >= ${currentStart} and ${tbsSales.saleDate} < ${currentEnd} then ${tbsSales.totalSales} else 0 end), 0)`,
+      currentReturnWeight: sql<number>`coalesce(sum(case when ${tbsSales.saleDate} >= ${currentStart} and ${tbsSales.saleDate} < ${currentEnd} then ${tbsSales.returnWeight} else 0 end), 0)`,
+      currentTotalDeduction: sql<number>`coalesce(sum(case when ${tbsSales.saleDate} >= ${currentStart} and ${tbsSales.saleDate} < ${currentEnd} then ${tbsSales.totalDeduction} else 0 end), 0)`,
+      currentMargin: sql<number>`coalesce(sum(case when ${tbsSales.saleDate} >= ${currentStart} and ${tbsSales.saleDate} < ${currentEnd} then ${tbsSales.margin} else 0 end), 0)`,
+      previousTransactionCount: sql<number>`coalesce(sum(case when ${tbsSales.saleDate} >= ${previousStart} and ${tbsSales.saleDate} < ${previousEnd} then 1 else 0 end), 0)`,
+      previousNetWeightFinal: sql<number>`coalesce(sum(case when ${tbsSales.saleDate} >= ${previousStart} and ${tbsSales.saleDate} < ${previousEnd} then ${tbsSales.netWeightFinal} else 0 end), 0)`,
+      previousTotalSales: sql<number>`coalesce(sum(case when ${tbsSales.saleDate} >= ${previousStart} and ${tbsSales.saleDate} < ${previousEnd} then ${tbsSales.totalSales} else 0 end), 0)`,
+      previousReturnWeight: sql<number>`coalesce(sum(case when ${tbsSales.saleDate} >= ${previousStart} and ${tbsSales.saleDate} < ${previousEnd} then ${tbsSales.returnWeight} else 0 end), 0)`,
+      previousTotalDeduction: sql<number>`coalesce(sum(case when ${tbsSales.saleDate} >= ${previousStart} and ${tbsSales.saleDate} < ${previousEnd} then ${tbsSales.totalDeduction} else 0 end), 0)`,
+      previousMargin: sql<number>`coalesce(sum(case when ${tbsSales.saleDate} >= ${previousStart} and ${tbsSales.saleDate} < ${previousEnd} then ${tbsSales.margin} else 0 end), 0)`,
+    })
+    .from(tbsSales)
+    .where(
+      and(
+        eq(tbsSales.status, "active"),
+        gte(tbsSales.saleDate, previousStart),
+        lt(tbsSales.saleDate, currentEnd),
+      ),
+    );
+
+  return {
+    current: {
+      transactionCount: toNumber(row?.currentTransactionCount),
+      netWeightFinal: toNumber(row?.currentNetWeightFinal),
+      totalSales: toNumber(row?.currentTotalSales),
+      returnWeight: toNumber(row?.currentReturnWeight),
+      totalDeduction: toNumber(row?.currentTotalDeduction),
+      margin: toNumber(row?.currentMargin),
+    } satisfies TbsSaleAggregateRow,
+    previous: {
+      transactionCount: toNumber(row?.previousTransactionCount),
+      netWeightFinal: toNumber(row?.previousNetWeightFinal),
+      totalSales: toNumber(row?.previousTotalSales),
+      returnWeight: toNumber(row?.previousReturnWeight),
+      totalDeduction: toNumber(row?.previousTotalDeduction),
+      margin: toNumber(row?.previousMargin),
+    } satisfies TbsSaleAggregateRow,
+  };
 }
 
 export async function getTbsPurchaseDailySummary(selectedDateParam?: string) {
@@ -164,12 +298,20 @@ export async function getTbsPurchaseDailySummary(selectedDateParam?: string) {
   const currentRange = getDateRange(selectedDate);
   const previousRange = getDateRange(previousDate);
 
-  const [currentMetrics, previousMetrics, currentDeductions, previousDeductions, topFarmers, purchases] =
+  const [aggregateComparison, deductionComparison, topFarmers, purchases] =
     await Promise.all([
-      getTbsPurchaseAggregate(currentRange.start, currentRange.end),
-      getTbsPurchaseAggregate(previousRange.start, previousRange.end),
-      getTbsPurchaseDeductionAggregate(currentRange.start, currentRange.end),
-      getTbsPurchaseDeductionAggregate(previousRange.start, previousRange.end),
+      getTbsPurchaseAggregateComparison(
+        currentRange.start,
+        currentRange.end,
+        previousRange.start,
+        previousRange.end,
+      ),
+      getTbsPurchaseDeductionAggregateComparison(
+        currentRange.start,
+        currentRange.end,
+        previousRange.start,
+        previousRange.end,
+      ),
       db
         .select({
           farmerId: tbsPurchases.farmerId,
@@ -224,12 +366,12 @@ export async function getTbsPurchaseDailySummary(selectedDateParam?: string) {
     previousDate,
     previousDateLabel: formatDateLabel(previousDate),
     metrics: {
-      ...currentMetrics,
-      totalDeduction: currentDeductions.totalDeduction,
+      ...aggregateComparison.current,
+      totalDeduction: deductionComparison.current.totalDeduction,
     },
     previousMetrics: {
-      ...previousMetrics,
-      totalDeduction: previousDeductions.totalDeduction,
+      ...aggregateComparison.previous,
+      totalDeduction: deductionComparison.previous.totalDeduction,
     },
     topFarmers: topFarmers.map((row) => ({
       farmerId: row.farmerId,
@@ -259,9 +401,13 @@ export async function getTbsSaleDailySummary(selectedDateParam?: string) {
   const currentRange = getDateRange(selectedDate);
   const previousRange = getDateRange(previousDate);
 
-  const [currentMetrics, previousMetrics, topFactories, sales] = await Promise.all([
-    getTbsSaleAggregate(currentRange.start, currentRange.end),
-    getTbsSaleAggregate(previousRange.start, previousRange.end),
+  const [aggregateComparison, topFactories, sales] = await Promise.all([
+    getTbsSaleAggregateComparison(
+      currentRange.start,
+      currentRange.end,
+      previousRange.start,
+      previousRange.end,
+    ),
     db
       .select({
         factoryId: tbsSales.factoryId,
@@ -315,8 +461,8 @@ export async function getTbsSaleDailySummary(selectedDateParam?: string) {
     selectedDateLabel: formatDateLabel(selectedDate),
     previousDate,
     previousDateLabel: formatDateLabel(previousDate),
-    metrics: currentMetrics,
-    previousMetrics,
+    metrics: aggregateComparison.current,
+    previousMetrics: aggregateComparison.previous,
     topFactories: topFactories.map((row) => ({
       factoryId: row.factoryId,
       factoryName: row.factoryName ?? "Tanpa nama",
@@ -345,7 +491,6 @@ export async function getFinanceInventorySummary() {
     [receivableRow],
     [payableRow],
     [stockRow],
-    [criticalRow],
     nearestReceivables,
     nearestSupplierPayables,
     topFarmerPayables,
@@ -368,22 +513,11 @@ export async function getFinanceInventorySummary() {
       .select({
         totalQuantity: sql<number>`coalesce(sum(${stockBalances.quantity}), 0)`,
         totalProducts: sql<number>`count(*)`,
+        criticalCount: sql<number>`coalesce(sum(case when ${stockBalances.quantity} <= ${products.minStock} then 1 else 0 end), 0)`,
       })
       .from(stockBalances)
       .innerJoin(products, eq(stockBalances.productId, products.id))
       .where(eq(products.isActive, true)),
-    db
-      .select({
-        criticalCount: sql<number>`count(*)`,
-      })
-      .from(stockBalances)
-      .innerJoin(products, eq(stockBalances.productId, products.id))
-      .where(
-        and(
-          eq(products.isActive, true),
-          sql`${stockBalances.quantity} <= ${products.minStock}`,
-        ),
-      ),
     db
       .select({
         id: receivables.id,
@@ -454,7 +588,7 @@ export async function getFinanceInventorySummary() {
       activePayableCount: toNumber(payableRow?.totalCount),
       currentStockQuantity: toNumber(stockRow?.totalQuantity),
       activeStockProductCount: toNumber(stockRow?.totalProducts),
-      criticalStockCount: toNumber(criticalRow?.criticalCount),
+      criticalStockCount: toNumber(stockRow?.criticalCount),
     },
     nearestReceivables: nearestReceivables.map((row) => ({
       id: row.id,
@@ -486,72 +620,13 @@ export async function getFinanceInventorySummary() {
 
 export async function getDashboardSummary(selectedDateParam?: string) {
   const selectedDate = resolveSelectedDate(selectedDateParam);
-  const currentRange = getDateRange(selectedDate);
 
   const [
-    [purchaseRow],
-    [salesRow],
-    [marginRow],
-    [payableRow],
-    [receivableRow],
-    [lowStockRow],
     [varianceRow],
     recentPalmPurchases,
     recentStoreSales,
     recentPalmSales,
   ] = await Promise.all([
-    db
-      .select({
-        value: sql<number>`coalesce(sum(${tbsPurchases.totalPurchase}), 0)`,
-      })
-      .from(tbsPurchases)
-      .where(
-        and(
-          eq(tbsPurchases.status, "active"),
-          gte(tbsPurchases.purchaseDate, currentRange.start),
-          lt(tbsPurchases.purchaseDate, currentRange.end),
-        ),
-      ),
-    db
-      .select({
-        value: sql<number>`coalesce(sum(${tbsSales.totalSales}), 0)`,
-      })
-      .from(tbsSales)
-      .where(
-        and(
-          eq(tbsSales.status, "active"),
-          gte(tbsSales.saleDate, currentRange.start),
-          lt(tbsSales.saleDate, currentRange.end),
-        ),
-      ),
-    db
-      .select({
-        value: sql<number>`coalesce(sum(${tbsSales.margin}), 0)`,
-      })
-      .from(tbsSales)
-      .where(
-        and(
-          eq(tbsSales.status, "active"),
-          gte(tbsSales.saleDate, currentRange.start),
-          lt(tbsSales.saleDate, currentRange.end),
-        ),
-      ),
-    db
-      .select({
-        value: sql<number>`coalesce(sum(${payables.outstandingAmount}), 0)`,
-      })
-      .from(payables),
-    db
-      .select({
-        value: sql<number>`coalesce(sum(${receivables.outstandingAmount}), 0)`,
-      })
-      .from(receivables),
-    db
-      .select({
-        value: sql<number>`count(*)`,
-      })
-      .from(stockBalances)
-      .where(sql`${stockBalances.quantity} <= 0`),
     db
       .select({
         value: sql<number>`coalesce(sum(abs(${stockTakeItems.varianceValue})), 0)`,
@@ -599,15 +674,7 @@ export async function getDashboardSummary(selectedDateParam?: string) {
     .slice(0, 8);
 
   return {
-    kpis: [
-      { label: "TBS Purchase", value: purchaseRow?.value ?? 0 },
-      { label: "TBS Sales", value: salesRow?.value ?? 0 },
-      { label: "Margin", value: marginRow?.value ?? 0 },
-      { label: "Payables", value: payableRow?.value ?? 0 },
-      { label: "Receivables", value: receivableRow?.value ?? 0 },
-      { label: "Low Stock Items", value: lowStockRow?.value ?? 0 },
-      { label: "Stock Take Variance", value: varianceRow?.value ?? 0 },
-    ],
+    stockTakeVariance: toNumber(varianceRow?.value),
     recentTransactions,
   };
 }

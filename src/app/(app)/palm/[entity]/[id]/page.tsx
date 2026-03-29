@@ -4,10 +4,12 @@ import { PageHeader } from "@/components/shared/page-header";
 import { SectionCard } from "@/components/shared/section-card";
 import { SimpleTable } from "@/components/shared/simple-table";
 import { AuditLogPanel } from "@/components/shared/audit-log-panel";
+import { canPerformAction } from "@/lib/auth/permissions";
+import { getSession } from "@/lib/auth/session";
 import { formatCurrency, formatDate, formatNumber } from "@/lib/utils";
 import { isPalmEntity } from "@/modules/palm/helpers";
 import { PalmTransactionDetailActions } from "@/modules/palm/transaction-detail-actions";
-import { hasActiveTbsSalesByReferencePurchaseId } from "@/repositories/palm-repository";
+import { hasActiveTbsSalesInWarehouseSince } from "@/repositories/palm-repository";
 import {
   PalmTransactionDetailView,
   type PalmTransactionDetailViewModel,
@@ -17,7 +19,10 @@ import {
   getPayableDetail,
   getReceivableByReference,
 } from "@/services/finance-service";
-import { hasReferenceStockMovement } from "@/services/inventory-service";
+import {
+  getReferenceStockReversalStatus,
+  hasReferenceStockMovement,
+} from "@/services/inventory-service";
 import { getPalmPurchase, getPalmSale } from "@/services/palm-service";
 import { getAuditLogsByEntity } from "@/services/audit-service";
 
@@ -42,13 +47,34 @@ export default async function PalmDetailPage({
 }) {
   const { entity, id } = await params;
   if (!isPalmEntity(entity)) notFound();
+  const session = await getSession();
+  const canManagePayments = Boolean(
+    session && canPerformAction(session.role, session.permissions, "finance.payments.manage"),
+  );
+  const canVoidPalmPurchase = Boolean(
+    session && canPerformAction(session.role, session.permissions, "palm.purchases.void"),
+  );
+  const canVoidPalmSale = Boolean(
+    session && canPerformAction(session.role, session.permissions, "palm.sales.void"),
+  );
 
   if (entity === "purchases") {
-    const [purchase, payable, hasStockMovement, hasActiveLinkedSale] = await Promise.all([
+    const [purchase, payable, hasStockMovement, hasActiveLinkedSale, reversalStatus] = await Promise.all([
       getPalmPurchase(id).catch(() => null),
       getPayableByReference("tbs_purchase", id).catch(() => null),
       hasReferenceStockMovement("tbs_purchase", id).catch(() => false),
-      hasActiveTbsSalesByReferencePurchaseId(id).catch(() => false),
+      getPalmPurchase(id)
+        .then((item) =>
+          item && item.warehouseId
+            ? hasActiveTbsSalesInWarehouseSince(item.warehouseId, item.createdAt)
+            : false,
+        )
+        .catch(() => false),
+      getReferenceStockReversalStatus("tbs_purchase", id).catch(() => ({
+        canReverse: true,
+        blockers: [],
+        movementCount: 0,
+      })),
     ]);
     const auditLogs = await getAuditLogsByEntity("tbs_purchases", id, 20).catch(() => []);
 
@@ -247,7 +273,11 @@ export default async function PalmDetailPage({
         : Number(payable?.paidAmount ?? 0) > 0
           ? "Transaksi yang sudah memiliki pembayaran tidak bisa dibatalkan otomatis."
           : hasActiveLinkedSale
-            ? "Pembelian ini sudah dipakai pada penjualan aktif ke pabrik."
+            ? "Gudang transaksi ini sudah memiliki penjualan TBS aktif sesudah pembelian, sehingga void diblok untuk melindungi pooled stock."
+            : !reversalStatus.canReverse
+              ? `Saldo stok ${reversalStatus.blockers[0]?.productName ?? "produk"} di ${reversalStatus.blockers[0]?.warehouseName ?? "gudang"} tidak cukup untuk reversal.`
+            : !canVoidPalmPurchase
+              ? "Anda tidak memiliki hak akses untuk void pembelian TBS."
             : null;
 
     return (
@@ -261,6 +291,10 @@ export default async function PalmDetailPage({
             documentLabel="Preview Slip Timbang"
             editDisabledReason={purchaseEditDisabledReason}
             editHref={purchaseEditDisabledReason ? undefined : `/palm/purchases/${id}/edit`}
+            paymentDisabledReason={
+              canManagePayments ? null : "Anda tidak memiliki hak akses untuk mencatat pembayaran."
+            }
+            paymentLabel="Catat Pembayaran"
             paymentStatus={purchase.paymentStatus}
             transactionStatus={purchase.status}
             paymentHref={
@@ -538,6 +572,8 @@ export default async function PalmDetailPage({
       ? "Transaksi ini sudah tidak aktif."
       : Number(receivable?.paidAmount ?? 0) > 0
         ? "Penjualan yang sudah memiliki penerimaan tidak bisa dibatalkan otomatis."
+        : !canVoidPalmSale
+          ? "Anda tidak memiliki hak akses untuk void penjualan TBS."
         : null;
 
   return (
@@ -547,6 +583,12 @@ export default async function PalmDetailPage({
         action={
           <PalmTransactionDetailActions
             backHref="/palm/sales"
+            documentHref={`/palm/sales/${id}/document`}
+            documentLabel="Preview Dokumen Penjualan"
+            paymentDisabledReason={
+              canManagePayments ? null : "Anda tidak memiliki hak akses untuk mencatat penerimaan."
+            }
+            paymentLabel="Catat Penerimaan"
             paymentStatus={sale.paymentStatus}
             transactionStatus={sale.status}
             paymentHref={
