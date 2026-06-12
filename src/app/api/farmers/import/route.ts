@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { getSession } from "@/lib/auth/session";
+import { requirePermission } from "@/lib/auth/api-guard";
 import {
   applyFarmerImport,
   previewFarmerImport,
@@ -55,11 +55,14 @@ export async function POST(request: Request) {
 
   try {
     if (action === "apply") {
-      const session = await getSession();
+      const auth = await requirePermission("master.farmers");
+      if (auth.response || !auth.session) {
+        return auth.response;
+      }
       const result = await applyFarmerImport(
         source,
         duplicateStrategy,
-        session?.sub,
+        auth.session.sub,
       );
 
       return NextResponse.json(result);

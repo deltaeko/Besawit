@@ -82,7 +82,7 @@ export function PalmTransactionDetailActions({
   }
 
   return (
-    <div className="flex w-full max-w-full flex-wrap justify-start gap-1.5 rounded-xl border border-border/70 bg-card/70 p-1.5 md:w-auto md:justify-end md:gap-2">
+    <div className="flex w-full max-w-full flex-wrap justify-start gap-1.5 rounded-[1.35rem] border border-white/85 bg-card/92 p-1.5 shadow-[0_20px_56px_-36px_rgba(20,37,24,0.22)] ring-1 ring-black/[0.02] md:w-auto md:justify-end md:gap-2">
       <Button asChild size="sm" variant="ghost">
         <Link href={backHref}>
           <ArrowLeft className="size-4" />

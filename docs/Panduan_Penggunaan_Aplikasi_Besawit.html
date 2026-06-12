@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Panduan Penggunaan Aplikasi Besawit</title>
+  <style>
+    :root {
+      --text: #1f2a1f;
+      --muted: #5a665b;
+      --line: #d9e2d3;
+      --accent: #2f6f46;
+      --soft: #f5f7f2;
+    }
+    @page {
+      size: A4;
+      margin: 18mm 14mm 18mm 14mm;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--text);
+      font-family: "Segoe UI", Arial, sans-serif;
+      line-height: 1.65;
+      font-size: 11pt;
+      background: white;
+    }
+    .cover {
+      min-height: 250mm;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 18mm 16mm;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: linear-gradient(180deg, #ffffff 0%, #f5f8f3 100%);
+      page-break-after: always;
+    }
+    .cover-kicker {
+      font-size: 10pt;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 16px;
+    }
+    .cover h1 {
+      font-size: 26pt;
+      line-height: 1.2;
+      margin: 0 0 14px 0;
+    }
+    .cover p {
+      max-width: 75%;
+      color: var(--muted);
+      margin: 0 0 10px 0;
+    }
+    .cover-meta {
+      margin-top: 24px;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px 18px;
+      max-width: 70%;
+      font-size: 10pt;
+      color: var(--muted);
+    }
+    .toc {
+      page-break-after: always;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 18px 22px;
+      background: white;
+    }
+    .toc h2 {
+      margin-top: 0;
+      border-bottom: 2px solid var(--line);
+      padding-bottom: 8px;
+    }
+    .toc ol {
+      margin: 0;
+      padding-left: 18px;
+    }
+    .toc li { margin: 6px 0; }
+    .toc-level-3 { margin-left: 16px; font-size: 10pt; }
+    .toc a {
+      color: var(--text);
+      text-decoration: none;
+    }
+    main {
+      max-width: 100%;
+    }
+    h1 {
+      font-size: 22pt;
+      margin: 0 0 18px 0;
+    }
+    h2 {
+      font-size: 16pt;
+      margin-top: 28px;
+      margin-bottom: 10px;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 6px;
+    }
+    h3 {
+      font-size: 13pt;
+      margin-top: 22px;
+      margin-bottom: 8px;
+    }
+    p, ul, ol, blockquote {
+      margin-top: 0;
+      margin-bottom: 10px;
+    }
+    ul, ol {
+      padding-left: 20px;
+    }
+    li {
+      margin: 4px 0;
+    }
+    hr {
+      border: 0;
+      border-top: 1px solid var(--line);
+      margin: 20px 0;
+    }
+    blockquote {
+      margin-left: 0;
+      padding: 10px 14px;
+      border-left: 4px solid var(--accent);
+      background: var(--soft);
+      color: var(--muted);
+    }
+    img {
+      display: block;
+      width: 100%;
+      max-width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      margin: 14px 0 6px;
+      page-break-inside: avoid;
+    }
+    p > em:only-child {
+      display: block;
+      margin-bottom: 14px;
+      color: var(--muted);
+      font-size: 9.5pt;
+      text-align: center;
+    }
+    code {
+      background: #f0f4ee;
+      padding: 1px 5px;
+      border-radius: 6px;
+      font-size: 9.5pt;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 14px 0;
+      font-size: 10pt;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 8px 10px;
+      vertical-align: top;
+    }
+    th {
+      background: var(--soft);
+      text-align: left;
+    }
+    .page-break {
+      page-break-before: always;
+    }
+  </style>
+</head>
+<body>
+  <section class="cover">
+    <div class="cover-kicker">Besawit</div>
+    <h1>Panduan Penggunaan Aplikasi Besawit</h1>
+    <p>Panduan operasional untuk pengguna Besawit yang menangani pembelian TBS, penjualan ke pabrik, toko pertanian, persediaan, hutang, piutang, pembayaran, dan laporan.</p>
+    <p>Dokumen ini disusun berdasarkan implementasi aplikasi yang benar-benar tersedia pada codebase dan aplikasi lokal saat penyusunan.</p>
+    <div class="cover-meta">
+      <div><strong>Versi dokumen</strong><br />1.0</div>
+      <div><strong>Tanggal</strong><br />29 Maret 2026</div>
+      <div><strong>Bahasa</strong><br />Indonesia</div>
+      <div><strong>Tujuan</strong><br />Training, onboarding, dan referensi operasional</div>
+    </div>
+  </section>
+  <section class="toc">
+    <h2>Daftar Isi</h2>
+    <ol><li class="toc-level-2"><a href="#panduan-cepat-untuk-training">Panduan Cepat untuk Training</a></li><li class="toc-level-3"><a href="#urutan-kerja-yang-disarankan">Urutan kerja yang disarankan</a></li><li class="toc-level-3"><a href="#hal-yang-paling-sering-gagal-saat-awal-memakai-aplikasi">Hal yang paling sering gagal saat awal memakai aplikasi</a></li><li class="toc-level-3"><a href="#ringkasan-modul-yang-paling-sering-dipakai">Ringkasan modul yang paling sering dipakai</a></li><li class="toc-level-3"><a href="#fitur-yang-perlu-diketahui-sejak-awal">Fitur yang perlu diketahui sejak awal</a></li><li class="toc-level-2"><a href="#1-pendahuluan">1. Pendahuluan</a></li><li class="toc-level-3"><a href="#tujuan-aplikasi">Tujuan aplikasi</a></li><li class="toc-level-3"><a href="#pengguna-aplikasi">Pengguna aplikasi</a></li><li class="toc-level-3"><a href="#manfaat-singkat">Manfaat singkat</a></li><li class="toc-level-2"><a href="#2-persiapan-sebelum-menggunakan-aplikasi">2. Persiapan Sebelum Menggunakan Aplikasi</a></li><li class="toc-level-3"><a href="#21-akun-pengguna">2.1 Akun pengguna</a></li><li class="toc-level-3"><a href="#22-hak-akses">2.2 Hak akses</a></li><li class="toc-level-3"><a href="#23-perangkat-dan-browser">2.3 Perangkat dan browser</a></li><li class="toc-level-3"><a href="#24-data-master-yang-perlu-disiapkan">2.4 Data master yang perlu disiapkan</a></li><li class="toc-level-2"><a href="#3-cara-masuk-ke-aplikasi">3. Cara Masuk ke Aplikasi</a></li><li class="toc-level-3"><a href="#langkah-login">Langkah login</a></li><li class="toc-level-3"><a href="#penjelasan-field-login">Penjelasan field login</a></li><li class="toc-level-3"><a href="#validasi-dasar">Validasi dasar</a></li><li class="toc-level-3"><a href="#masalah-umum-saat-login">Masalah umum saat login</a></li><li class="toc-level-2"><a href="#4-gambaran-menu-utama">4. Gambaran Menu Utama</a></li><li class="toc-level-3"><a href="#struktur-menu-utama">Struktur menu utama</a></li><li class="toc-level-3"><a href="#cara-membaca-sidebar">Cara membaca sidebar</a></li><li class="toc-level-2"><a href="#5-dashboard">5. Dashboard</a></li><li class="toc-level-3"><a href="#informasi-yang-tersedia">Informasi yang tersedia</a></li><li class="toc-level-3"><a href="#cara-menggunakan-dashboard">Cara menggunakan dashboard</a></li><li class="toc-level-3"><a href="#catatan-penting">Catatan penting</a></li><li class="toc-level-3"><a href="#kesalahan-umum">Kesalahan umum</a></li><li class="toc-level-2"><a href="#6-panduan-master-data">6. Panduan Master Data</a></li><li class="toc-level-3"><a href="#61-daftar-modul-master-yang-tersedia">6.1 Daftar modul master yang tersedia</a></li><li class="toc-level-3"><a href="#62-pola-umum-penggunaan-master-data">6.2 Pola umum penggunaan master data</a></li><li class="toc-level-3"><a href="#63-pelanggan-toko">6.3 Pelanggan Toko</a></li><li class="toc-level-3"><a href="#64-produk-dan-kategori">6.4 Produk dan kategori</a></li><li class="toc-level-3"><a href="#65-pengguna-dan-peran">6.5 Pengguna dan peran</a></li><li class="toc-level-2"><a href="#7-panduan-transaksi-utama">7. Panduan Transaksi Utama</a></li><li class="toc-level-2"><a href="#71-pembelian-tbs">7.1 Pembelian TBS</a></li><li class="toc-level-2"><a href="#72-penjualan-ke-pabrik">7.2 Penjualan ke Pabrik</a></li><li class="toc-level-2"><a href="#73-pembelian-barang-toko">7.3 Pembelian Barang Toko</a></li><li class="toc-level-2"><a href="#74-penjualan-toko">7.4 Penjualan Toko</a></li><li class="toc-level-2"><a href="#75-pembayaran-penerimaan">7.5 Pembayaran / Penerimaan</a></li><li class="toc-level-2"><a href="#76-hutang-dan-piutang">7.6 Hutang dan Piutang</a></li><li class="toc-level-2"><a href="#77-inventory-mutasi-stok">7.7 Inventory / Mutasi Stok</a></li><li class="toc-level-2"><a href="#8-panduan-detail-transaksi">8. Panduan Detail Transaksi</a></li><li class="toc-level-2"><a href="#81-detail-pembelian-tbs">8.1 Detail Pembelian TBS</a></li><li class="toc-level-3"><a href="#informasi-yang-ditampilkan">Informasi yang ditampilkan</a></li><li class="toc-level-3"><a href="#tombol-tindakan-yang-tersedia">Tombol tindakan yang tersedia</a></li><li class="toc-level-3"><a href="#peringatan">Peringatan</a></li><li class="toc-level-2"><a href="#82-detail-penjualan-tbs-ke-pabrik">8.2 Detail Penjualan TBS ke Pabrik</a></li><li class="toc-level-2"><a href="#83-detail-pembelian-barang">8.3 Detail Pembelian Barang</a></li><li class="toc-level-2"><a href="#84-detail-penjualan-toko">8.4 Detail Penjualan Toko</a></li><li class="toc-level-2"><a href="#9-panduan-laporan-dan-monitoring">9. Panduan Laporan dan Monitoring</a></li><li class="toc-level-3"><a href="#laporan-yang-tersedia">Laporan yang tersedia</a></li><li class="toc-level-3"><a href="#cara-menggunakan-laporan">Cara menggunakan laporan</a></li><li class="toc-level-3"><a href="#cara-membaca-laporan">Cara membaca laporan</a></li><li class="toc-level-3"><a href="#catatan-penting">Catatan penting</a></li><li class="toc-level-2"><a href="#10-hak-akses-dan-pengaturan">10. Hak Akses dan Pengaturan</a></li><li class="toc-level-3"><a href="#hak-akses-yang-tersedia">Hak akses yang tersedia</a></li><li class="toc-level-3"><a href="#pengaturan-sistem">Pengaturan sistem</a></li><li class="toc-level-3"><a href="#catatan-untuk-administrator">Catatan untuk administrator</a></li><li class="toc-level-2"><a href="#11-troubleshooting">11. Troubleshooting</a></li><li class="toc-level-3"><a href="#tidak-bisa-login">Tidak bisa login</a></li><li class="toc-level-3"><a href="#data-tidak-muncul">Data tidak muncul</a></li><li class="toc-level-3"><a href="#tombol-tidak-aktif">Tombol tidak aktif</a></li><li class="toc-level-3"><a href="#transaksi-tidak-bisa-disimpan">Transaksi tidak bisa disimpan</a></li><li class="toc-level-3"><a href="#status-tidak-berubah">Status tidak berubah</a></li><li class="toc-level-3"><a href="#print-tidak-muncul">Print tidak muncul</a></li><li class="toc-level-3"><a href="#laporan-kosong">Laporan kosong</a></li><li class="toc-level-3"><a href="#hak-akses-tidak-sesuai">Hak akses tidak sesuai</a></li><li class="toc-level-2"><a href="#12-batasan-sistem-saat-ini">12. Batasan Sistem Saat Ini</a></li><li class="toc-level-2"><a href="#13-sop-penggunaan-singkat">13. SOP Penggunaan Singkat</a></li><li class="toc-level-2"><a href="#14-ringkasan-cepat-untuk-training">14. Ringkasan Cepat untuk Training</a></li><li class="toc-level-3"><a href="#langkah-masuk">Langkah masuk</a></li><li class="toc-level-3"><a href="#modul-yang-paling-sering-dipakai">Modul yang paling sering dipakai</a></li><li class="toc-level-3"><a href="#alur-kerja-singkat">Alur kerja singkat</a></li><li class="toc-level-3"><a href="#hal-yang-harus-dihindari">Hal yang harus dihindari</a></li><li class="toc-level-2"><a href="#lampiran-gambar-penting">Lampiran Gambar Penting</a></li></ol>
+  </section>
+  <main><h1 id="panduan-penggunaan-aplikasi-besawit">PANDUAN PENGGUNAAN APLIKASI BESAWIT</h1><p><strong>Versi dokumen:</strong> 1.0<br><strong>Tanggal penyusunan:</strong> 29 Maret 2026<br><strong>Nama aplikasi:</strong> Besawit<br><strong>Fokus penggunaan:</strong> operasional agen sawit, toko pertanian, persediaan, dan keuangan</p>
+<hr>
+<h2 id="panduan-cepat-untuk-training">Panduan Cepat untuk Training</h2><p>Halaman ini ditujukan untuk pelatihan singkat bagi pengguna baru yang perlu mulai bekerja tanpa membaca seluruh dokumen lebih dulu.</p>
+<h3 id="urutan-kerja-yang-disarankan">Urutan kerja yang disarankan</h3><ol>
+<li>Login ke aplikasi menggunakan akun yang diberikan administrator.</li>
+<li>Cek <strong>Dashboard</strong> untuk melihat ringkasan operasional hari ini.</li>
+<li>Pastikan <strong>Master Data</strong> sudah lengkap, terutama petani, pabrik, gudang, supplier, pelanggan toko, dan produk.</li>
+<li>Jalankan transaksi sesuai kebutuhan:<ul>
+<li><strong>Pembelian TBS</strong> untuk membeli buah dari petani</li>
+<li><strong>Penjualan ke Pabrik</strong> untuk menjual stok TBS dari gudang</li>
+<li><strong>Pembelian Barang</strong> untuk stok toko</li>
+<li><strong>Penjualan Toko</strong> untuk transaksi toko tunai atau kredit</li>
+</ul>
+</li>
+<li>Jika ada pembayaran atau penerimaan, catat dari modul <strong>Finance</strong> atau dari tombol aksi pada detail dokumen.</li>
+<li>Pantau <strong>Inventory</strong> untuk saldo stok, mutasi, stock take, dan adjustment.</li>
+<li>Buka <strong>Reports</strong> untuk memeriksa transaksi, margin, hutang, piutang, laba rugi, dan stok.</li>
+</ol>
+<h3 id="hal-yang-paling-sering-gagal-saat-awal-memakai-aplikasi">Hal yang paling sering gagal saat awal memakai aplikasi</h3><ul>
+<li>Login gagal karena email atau password tidak sesuai.</li>
+<li>Penjualan kredit gagal disimpan karena pelanggan atau jatuh tempo belum diisi.</li>
+<li>Penjualan TBS gagal karena gudang asal belum dipilih atau saldo TBS tidak cukup.</li>
+<li>Tombol pembayaran tidak aktif karena dokumen sudah lunas atau user tidak punya hak akses.</li>
+<li>Void transaksi gagal karena stok sudah terpakai atau dokumen sudah memiliki pembayaran.</li>
+</ul>
+<h3 id="ringkasan-modul-yang-paling-sering-dipakai">Ringkasan modul yang paling sering dipakai</h3><ul>
+<li><strong>Dashboard</strong>: melihat kondisi usaha secara cepat.</li>
+<li><strong>Palm Agent</strong>: pembelian TBS dan penjualan ke pabrik.</li>
+<li><strong>Store</strong>: pembelian barang dan penjualan toko.</li>
+<li><strong>Finance</strong>: hutang, piutang, pembayaran, dan cash ledger.</li>
+<li><strong>Inventory</strong>: saldo stok, mutasi, stock take, adjustment.</li>
+</ul>
+<h3 id="fitur-yang-perlu-diketahui-sejak-awal">Fitur yang perlu diketahui sejak awal</h3><ul>
+<li><strong>Lupa password / reset password</strong> belum tersedia di aplikasi.</li>
+<li><strong>Export PDF dari dalam aplikasi</strong> belum tersedia; yang ada saat ini adalah preview cetak browser pada halaman tertentu.</li>
+<li><strong>Retur penjualan toko</strong> belum tersedia.</li>
+<li><strong>Pengaturan sistem umum</strong> belum tersedia sebagai menu terpisah.</li>
+</ul>
+<hr>
+<h2 id="1-pendahuluan">1. Pendahuluan</h2><p>Besawit adalah aplikasi operasional untuk bisnis agen sawit dan toko pertanian. Aplikasi ini menggabungkan pencatatan transaksi sawit, transaksi toko, stok, hutang, piutang, pembayaran, dan pelaporan dalam satu sistem kerja.</p>
+<h3 id="tujuan-aplikasi">Tujuan aplikasi</h3><ul>
+<li>Mencatat pembelian TBS dari petani secara rapi.</li>
+<li>Mengelola penjualan TBS ke pabrik dari stok gudang.</li>
+<li>Mengelola transaksi toko pertanian.</li>
+<li>Menjaga saldo stok barang dan stok TBS pool.</li>
+<li>Memantau hutang, piutang, pembayaran, dan cash ledger.</li>
+<li>Menyediakan laporan operasional yang cepat dibaca.</li>
+</ul>
+<h3 id="pengguna-aplikasi">Pengguna aplikasi</h3><ul>
+<li>Owner</li>
+<li>Admin operasional sawit</li>
+<li>Admin toko</li>
+<li>Admin finance / kasir</li>
+<li>Supervisor</li>
+<li>Management reviewer</li>
+</ul>
+<h3 id="manfaat-singkat">Manfaat singkat</h3><ul>
+<li>Satu sistem untuk transaksi sawit, toko, stok, dan keuangan.</li>
+<li>Status dokumen dan histori pembayaran lebih mudah diaudit.</li>
+<li>Stok TBS pool per gudang dapat dipantau.</li>
+<li>Dokumen penting tertentu dapat dipreview dan dicetak.</li>
+</ul>
+<hr>
+<h2 id="2-persiapan-sebelum-menggunakan-aplikasi">2. Persiapan Sebelum Menggunakan Aplikasi</h2><p>Sebelum mulai bekerja di Besawit, pastikan hal berikut sudah siap:</p>
+<h3 id="21-akun-pengguna">2.1 Akun pengguna</h3><ul>
+<li>Setiap pengguna sebaiknya memakai akun masing-masing.</li>
+<li>Akun dibuat dari modul <strong>Master Data &gt; Pengguna</strong>.</li>
+<li>Peran pengguna diatur dari modul <strong>Master Data &gt; Peran</strong>.</li>
+</ul>
+<h3 id="22-hak-akses">2.2 Hak akses</h3><ul>
+<li>Menu yang muncul mengikuti role dan hak akses role.</li>
+<li>Tidak semua user bisa melihat seluruh menu.</li>
+<li>Aksi sensitif seperti void, retur, approve, dan pencatatan pembayaran dapat dibatasi per role.</li>
+</ul>
+<h3 id="23-perangkat-dan-browser">2.3 Perangkat dan browser</h3><ul>
+<li>Gunakan browser modern seperti Google Chrome atau Microsoft Edge.</li>
+<li>Untuk layar kecil, tabel yang lebar tetap bisa dipakai, tetapi pada beberapa halaman perlu scroll horizontal.</li>
+</ul>
+<h3 id="24-data-master-yang-perlu-disiapkan">2.4 Data master yang perlu disiapkan</h3><p>Sebelum transaksi dicatat, minimal siapkan:</p>
+<ul>
+<li>Petani</li>
+<li>Pabrik</li>
+<li>Gudang</li>
+<li>Supplier</li>
+<li>Pelanggan toko</li>
+<li>Produk</li>
+<li>Kategori produk</li>
+<li>Kendaraan dan personel armada bila digunakan untuk transaksi TBS</li>
+</ul>
+<blockquote>
+<p><strong>Catatan:</strong> Jika pelanggan toko juga merupakan petani, hubungkan pelanggan ke petani agar piutang toko dapat dipotong dari hasil TBS.</p>
+</blockquote>
+<hr>
+<h2 id="3-cara-masuk-ke-aplikasi">3. Cara Masuk ke Aplikasi</h2><h3 id="langkah-login">Langkah login</h3><ol>
+<li>Buka alamat aplikasi Besawit.</li>
+<li>Masukkan <strong>Email</strong>.</li>
+<li>Masukkan <strong>Password</strong>.</li>
+<li>Klik tombol <strong>Login</strong>.</li>
+<li>Jika berhasil, sistem akan mengarahkan Anda ke <strong>Dashboard</strong>.</li>
+</ol>
+<p><img src="./assets/screenshots/01-login.png" alt="Gambar 1. Halaman Login">
+<em>Gambar 1. Halaman Login.</em></p>
+<h3 id="penjelasan-field-login">Penjelasan field login</h3><ul>
+<li><strong>Email</strong>: alamat email akun pengguna.</li>
+<li><strong>Password</strong>: password akun yang diberikan administrator.</li>
+</ul>
+<h3 id="validasi-dasar">Validasi dasar</h3><ul>
+<li>Email wajib diisi dalam format email.</li>
+<li>Password wajib diisi.</li>
+<li>Jika kombinasi email dan password salah, sistem akan menampilkan pesan gagal login.</li>
+</ul>
+<h3 id="masalah-umum-saat-login">Masalah umum saat login</h3><ul>
+<li><strong>Email atau password salah</strong>: pastikan tidak ada salah ketik.</li>
+<li><strong>Tombol tampak memproses lama</strong>: cek koneksi dan pastikan server/database aplikasi aktif.</li>
+<li><strong>Akun tidak bisa masuk</strong>: minta admin memeriksa status user dan role.</li>
+</ul>
+<blockquote>
+<p><strong>Belum tersedia:</strong> fitur lupa password dan reset password mandiri.</p>
+</blockquote>
+<hr>
+<h2 id="4-gambaran-menu-utama">4. Gambaran Menu Utama</h2><p>Setelah login, pengguna akan melihat sidebar utama di sisi kiri dan area kerja di sisi kanan.</p>
+<p><img src="./assets/screenshots/02-dashboard.png" alt="Gambar 2. Dashboard Utama">
+<em>Gambar 2. Dashboard utama sekaligus contoh struktur sidebar Besawit.</em></p>
+<h3 id="struktur-menu-utama">Struktur menu utama</h3><ul>
+<li><strong>Dashboard</strong>: ringkasan operasional.</li>
+<li><strong>Master Data</strong>: data dasar seperti petani, pabrik, pelanggan, supplier, gudang, produk, pengguna, dan peran.</li>
+<li><strong>Palm Agent</strong>: pembelian TBS dan penjualan ke pabrik.</li>
+<li><strong>Store</strong>: pembelian barang dan penjualan toko.</li>
+<li><strong>Inventory</strong>: stok, stock take, adjustment, dan histori mutasi.</li>
+<li><strong>Finance</strong>: hutang, piutang, pembayaran, dan cash ledger.</li>
+<li><strong>Reports</strong>: laporan transaksi, margin, hutang, piutang, laba rugi, stok, retur, dan potongan.</li>
+</ul>
+<h3 id="cara-membaca-sidebar">Cara membaca sidebar</h3><ul>
+<li>Menu yang terbuka memperlihatkan sub-menu di bawahnya.</li>
+<li>Warna aktif menandakan halaman yang sedang digunakan.</li>
+<li>Jika menu tertentu tidak terlihat, kemungkinan user tidak memiliki hak akses ke menu tersebut.</li>
+</ul>
+<hr>
+<h2 id="5-dashboard">5. Dashboard</h2><p>Dashboard dipakai untuk membaca kondisi usaha secara cepat tanpa membuka modul satu per satu.</p>
+<h3 id="informasi-yang-tersedia">Informasi yang tersedia</h3><ul>
+<li>KPI pembelian TBS hari ini</li>
+<li>KPI penjualan pabrik hari ini</li>
+<li>Margin hari ini</li>
+<li>Piutang aktif</li>
+<li>Hutang aktif</li>
+<li>Stok kritis</li>
+<li>Transaksi terbaru</li>
+<li>Jatuh tempo terdekat</li>
+<li>Peringatan operasional</li>
+<li>Widget operasional harian</li>
+</ul>
+<h3 id="cara-menggunakan-dashboard">Cara menggunakan dashboard</h3><ol>
+<li>Buka menu <strong>Dashboard</strong>.</li>
+<li>Pilih tanggal operasional bila ingin melihat data hari tertentu.</li>
+<li>Periksa kartu KPI utama di bagian atas.</li>
+<li>Lihat <strong>Transaksi Terbaru</strong> untuk memeriksa dokumen terakhir.</li>
+<li>Lihat <strong>Jatuh Tempo Terdekat</strong> untuk memantau hutang/piutang yang perlu ditindaklanjuti.</li>
+<li>Gunakan tombol cepat seperti <strong>Buka Laporan</strong>, <strong>Cek Stok</strong>, <strong>Cek Hutang</strong>, atau <strong>Cek Piutang</strong> bila perlu analisis lebih lanjut.</li>
+</ol>
+<h3 id="catatan-penting">Catatan penting</h3><ul>
+<li>Dashboard menggabungkan ringkasan harian dan snapshot saat ini.</li>
+<li>Dashboard cocok untuk monitoring cepat, tetapi rekonsiliasi akhir tetap sebaiknya dilakukan di modul sumber atau laporan.</li>
+</ul>
+<h3 id="kesalahan-umum">Kesalahan umum</h3><ul>
+<li>Menganggap dashboard sebagai satu-satunya sumber audit final.</li>
+<li>Tidak memperhatikan tanggal operasional yang sedang aktif.</li>
+</ul>
+<hr>
+<h2 id="6-panduan-master-data">6. Panduan Master Data</h2><p>Master data adalah fondasi seluruh transaksi. Isi data master terlebih dahulu sebelum transaksi dimulai.</p>
+<h3 id="61-daftar-modul-master-yang-tersedia">6.1 Daftar modul master yang tersedia</h3><ul>
+<li>Petani</li>
+<li>Pabrik</li>
+<li>Pelanggan Toko</li>
+<li>Supplier</li>
+<li>Personel Armada</li>
+<li>Kendaraan</li>
+<li>Gudang</li>
+<li>Produk</li>
+<li>Kategori</li>
+<li>Pengguna</li>
+<li>Peran</li>
+</ul>
+<h3 id="62-pola-umum-penggunaan-master-data">6.2 Pola umum penggunaan master data</h3><ol>
+<li>Buka menu <strong>Master Data</strong>.</li>
+<li>Pilih modul yang diinginkan.</li>
+<li>Gunakan kolom pencarian untuk mencari dokumen.</li>
+<li>Klik <strong>Tambah</strong> untuk membuat data baru.</li>
+<li>Isi form sesuai kebutuhan.</li>
+<li>Simpan data.</li>
+<li>Buka detail bila ingin memeriksa isi data atau histori terkait.</li>
+</ol>
+<h3 id="63-pelanggan-toko">6.3 Pelanggan Toko</h3><p>Modul ini penting karena pelanggan toko bisa dihubungkan ke petani.</p>
+<p><img src="./assets/screenshots/03-master-customers-list.png" alt="Gambar 3. Daftar Pelanggan Toko">
+<em>Gambar 3. Daftar pelanggan toko pada modul Master Data.</em></p>
+<p><img src="./assets/screenshots/04-master-customers-new.png" alt="Gambar 4. Form Tambah Pelanggan Toko">
+<em>Gambar 4. Form tambah pelanggan toko dengan pilihan petani terkait.</em></p>
+<p><strong>Tujuan</strong></p>
+<ul>
+<li>Mencatat pelanggan toko pertanian.</li>
+<li>Menghubungkan pelanggan ke petani jika orang yang sama bertransaksi di toko dan sawit.</li>
+</ul>
+<p><strong>Langkah tambah pelanggan toko</strong></p>
+<ol>
+<li>Buka <strong>Master Data &gt; Pelanggan</strong>.</li>
+<li>Klik <strong>Tambah Pelanggan Toko</strong>.</li>
+<li>Isi <strong>Kode</strong> dan <strong>Nama Pelanggan</strong>.</li>
+<li>Jika pelanggan juga petani, aktifkan <strong>Ini Petani</strong>.</li>
+<li>Klik field <strong>Petani Terkait (Opsional)</strong>, lalu cari nama petani yang sesuai.</li>
+<li>Isi kontak dan alamat bila ada.</li>
+<li>Pastikan status <strong>Aktif</strong> sesuai kebutuhan.</li>
+<li>Klik <strong>Simpan</strong>.</li>
+</ol>
+<p><strong>Catatan penting</strong></p>
+<ul>
+<li>Jika pelanggan dihubungkan ke petani, nama pelanggan akan mengikuti nama petani.</li>
+<li>Satu petani tidak boleh ditautkan ke lebih dari satu pelanggan toko.</li>
+</ul>
+<p><strong>Kesalahan umum</strong></p>
+<ul>
+<li>Membuat pelanggan baru padahal petaninya sudah ada.</li>
+<li>Tidak menautkan pelanggan ke petani, sehingga piutang toko tidak dapat dipotong dari hasil TBS secara benar.</li>
+</ul>
+<h3 id="64-produk-dan-kategori">6.4 Produk dan kategori</h3><p>Gunakan modul <strong>Produk</strong> untuk mengelola:</p>
+<ul>
+<li>kode produk</li>
+<li>nama produk</li>
+<li>satuan</li>
+<li>harga beli</li>
+<li>harga jual</li>
+<li>stok minimum</li>
+</ul>
+<p>Gunakan modul <strong>Kategori</strong> untuk mengelompokkan produk.</p>
+<blockquote>
+<p><strong>Catatan:</strong> produk sistem <strong>TBS Pool</strong> digunakan untuk stok TBS campuran per gudang dan bukan produk toko biasa.</p>
+</blockquote>
+<h3 id="65-pengguna-dan-peran">6.5 Pengguna dan peran</h3><p>Gunakan modul <strong>Pengguna</strong> dan <strong>Peran</strong> untuk:</p>
+<ul>
+<li>membuat akun user</li>
+<li>mengatur role</li>
+<li>memilih hak akses halaman dan aksi sensitif</li>
+</ul>
+<blockquote>
+<p><strong>Catatan penting:</strong> Password wajib diisi saat membuat user baru. Fitur reset password mandiri belum tersedia.</p>
+</blockquote>
+<hr>
+<h2 id="7-panduan-transaksi-utama">7. Panduan Transaksi Utama</h2><h2 id="71-pembelian-tbs">7.1 Pembelian TBS</h2><p><img src="./assets/screenshots/05-palm-purchases-list.png" alt="Gambar 5. Daftar Pembelian TBS">
+<em>Gambar 5. Daftar transaksi pembelian TBS.</em></p>
+<p><img src="./assets/screenshots/06-palm-purchase-new.png" alt="Gambar 6. Form Pembelian TBS">
+<em>Gambar 6. Form pembelian TBS dari petani.</em></p>
+<p><strong>Tujuan</strong><br>Mencatat pembelian buah dari petani dan membentuk stok TBS pool di gudang.</p>
+<p><strong>Kapan digunakan</strong><br>Saat perusahaan membeli TBS dari petani.</p>
+<p><strong>Langkah penggunaan</strong></p>
+<ol>
+<li>Buka <strong>Palm Agent &gt; Pembelian TBS</strong>.</li>
+<li>Klik <strong>Tambah Transaksi</strong>.</li>
+<li>Isi <strong>Tanggal</strong>.</li>
+<li>Pilih <strong>Petani</strong>.</li>
+<li>Pilih <strong>Sopir</strong>, <strong>Kendaraan</strong>, dan <strong>Gudang</strong> bila tersedia.</li>
+<li>Isi bagian <strong>Data Timbangan</strong>:<ul>
+<li>Berat Kotor</li>
+<li>Berat Tara</li>
+<li>Berat Bersih akan dihitung sistem</li>
+</ul>
+</li>
+<li>Isi harga dan biaya pada bagian berikutnya.</li>
+<li>Jika perlu, isi <strong>Potong Hutang Toko Petani</strong>.</li>
+<li>Periksa panel <strong>Ringkasan Perhitungan</strong> di sisi kanan.</li>
+<li>Klik <strong>Simpan</strong> atau <strong>Simpan &amp; Catat Pembayaran</strong>.</li>
+</ol>
+<p><strong>Field penting</strong></p>
+<ul>
+<li><strong>Petani</strong>: wajib.</li>
+<li><strong>Gudang</strong>: wajib, karena stok TBS akan masuk ke gudang ini.</li>
+<li><strong>Berat Kotor / Berat Tara</strong>: dasar perhitungan berat bersih.</li>
+<li><strong>Harga Beli / Kg</strong>: dasar nilai pembelian.</li>
+</ul>
+<p><strong>Tombol/Aksi penting</strong></p>
+<ul>
+<li><strong>Simpan</strong></li>
+<li><strong>Simpan &amp; Catat Pembayaran</strong></li>
+<li><strong>Preview Slip Timbang</strong> pada halaman detail</li>
+<li><strong>Cetak</strong> pada halaman detail</li>
+<li><strong>Void Pembelian</strong> pada halaman detail jika syarat terpenuhi</li>
+</ul>
+<p><strong>Validasi yang perlu diperhatikan</strong></p>
+<ul>
+<li>Petani wajib dipilih.</li>
+<li>Gudang wajib dipilih.</li>
+<li>Berat tara tidak boleh melebihi berat kotor.</li>
+<li>Jika ada potong hutang toko, relasi petani dan pelanggan toko harus benar.</li>
+</ul>
+<p><strong>Kesalahan umum</strong></p>
+<ul>
+<li>Salah memilih gudang.</li>
+<li>Menginput timbangan sebelum memastikan angka final.</li>
+<li>Menganggap transaksi bisa diedit bebas setelah stok terbentuk.</li>
+</ul>
+<p><strong>Tips penggunaan</strong></p>
+<ul>
+<li>Gunakan <strong>Simpan &amp; Catat Pembayaran</strong> jika langsung melakukan pelunasan ke petani.</li>
+<li>Cek panel ringkasan sebelum simpan agar nilai hutang sesuai.</li>
+</ul>
+<h2 id="72-penjualan-ke-pabrik">7.2 Penjualan ke Pabrik</h2><p><img src="./assets/screenshots/08-palm-sale-detail.png" alt="Gambar 8. Detail Penjualan ke Pabrik">
+<em>Gambar 8. Halaman detail penjualan TBS ke pabrik.</em></p>
+<p><strong>Tujuan</strong><br>Mencatat penjualan TBS dari stok gudang ke pabrik dan membentuk piutang.</p>
+<p><strong>Kapan digunakan</strong><br>Saat TBS dari gudang dikirim ke pabrik.</p>
+<p><strong>Langkah penggunaan</strong></p>
+<ol>
+<li>Buka <strong>Palm Agent &gt; Penjualan ke Pabrik</strong>.</li>
+<li>Klik <strong>Tambah Transaksi</strong>.</li>
+<li>Isi <strong>Tanggal</strong>.</li>
+<li>Pilih <strong>Gudang Asal</strong>.</li>
+<li>Pastikan saldo TBS gudang cukup.</li>
+<li>Pilih <strong>Pabrik</strong>.</li>
+<li>Isi timbangan penjualan.</li>
+<li>Isi harga jual.</li>
+<li>Isi potongan, grading, atau return bila ada.</li>
+<li>Isi <strong>Jatuh Tempo Piutang</strong>.</li>
+<li>Periksa ringkasan perhitungan.</li>
+<li>Klik <strong>Simpan</strong>.</li>
+</ol>
+<p><strong>Field penting</strong></p>
+<ul>
+<li><strong>Gudang Asal</strong>: wajib.</li>
+<li><strong>Pabrik</strong>: wajib.</li>
+<li><strong>Jatuh Tempo Piutang</strong>: penting untuk transaksi piutang.</li>
+<li><strong>Berat Bersih Final</strong>: menentukan total penjualan dan pengurangan stok.</li>
+</ul>
+<p><strong>Validasi yang perlu diperhatikan</strong></p>
+<ul>
+<li>Penjualan harus mengambil stok dari gudang yang dipilih.</li>
+<li>Saldo TBS gudang harus cukup.</li>
+<li>Jatuh tempo harus diisi bila piutang digunakan.</li>
+</ul>
+<p><strong>Kesalahan umum</strong></p>
+<ul>
+<li>Memilih gudang yang salah.</li>
+<li>Menginput potongan/grading tanpa verifikasi dokumen pabrik.</li>
+<li>Tidak memeriksa dampak return terhadap netto final.</li>
+</ul>
+<p><strong>Tips penggunaan</strong></p>
+<ul>
+<li>Setelah simpan, buka detail transaksi untuk mengecek breakdown potongan dan piutang.</li>
+<li>Gunakan preview dokumen penjualan sebelum mencetak.</li>
+</ul>
+<h2 id="73-pembelian-barang-toko">7.3 Pembelian Barang Toko</h2><p><img src="./assets/screenshots/09-store-purchases-list.png" alt="Gambar 9. Daftar Pembelian Barang">
+<em>Gambar 9. Daftar pembelian barang toko.</em></p>
+<p><img src="./assets/screenshots/10-store-purchase-detail.png" alt="Gambar 10. Detail Pembelian Barang">
+<em>Gambar 10. Detail pembelian barang toko beserta item dan retur.</em></p>
+<p><strong>Tujuan</strong><br>Mencatat pembelian barang dari supplier untuk menambah stok toko dan membentuk hutang supplier.</p>
+<p><strong>Langkah penggunaan</strong></p>
+<ol>
+<li>Buka <strong>Store &gt; Pembelian Barang</strong>.</li>
+<li>Klik <strong>Tambah Transaksi</strong>.</li>
+<li>Pilih <strong>Supplier</strong> dan <strong>Gudang</strong>.</li>
+<li>Isi tanggal dan nomor invoice supplier jika ada.</li>
+<li>Tambahkan item barang.</li>
+<li>Isi qty dan harga beli masing-masing item.</li>
+<li>Periksa subtotal, diskon, pajak, dan total.</li>
+<li>Klik <strong>Simpan</strong>.</li>
+</ol>
+<p><strong>Tombol/Aksi penting pada detail</strong></p>
+<ul>
+<li><strong>Catat Pembayaran</strong></li>
+<li><strong>Preview Slip Pembelian</strong></li>
+<li><strong>Retur Pembelian</strong></li>
+<li><strong>Void Pembelian</strong></li>
+<li><strong>Cetak</strong></li>
+</ul>
+<p><strong>Kesalahan umum</strong></p>
+<ul>
+<li>Salah gudang tujuan stok.</li>
+<li>Menginput invoice yang tidak sesuai dokumen supplier.</li>
+<li>Melakukan retur setelah pembayaran sudah berjalan.</li>
+</ul>
+<p><strong>Catatan penting</strong></p>
+<ul>
+<li>Retur pembelian saat ini hanya didukung sebelum ada pembayaran supplier.</li>
+</ul>
+<h2 id="74-penjualan-toko">7.4 Penjualan Toko</h2><p><img src="./assets/screenshots/11-store-sale-detail.png" alt="Gambar 11. Detail Penjualan Toko">
+<em>Gambar 11. Detail penjualan toko.</em></p>
+<p><strong>Tujuan</strong><br>Mencatat penjualan barang toko secara tunai atau kredit.</p>
+<p><strong>Langkah penggunaan</strong></p>
+<ol>
+<li>Buka <strong>Store &gt; Penjualan Toko</strong>.</li>
+<li>Klik <strong>Tambah Transaksi</strong>.</li>
+<li>Pilih <strong>Gudang</strong>.</li>
+<li>Pilih <strong>Pelanggan</strong> bila transaksi kredit.</li>
+<li>Tambahkan item dan qty.</li>
+<li>Pilih jenis penjualan:<ul>
+<li><strong>Tunai</strong></li>
+<li><strong>Kredit</strong></li>
+</ul>
+</li>
+<li>Jika kredit, isi <strong>Jatuh Tempo Piutang</strong>.</li>
+<li>Klik <strong>Simpan</strong>.</li>
+</ol>
+<p><strong>Field penting</strong></p>
+<ul>
+<li><strong>Jenis Penjualan</strong></li>
+<li><strong>Pelanggan</strong> untuk kredit</li>
+<li><strong>Jatuh Tempo Piutang</strong> untuk kredit</li>
+<li><strong>Qty item</strong> dan <strong>harga jual</strong></li>
+</ul>
+<p><strong>Validasi</strong></p>
+<ul>
+<li>Penjualan kredit wajib memiliki pelanggan.</li>
+<li>Penjualan kredit wajib memiliki jatuh tempo.</li>
+<li>Stok barang harus cukup.</li>
+</ul>
+<p><strong>Kesalahan umum</strong></p>
+<ul>
+<li>Memilih kredit tetapi tidak memilih pelanggan.</li>
+<li>Lupa mengisi jatuh tempo.</li>
+</ul>
+<p><strong>Catatan penting</strong></p>
+<ul>
+<li><strong>Retur penjualan toko belum tersedia.</strong></li>
+</ul>
+<h2 id="75-pembayaran-penerimaan">7.5 Pembayaran / Penerimaan</h2><p><img src="./assets/screenshots/12-finance-payment-form.png" alt="Gambar 12. Form Pembayaran / Penerimaan">
+<em>Gambar 12. Form pembayaran atau penerimaan pada modul Finance.</em></p>
+<p><strong>Tujuan</strong><br>Mencatat pembayaran hutang atau penerimaan piutang.</p>
+<p><strong>Langkah penggunaan</strong></p>
+<ol>
+<li>Buka dari tombol aksi pada detail hutang/piutang atau transaksi terkait.</li>
+<li>Pastikan referensi hutang/piutang sudah terisi.</li>
+<li>Isi <strong>Tanggal Pembayaran</strong>.</li>
+<li>Pilih <strong>Arah Transaksi</strong> bila diperlukan.</li>
+<li>Pilih <strong>Metode</strong> pembayaran.</li>
+<li>Isi <strong>Nominal</strong>.</li>
+<li>Tambahkan catatan jika perlu.</li>
+<li>Klik <strong>Simpan</strong>.</li>
+</ol>
+<p><strong>Catatan penting</strong></p>
+<ul>
+<li>Pencatatan payment dipisahkan dari transaksi utama agar audit lebih rapi.</li>
+<li>Setelah payment diposting, status hutang/piutang akan menyesuaikan.</li>
+</ul>
+<h2 id="76-hutang-dan-piutang">7.6 Hutang dan Piutang</h2><p><img src="./assets/screenshots/13-finance-payable-detail.png" alt="Gambar 13. Detail Hutang">
+<em>Gambar 13. Detail hutang pada modul Finance.</em></p>
+<p><strong>Tujuan</strong><br>Memantau dokumen hutang dan piutang, termasuk jatuh tempo dan histori pembayaran.</p>
+<p><strong>Langkah memeriksa hutang/piutang</strong></p>
+<ol>
+<li>Buka menu <strong>Finance &gt; Hutang</strong> atau <strong>Finance &gt; Piutang</strong>.</li>
+<li>Gunakan pencarian, filter status, dan filter jenis pihak.</li>
+<li>Klik kode dokumen untuk membuka detail.</li>
+<li>Periksa:<ul>
+<li>total</li>
+<li>outstanding</li>
+<li>due date</li>
+<li>histori pembayaran/penerimaan</li>
+</ul>
+</li>
+<li>Gunakan tombol <strong>Catat Pembayaran</strong> atau <strong>Catat Penerimaan</strong> bila diperlukan.</li>
+</ol>
+<p><strong>Kesalahan umum</strong></p>
+<ul>
+<li>Membayar dokumen yang sebenarnya sudah lunas.</li>
+<li>Tidak memeriksa due date saat menindaklanjuti outstanding.</li>
+</ul>
+<h2 id="77-inventory-mutasi-stok">7.7 Inventory / Mutasi Stok</h2><p><img src="./assets/screenshots/14-inventory-stock.png" alt="Gambar 14. Saldo Stok">
+<em>Gambar 14. Halaman saldo stok dan posisi TBS pool.</em></p>
+<p><strong>Tujuan</strong><br>Memantau stok barang dan stok TBS pool per gudang.</p>
+<p><strong>Langkah penggunaan</strong></p>
+<ol>
+<li>Buka <strong>Inventory &gt; Stok</strong>.</li>
+<li>Gunakan filter produk, gudang, dan tampilan stok kritis.</li>
+<li>Periksa bagian <strong>Posisi Stok TBS Pool</strong> untuk saldo TBS campuran per gudang.</li>
+<li>Klik produk untuk membuka histori mutasi.</li>
+</ol>
+<p><strong>Catatan penting</strong></p>
+<ul>
+<li><code>TBS Pool (Sistem)</code> adalah produk internal untuk saldo TBS campuran.</li>
+<li>Histori mutasi TBS tersedia dari modul histori mutasi.</li>
+</ul>
+<hr>
+<h2 id="8-panduan-detail-transaksi">8. Panduan Detail Transaksi</h2><p>Bagian ini menjelaskan informasi apa saja yang biasanya muncul pada halaman detail dokumen.</p>
+<h2 id="81-detail-pembelian-tbs">8.1 Detail Pembelian TBS</h2><p><img src="./assets/screenshots/07-palm-purchase-detail.png" alt="Gambar 7. Detail Pembelian TBS">
+<em>Gambar 7. Halaman detail pembelian TBS.</em></p>
+<h3 id="informasi-yang-ditampilkan">Informasi yang ditampilkan</h3><ul>
+<li>Header dokumen dan kode transaksi</li>
+<li>Status transaksi</li>
+<li>Status pembayaran</li>
+<li>Ringkasan nominal:<ul>
+<li>total akhir</li>
+<li>sudah dibayar</li>
+<li>sisa hutang</li>
+</ul>
+</li>
+<li>Informasi umum:<ul>
+<li>tanggal</li>
+<li>petani</li>
+<li>sopir</li>
+<li>kendaraan</li>
+<li>gudang</li>
+</ul>
+</li>
+<li>Data timbangan</li>
+<li>Nilai transaksi</li>
+<li>Breakdown potong hutang toko bila ada</li>
+<li>Histori pembayaran petani</li>
+<li>Audit log</li>
+</ul>
+<h3 id="tombol-tindakan-yang-tersedia">Tombol tindakan yang tersedia</h3><ul>
+<li><strong>Kembali</strong></li>
+<li><strong>Ubah</strong> (dibatasi jika stok sudah terbentuk)</li>
+<li><strong>Catat Pembayaran</strong></li>
+<li><strong>Preview Slip Timbang</strong></li>
+<li><strong>Void Pembelian</strong></li>
+<li><strong>Cetak</strong></li>
+</ul>
+<h3 id="peringatan">Peringatan</h3><ul>
+<li>Void pembelian dapat diblok jika stok sudah terpakai atau sudah ada pembayaran.</li>
+</ul>
+<h2 id="82-detail-penjualan-tbs-ke-pabrik">8.2 Detail Penjualan TBS ke Pabrik</h2><p>Pada detail penjualan pabrik, pengguna dapat memeriksa:</p>
+<ul>
+<li>gudang asal</li>
+<li>pabrik</li>
+<li>timbangan awal dan final</li>
+<li>deduction dan return</li>
+<li>total penjualan</li>
+<li>margin</li>
+<li>sisa piutang</li>
+<li>breakdown potongan</li>
+<li>audit log</li>
+</ul>
+<p>Tombol yang tersedia:</p>
+<ul>
+<li><strong>Kembali</strong></li>
+<li><strong>Catat Penerimaan</strong></li>
+<li><strong>Preview Dokumen Penjualan</strong></li>
+<li><strong>Void Penjualan</strong></li>
+</ul>
+<h2 id="83-detail-pembelian-barang">8.3 Detail Pembelian Barang</h2><p>Halaman ini menampilkan:</p>
+<ul>
+<li>kode transaksi</li>
+<li>supplier</li>
+<li>gudang</li>
+<li>status pembayaran</li>
+<li>ringkasan nilai</li>
+<li>tabel item pembelian</li>
+<li>ringkasan retur</li>
+<li>catatan</li>
+</ul>
+<p>Tombol yang tersedia:</p>
+<ul>
+<li><strong>Catat Pembayaran</strong></li>
+<li><strong>Preview Slip Pembelian</strong></li>
+<li><strong>Retur Pembelian</strong></li>
+<li><strong>Void Pembelian</strong></li>
+<li><strong>Cetak</strong></li>
+</ul>
+<h2 id="84-detail-penjualan-toko">8.4 Detail Penjualan Toko</h2><p>Halaman ini menampilkan:</p>
+<ul>
+<li>kode transaksi</li>
+<li>pelanggan</li>
+<li>gudang</li>
+<li>jenis penjualan</li>
+<li>status pembayaran</li>
+<li>tabel item penjualan</li>
+<li>catatan</li>
+</ul>
+<p>Tombol yang tersedia:</p>
+<ul>
+<li><strong>Catat Penerimaan</strong></li>
+<li><strong>Preview Nota</strong></li>
+<li><strong>Cetak</strong></li>
+</ul>
+<hr>
+<h2 id="9-panduan-laporan-dan-monitoring">9. Panduan Laporan dan Monitoring</h2><p><img src="./assets/screenshots/15-report-transactions.png" alt="Gambar 15. Laporan Transaksi">
+<em>Gambar 15. Halaman laporan transaksi lintas modul.</em></p>
+<h3 id="laporan-yang-tersedia">Laporan yang tersedia</h3><ul>
+<li>Laporan Transaksi</li>
+<li>Laporan Margin</li>
+<li>Laporan Hutang</li>
+<li>Laporan Piutang</li>
+<li>Laporan Laba Rugi</li>
+<li>Laporan Stok</li>
+<li>Laporan Stock Take</li>
+<li>Laporan Retur</li>
+<li>Laporan Potongan</li>
+</ul>
+<h3 id="cara-menggunakan-laporan">Cara menggunakan laporan</h3><ol>
+<li>Buka menu <strong>Reports</strong>.</li>
+<li>Pilih jenis laporan.</li>
+<li>Isi filter periode bila tersedia.</li>
+<li>Klik <strong>Terapkan</strong>.</li>
+<li>Periksa kartu ringkasan dan tabel detail.</li>
+<li>Gunakan <strong>Cetak Laporan</strong> bila ingin mencetak tampilan saat ini.</li>
+</ol>
+<h3 id="cara-membaca-laporan">Cara membaca laporan</h3><ul>
+<li>Kartu atas berisi ringkasan utama.</li>
+<li>Tabel di bawah berisi detail atau snapshot dokumen.</li>
+<li>Perhatikan apakah laporan bersifat ringkasan periode atau snapshot dokumen terbaru.</li>
+</ul>
+<h3 id="catatan-penting">Catatan penting</h3><ul>
+<li>Saat ini laporan mendukung <strong>cetak browser</strong>.</li>
+<li><strong>Export PDF dari dalam aplikasi belum tersedia.</strong></li>
+</ul>
+<hr>
+<h2 id="10-hak-akses-dan-pengaturan">10. Hak Akses dan Pengaturan</h2><h3 id="hak-akses-yang-tersedia">Hak akses yang tersedia</h3><ul>
+<li>Hak akses menu dan halaman diatur dari modul <strong>Peran</strong>.</li>
+<li>User dihubungkan ke role dari modul <strong>Pengguna</strong>.</li>
+<li>Aksi sensitif tertentu juga dapat dibatasi, seperti:<ul>
+<li>catat pembayaran/penerimaan</li>
+<li>void transaksi tertentu</li>
+<li>retur pembelian</li>
+<li>approve stock take</li>
+<li>approve adjustment</li>
+</ul>
+</li>
+</ul>
+<h3 id="pengaturan-sistem">Pengaturan sistem</h3><ul>
+<li><strong>Belum tersedia sebagai modul terpisah.</strong></li>
+<li>Saat ini belum ada menu pengaturan umum untuk parameter sistem.</li>
+</ul>
+<h3 id="catatan-untuk-administrator">Catatan untuk administrator</h3><ul>
+<li>Setelah mengubah role atau hak akses, minta pengguna login ulang.</li>
+</ul>
+<hr>
+<h2 id="11-troubleshooting">11. Troubleshooting</h2><h3 id="tidak-bisa-login">Tidak bisa login</h3><ul>
+<li>Periksa email dan password.</li>
+<li>Pastikan akun aktif.</li>
+<li>Pastikan server dan database aktif.</li>
+<li>Jika tetap gagal, minta admin memeriksa user dari modul <strong>Pengguna</strong>.</li>
+</ul>
+<h3 id="data-tidak-muncul">Data tidak muncul</h3><ul>
+<li>Periksa filter pencarian dan status.</li>
+<li>Pastikan Anda punya hak akses ke modul tersebut.</li>
+</ul>
+<h3 id="tombol-tidak-aktif">Tombol tidak aktif</h3><ul>
+<li>Dokumen bisa jadi sudah lunas, sudah dibatalkan, atau user tidak punya hak akses.</li>
+<li>Void juga bisa diblok jika stok atau pembayaran tidak memungkinkan.</li>
+</ul>
+<h3 id="transaksi-tidak-bisa-disimpan">Transaksi tidak bisa disimpan</h3><ul>
+<li>Periksa field wajib.</li>
+<li>Untuk penjualan kredit, pastikan pelanggan dan jatuh tempo terisi.</li>
+<li>Untuk penjualan TBS, pastikan gudang asal dan saldo stok benar.</li>
+</ul>
+<h3 id="status-tidak-berubah">Status tidak berubah</h3><ul>
+<li>Pembayaran dan penerimaan harus dicatat melalui modul payment, bukan hanya dengan mengedit transaksi.</li>
+</ul>
+<h3 id="print-tidak-muncul">Print tidak muncul</h3><ul>
+<li>Pastikan Anda membuka halaman preview dokumen yang benar.</li>
+<li>Tidak semua modul memiliki format cetak khusus.</li>
+</ul>
+<h3 id="laporan-kosong">Laporan kosong</h3><ul>
+<li>Periksa periode filter.</li>
+<li>Pastikan memang sudah ada data transaksi pada periode tersebut.</li>
+</ul>
+<h3 id="hak-akses-tidak-sesuai">Hak akses tidak sesuai</h3><ul>
+<li>Periksa role user.</li>
+<li>Minta admin memeriksa checklist hak akses pada modul <strong>Peran</strong>.</li>
+</ul>
+<hr>
+<h2 id="12-batasan-sistem-saat-ini">12. Batasan Sistem Saat Ini</h2><p>Berikut batasan aplikasi berdasarkan implementasi saat ini:</p>
+<ul>
+<li>Fitur <strong>lupa password / reset password</strong> belum tersedia.</li>
+<li><strong>Export PDF dari dalam aplikasi</strong> belum tersedia.</li>
+<li><strong>Retur penjualan toko</strong> belum tersedia.</li>
+<li><strong>Pengaturan sistem umum</strong> belum tersedia sebagai menu tersendiri.</li>
+<li><strong>Audit log terpusat</strong> belum tersedia sebagai halaman khusus lintas modul.</li>
+<li>Beberapa tabel pada layar kecil masih bergantung pada scroll horizontal.</li>
+<li>Void transaksi yang berdampak ke stok tetap harus dipakai dengan hati-hati oleh user yang berwenang.</li>
+</ul>
+<hr>
+<h2 id="13-sop-penggunaan-singkat">13. SOP Penggunaan Singkat</h2><p>Untuk penggunaan harian yang lebih aman, terapkan SOP berikut:</p>
+<ol>
+<li>Lengkapi data master sebelum mulai transaksi.</li>
+<li>Pastikan gudang dipilih dengan benar pada transaksi yang memengaruhi stok.</li>
+<li>Periksa timbangan dan nilai sebelum klik simpan.</li>
+<li>Hindari membuat data master ganda.</li>
+<li>Catat pembayaran dan penerimaan dari modul Finance atau detail dokumen terkait.</li>
+<li>Review hutang, piutang, dan stok secara berkala.</li>
+<li>Lakukan stock take dan adjustment sesuai kebutuhan audit.</li>
+<li>Gunakan void hanya oleh user yang memahami dampaknya terhadap stok dan keuangan.</li>
+</ol>
+<hr>
+<h2 id="14-ringkasan-cepat-untuk-training">14. Ringkasan Cepat untuk Training</h2><h3 id="langkah-masuk">Langkah masuk</h3><ol>
+<li>Buka halaman login.</li>
+<li>Masukkan email dan password.</li>
+<li>Klik <strong>Login</strong>.</li>
+</ol>
+<h3 id="modul-yang-paling-sering-dipakai">Modul yang paling sering dipakai</h3><ul>
+<li>Dashboard</li>
+<li>Pembelian TBS</li>
+<li>Penjualan ke Pabrik</li>
+<li>Pembelian Barang</li>
+<li>Penjualan Toko</li>
+<li>Hutang / Piutang</li>
+<li>Inventory</li>
+</ul>
+<h3 id="alur-kerja-singkat">Alur kerja singkat</h3><ol>
+<li>Siapkan master data.</li>
+<li>Jalankan transaksi.</li>
+<li>Catat pembayaran/penerimaan.</li>
+<li>Pantau stok dan laporan.</li>
+</ol>
+<h3 id="hal-yang-harus-dihindari">Hal yang harus dihindari</h3><ul>
+<li>Salah gudang.</li>
+<li>Salah pelanggan/petani terkait.</li>
+<li>Menyimpan transaksi kredit tanpa jatuh tempo.</li>
+<li>Menganggap semua dokumen bisa di-void kapan saja.</li>
+</ul>
+<hr>
+<h2 id="lampiran-gambar-penting">Lampiran Gambar Penting</h2><p><img src="./assets/screenshots/16-palm-sale-document.png" alt="Gambar 16. Preview Dokumen Penjualan Pabrik">
+<em>Gambar 16. Preview dokumen penjualan TBS ke pabrik.</em></p>
+<p>Dokumen preview seperti ini dapat dipakai untuk pengecekan sebelum cetak atau arsip operasional.</p>
+</main>
+</body>
+</html>

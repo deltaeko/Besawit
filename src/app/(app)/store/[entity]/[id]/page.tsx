@@ -1,12 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, FileText, Receipt, Wallet, Warehouse } from "lucide-react";
+import { Receipt, Warehouse } from "lucide-react";
 
 import { PageHeader } from "@/components/shared/page-header";
 import { SectionCard } from "@/components/shared/section-card";
 import { SimpleTable } from "@/components/shared/simple-table";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { canPerformAction } from "@/lib/auth/permissions";
 import { getSession } from "@/lib/auth/session";
 import { formatCurrency, formatDate } from "@/lib/utils";
@@ -36,8 +35,8 @@ function MetricCard({
     <div
       className={
         emphasis
-          ? "rounded-2xl border border-primary/20 bg-primary/10 p-4"
-          : "rounded-2xl border border-border/80 bg-muted/20 p-4"
+          ? "rounded-[1.35rem] border border-primary/20 bg-[linear-gradient(180deg,rgba(72,115,74,0.12),rgba(72,115,74,0.06))] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.28)]"
+          : "rounded-[1.35rem] border border-border/80 bg-card/88 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]"
       }
     >
       <div className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">{label}</div>
@@ -151,10 +150,6 @@ export default async function StoreDetailPage({
         movementCount: 0,
       }))
     : null;
-  const canPostFinance =
-    transactionStatus === "active" &&
-    (paymentStatus === "unpaid" || paymentStatus === "partial") &&
-    Boolean(financeReference?.id);
   const returnTo = `/store/${entity}/${id}`;
 
   return (
@@ -228,7 +223,7 @@ export default async function StoreDetailPage({
         }
       />
 
-      <div className="rounded-2xl border border-border/80 bg-card p-5 shadow-sm">
+      <div className="overflow-hidden rounded-[1.8rem] border border-white/90 bg-[radial-gradient(circle_at_top_left,rgba(97,143,96,0.14),transparent_34%),linear-gradient(180deg,rgba(255,255,255,0.98),rgba(246,249,244,0.94))] p-5 shadow-[0_26px_72px_-42px_rgba(20,37,24,0.28)] ring-1 ring-black/[0.02]">
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
           <div className="space-y-3">
             <div className="font-mono text-xs uppercase tracking-[0.3em] text-primary">Store</div>
@@ -252,7 +247,7 @@ export default async function StoreDetailPage({
               ) : null}
             </div>
           </div>
-          <div className="rounded-xl border border-border/70 bg-muted/20 px-4 py-3 text-sm text-muted-foreground">
+          <div className="rounded-[1.2rem] border border-border/70 bg-card/80 px-4 py-3 text-sm text-muted-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.22)]">
             Tanggal transaksi {formatDate(String(data.transactionDate))}
           </div>
         </div>
@@ -276,7 +271,7 @@ export default async function StoreDetailPage({
                 value={String((data as Record<string, unknown>).warehouseName ?? "-")}
               />
             </div>
-            <div className="mt-4 rounded-2xl border border-border/80 bg-muted/20 p-4 text-sm text-muted-foreground">
+            <div className="mt-4 rounded-[1.35rem] border border-border/80 bg-muted/20 p-4 text-sm text-muted-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.22)]">
               <div className="mb-1 flex items-center gap-2 font-medium text-foreground">
                 <Warehouse className="size-4 text-primary" />
                 Nomor Referensi
@@ -325,7 +320,7 @@ export default async function StoreDetailPage({
                   value={formatCurrency(Number(financeReference?.outstandingAmount ?? data.totalAmount ?? 0))}
                 />
               </div>
-              <div className="mt-4 space-y-2 rounded-2xl border border-border/80 bg-muted/10 p-4">
+              <div className="mt-4 space-y-2 rounded-[1.35rem] border border-border/80 bg-muted/10 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.22)]">
                 {(purchaseReturnContext?.returns ?? []).length ? (
                   purchaseReturnContext!.returns.map((item) => (
                     <div
@@ -356,7 +351,7 @@ export default async function StoreDetailPage({
           ) : null}
 
           <SectionCard title="Catatan" description="Catatan tambahan transaksi untuk audit dan tindak lanjut operasional.">
-            <div className="rounded-2xl border border-border/80 bg-muted/20 p-4 text-sm leading-7 text-foreground">
+            <div className="rounded-[1.35rem] border border-border/80 bg-muted/20 p-4 text-sm leading-7 text-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.22)]">
               {String(data.notes ?? "").trim() || "Tidak ada catatan."}
             </div>
           </SectionCard>
@@ -375,7 +370,7 @@ export default async function StoreDetailPage({
             <DetailRow label="Kode" value={data.code} />
             <DetailRow label="Tanggal Dibuat" value={formatDate(String(data.createdAt))} />
           </div>
-          <div className="mt-4 rounded-2xl border border-border/80 bg-muted/20 p-4 text-sm text-muted-foreground">
+          <div className="mt-4 rounded-[1.35rem] border border-border/80 bg-muted/20 p-4 text-sm text-muted-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.22)]">
             <div className="mb-1 flex items-center gap-2 font-medium text-foreground">
               <Receipt className="size-4 text-primary" />
               Catatan operasional

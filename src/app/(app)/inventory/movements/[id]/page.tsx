@@ -79,8 +79,8 @@ function SummaryCard({
     <div
       className={
         emphasis
-          ? "rounded-2xl border border-primary/20 bg-primary/10 p-4"
-          : "rounded-2xl border border-border/70 bg-muted/20 p-4"
+          ? "rounded-[1.35rem] border border-primary/20 bg-[linear-gradient(180deg,rgba(72,115,74,0.12),rgba(72,115,74,0.06))] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.28)]"
+          : "rounded-[1.35rem] border border-border/70 bg-card/88 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]"
       }
     >
       <div className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">{label}</div>
@@ -97,7 +97,7 @@ function InfoList({
   items: Array<{ label: string; value: React.ReactNode }>;
 }) {
   return (
-    <div className="overflow-hidden rounded-2xl border border-border/70 bg-muted/10">
+    <div className="overflow-hidden rounded-[1.35rem] border border-border/70 bg-muted/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.22)]">
       {items.map((item, index) => (
         <div
           key={item.label}
@@ -141,7 +141,7 @@ export default async function InventoryMovementDetailPage({
         }
       />
 
-      <div className="rounded-2xl border border-border/80 bg-card p-5 shadow-sm">
+      <div className="overflow-hidden rounded-[1.8rem] border border-white/90 bg-[radial-gradient(circle_at_top_left,rgba(97,143,96,0.14),transparent_34%),linear-gradient(180deg,rgba(255,255,255,0.98),rgba(246,249,244,0.94))] p-5 shadow-[0_26px_72px_-42px_rgba(20,37,24,0.28)] ring-1 ring-black/[0.02]">
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
           <div className="space-y-3">
             <div className="font-mono text-xs uppercase tracking-[0.3em] text-primary">Inventory</div>
@@ -154,7 +154,7 @@ export default async function InventoryMovementDetailPage({
               <Badge variant="neutral">{getReasonLabel(String(movement.reason))}</Badge>
             </div>
           </div>
-          <div className="rounded-xl border border-border/70 bg-muted/20 px-4 py-3 text-sm text-muted-foreground">
+          <div className="rounded-[1.2rem] border border-border/70 bg-card/80 px-4 py-3 text-sm text-muted-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.22)]">
             Dicatat {formatDateTime(movement.movementDate)}
           </div>
         </div>
@@ -243,7 +243,7 @@ export default async function InventoryMovementDetailPage({
         description="Tautan ke dokumen sumber agar mutasi stok mudah ditelusuri kembali."
       >
         <div className="grid gap-4 md:grid-cols-3">
-          <div className="rounded-2xl border border-border/70 bg-muted/20 px-4 py-3">
+          <div className="rounded-[1.35rem] border border-border/70 bg-muted/20 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.22)]">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <FileText className="size-4" />
               Tipe Referensi
@@ -252,14 +252,14 @@ export default async function InventoryMovementDetailPage({
               {getReferenceLabel(String(movement.referenceType))}
             </div>
           </div>
-          <div className="rounded-2xl border border-border/70 bg-muted/20 px-4 py-3">
+          <div className="rounded-[1.35rem] border border-border/70 bg-muted/20 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.22)]">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <ArrowRightLeft className="size-4" />
               ID Referensi
             </div>
             <div className="mt-2 break-all text-sm font-semibold">{movement.referenceId ?? "-"}</div>
           </div>
-          <div className="rounded-2xl border border-border/70 bg-muted/20 px-4 py-3">
+          <div className="rounded-[1.35rem] border border-border/70 bg-muted/20 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.22)]">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Warehouse className="size-4" />
               Counterparty Gudang

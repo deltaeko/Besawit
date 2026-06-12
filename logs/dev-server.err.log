@@ -143,3 +143,723 @@ Caused by:
     2: Unable to open static sorted file 00008145.sst
     3: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00008145.sst
     4: The system cannot find the path specified. (os error 3)
+Persisting failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+
+thread 'tokio-runtime-worker' (22360) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:224:17:
+Failed to restore task data (corrupted database or bug): Data for batch of 2 tasks
+
+Caused by:
+    0: Looking up typed data for 2 tasks from database failed
+    1: Unable to open static sorted file referenced from 00002771.meta
+    2: Unable to open static sorted file 00002768.sst
+    3: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00002768.sst
+    4: The system cannot find the path specified. (os error 3)
+
+thread 'tokio-runtime-worker' (22360) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:196:17:
+Failed to restore task data (corrupted database or bug): Data for TaskId 162199)
+
+Caused by:
+    0: Looking up task storage for TaskId 162199 from database failed
+    1: Unable to open static sorted file referenced from 00000282.meta
+    2: Unable to open static sorted file 00000280.sst
+    3: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00000280.sst
+    4: The system cannot find the path specified. (os error 3)
+Persisting failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+
+thread 'tokio-runtime-worker' (32036) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:618:14:
+Failed to lookup task ids: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "project_trace_source_operation", global_name: "next_napi_bindings::next_api::project::project_trace_source_operation", .. }, this: None, arg: (ResolvedVc(RawVc::TaskCell(1, "next_api::project::ProjectContainer#0")), StackFrame { is_server: false, is_ignored: None, original_file: None, file: "file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js", line: Some(8084), column: Some(21), method_name: Some("createFetch") }, "file:///D:/Besawit") } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00007640.meta
+    1: Unable to open static sorted file 00007638.sst
+    2: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00007638.sst
+    3: The system cannot find the path specified. (os error 3)
+
+thread 'tokio-runtime-worker' (24480) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:618:14:
+Failed to lookup task ids: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "project_trace_source_operation", global_name: "next_napi_bindings::next_api::project::project_trace_source_operation", .. }, this: None, arg: (ResolvedVc(RawVc::TaskCell(1, "next_api::project::ProjectContainer#0")), StackFrame { is_server: false, is_ignored: None, original_file: None, file: "file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js", line: Some(9149), column: Some(35), method_name: Some("spawnDynamicRequests") }, "file:///D:/Besawit") } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00007882.meta
+    1: Unable to open static sorted file 00007879.sst
+    2: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00007879.sst
+    3: The system cannot find the path specified. (os error 3)
+
+thread 'tokio-runtime-worker' (2328) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:618:14:
+Failed to lookup task ids: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "project_trace_source_operation", global_name: "next_napi_bindings::next_api::project::project_trace_source_operation", .. }, this: None, arg: (ResolvedVc(RawVc::TaskCell(1, "next_api::project::ProjectContainer#0")), StackFrame { is_server: false, is_ignored: None, original_file: None, file: "http://gc.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=4yU1q_1x_j2H6UDhOVuaceKCHTkEcLj-T0kyyjaB2vIJSmCvXWYeRedAmBjttX29FMO8A3T0OMuBAuJnK4kqVA", line: Some(4513), column: Some(21), method_name: Some("fetchCallImpl") }, "file:///D:/Besawit") } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00006606.meta
+    1: Unable to open static sorted file 00006604.sst
+    2: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00006604.sst
+    3: The system cannot find the path specified. (os error 3)
+
+thread 'tokio-runtime-worker' (12972) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:618:14:
+Failed to lookup task ids: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "project_trace_source_operation", global_name: "next_napi_bindings::next_api::project::project_trace_source_operation", .. }, this: None, arg: (ResolvedVc(RawVc::TaskCell(1, "next_api::project::ProjectContainer#0")), StackFrame { is_server: false, is_ignored: None, original_file: None, file: "file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js", line: Some(11382), column: Some(61), method_name: Some("clientReducer") }, "file:///D:/Besawit") } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00003197.meta
+    1: Unable to open static sorted file 00003194.sst
+    2: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00003194.sst
+    3: The system cannot find the path specified. (os error 3)
+
+thread 'tokio-runtime-worker' (23204) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:618:14:
+Failed to lookup task ids: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "project_trace_source_operation", global_name: "next_napi_bindings::next_api::project::project_trace_source_operation", .. }, this: None, arg: (ResolvedVc(RawVc::TaskCell(1, "next_api::project::ProjectContainer#0")), StackFrame { is_server: false, is_ignored: None, original_file: None, file: "file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js", line: Some(7928), column: Some(27), method_name: Some("fetchServerResponse") }, "file:///D:/Besawit") } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00003222.meta
+    1: Unable to open static sorted file 00003218.sst
+    2: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00003218.sst
+    3: The system cannot find the path specified. (os error 3)
+
+thread 'tokio-runtime-worker' (32036) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:618:14:
+Failed to lookup task ids: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "project_trace_source_operation", global_name: "next_napi_bindings::next_api::project::project_trace_source_operation", .. }, this: None, arg: (ResolvedVc(RawVc::TaskCell(1, "next_api::project::ProjectContainer#0")), StackFrame { is_server: false, is_ignored: None, original_file: None, file: "file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js", line: Some(963), column: Some(29), method_name: Some("<unknown>") }, "file:///D:/Besawit") } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00003197.meta
+    1: Unable to open static sorted file 00003194.sst
+    2: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00003194.sst
+    3: The system cannot find the path specified. (os error 3)
+
+thread 'tokio-runtime-worker' (7736) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:618:14:
+Failed to lookup task ids: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "project_trace_source_operation", global_name: "next_napi_bindings::next_api::project::project_trace_source_operation", .. }, this: None, arg: (ResolvedVc(RawVc::TaskCell(1, "next_api::project::ProjectContainer#0")), StackFrame { is_server: false, is_ignored: None, original_file: None, file: "file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js", line: Some(11536), column: Some(38), method_name: Some("runAction") }, "file:///D:/Besawit") } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00003197.meta
+    1: Unable to open static sorted file 00003194.sst
+    2: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00003194.sst
+    3: The system cannot find the path specified. (os error 3)
+
+thread 'tokio-runtime-worker' (3892) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:618:14:
+Failed to lookup task ids: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "project_trace_source_operation", global_name: "next_napi_bindings::next_api::project::project_trace_source_operation", .. }, this: None, arg: (ResolvedVc(RawVc::TaskCell(1, "next_api::project::ProjectContainer#0")), StackFrame { is_server: false, is_ignored: None, original_file: None, file: "file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js", line: Some(10033), column: Some(54), method_name: Some("navigateToKnownRoute") }, "file:///D:/Besawit") } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00003222.meta
+    1: Unable to open static sorted file 00003218.sst
+    2: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00003218.sst
+    3: The system cannot find the path specified. (os error 3)
+
+thread 'tokio-runtime-worker' (30992) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:618:14:
+Failed to lookup task ids: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "project_trace_source_operation", global_name: "next_napi_bindings::next_api::project::project_trace_source_operation", .. }, this: None, arg: (ResolvedVc(RawVc::TaskCell(1, "next_api::project::ProjectContainer#0")), StackFrame { is_server: false, is_ignored: None, original_file: None, file: "file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js", line: Some(9341), column: Some(75), method_name: Some("fetchMissingDynamicData") }, "file:///D:/Besawit") } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00003197.meta
+    1: Unable to open static sorted file 00003194.sst
+    2: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00003194.sst
+    3: The system cannot find the path specified. (os error 3)
+
+thread 'tokio-runtime-worker' (6464) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:618:14:
+Failed to lookup task ids: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "project_trace_source_operation", global_name: "next_napi_bindings::next_api::project::project_trace_source_operation", .. }, this: None, arg: (ResolvedVc(RawVc::TaskCell(1, "next_api::project::ProjectContainer#0")), StackFrame { is_server: false, is_ignored: None, original_file: None, file: "file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js", line: Some(9962), column: Some(16), method_name: Some("navigateImpl") }, "file:///D:/Besawit") } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00007451.meta
+    1: Unable to open static sorted file 00007448.sst
+    2: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00007448.sst
+    3: The system cannot find the path specified. (os error 3)
+
+thread 'tokio-runtime-worker' (14472) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:618:14:
+Failed to lookup task ids: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "project_trace_source_operation", global_name: "next_napi_bindings::next_api::project::project_trace_source_operation", .. }, this: None, arg: (ResolvedVc(RawVc::TaskCell(1, "next_api::project::ProjectContainer#0")), StackFrame { is_server: false, is_ignored: None, original_file: None, file: "file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js", line: Some(11599), column: Some(9), method_name: Some("dispatchAction") }, "file:///D:/Besawit") } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00003894.meta
+    1: Unable to open static sorted file 00003890.sst
+    2: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00003890.sst
+    3: The system cannot find the path specified. (os error 3)
+
+thread 'tokio-runtime-worker' (20152) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:618:14:
+Failed to lookup task ids: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "project_trace_source_operation", global_name: "next_napi_bindings::next_api::project::project_trace_source_operation", .. }, this: None, arg: (ResolvedVc(RawVc::TaskCell(1, "next_api::project::ProjectContainer#0")), StackFrame { is_server: false, is_ignored: None, original_file: None, file: "file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js", line: Some(10530), column: Some(37), method_name: Some("navigateReducer") }, "file:///D:/Besawit") } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00003197.meta
+    1: Unable to open static sorted file 00003194.sst
+    2: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00003194.sst
+    3: The system cannot find the path specified. (os error 3)
+
+thread 'tokio-runtime-worker' (24480) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:618:14:
+Failed to lookup task ids: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "project_trace_source_operation", global_name: "next_napi_bindings::next_api::project::project_trace_source_operation", .. }, this: None, arg: (ResolvedVc(RawVc::TaskCell(1, "next_api::project::ProjectContainer#0")), StackFrame { is_server: false, is_ignored: None, original_file: None, file: "file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js", line: Some(5469), column: Some(31), method_name: Some("startTransition") }, "file:///D:/Besawit") } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00003197.meta
+    1: Unable to open static sorted file 00003194.sst
+    2: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00003194.sst
+    3: The system cannot find the path specified. (os error 3)
+
+thread 'tokio-runtime-worker' (8456) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:618:14:
+Failed to lookup task ids: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "project_trace_source_operation", global_name: "next_napi_bindings::next_api::project::project_trace_source_operation", .. }, this: None, arg: (ResolvedVc(RawVc::TaskCell(1, "next_api::project::ProjectContainer#0")), StackFrame { is_server: false, is_ignored: None, original_file: None, file: "file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js", line: Some(11631), column: Some(55), method_name: Some("Object.action") }, "file:///D:/Besawit") } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00003197.meta
+    1: Unable to open static sorted file 00003194.sst
+    2: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00003194.sst
+    3: The system cannot find the path specified. (os error 3)
+
+thread 'tokio-runtime-worker' (5892) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:618:14:
+Failed to lookup task ids: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "project_trace_source_operation", global_name: "next_napi_bindings::next_api::project::project_trace_source_operation", .. }, this: None, arg: (ResolvedVc(RawVc::TaskCell(1, "next_api::project::ProjectContainer#0")), StackFrame { is_server: false, is_ignored: None, original_file: None, file: "file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js", line: Some(11629), column: Some(40), method_name: Some("Object.dispatch") }, "file:///D:/Besawit") } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00007132.meta
+    1: Unable to open static sorted file 00007130.sst
+    2: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00007130.sst
+    3: The system cannot find the path specified. (os error 3)
+
+thread 'tokio-runtime-worker' (26880) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:618:14:
+Failed to lookup task ids: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "project_trace_source_operation", global_name: "next_napi_bindings::next_api::project::project_trace_source_operation", .. }, this: None, arg: (ResolvedVc(RawVc::TaskCell(1, "next_api::project::ProjectContainer#0")), StackFrame { is_server: false, is_ignored: None, original_file: None, file: "file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js", line: Some(9953), column: Some(12), method_name: Some("navigate") }, "file:///D:/Besawit") } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00003197.meta
+    1: Unable to open static sorted file 00003194.sst
+    2: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00003194.sst
+    3: The system cannot find the path specified. (os error 3)
+
+thread 'tokio-runtime-worker' (2328) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:618:14:
+Failed to lookup task ids: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "project_trace_source_operation", global_name: "next_napi_bindings::next_api::project::project_trace_source_operation", .. }, this: None, arg: (ResolvedVc(RawVc::TaskCell(1, "next_api::project::ProjectContainer#0")), StackFrame { is_server: false, is_ignored: None, original_file: None, file: "file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js", line: Some(962), column: Some(13), method_name: Some("nextDispatch") }, "file:///D:/Besawit") } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00003197.meta
+    1: Unable to open static sorted file 00003194.sst
+    2: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00003194.sst
+    3: The system cannot find the path specified. (os error 3)
+
+thread 'tokio-runtime-worker' (22360) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:618:14:
+Failed to lookup task ids: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "project_trace_source_operation", global_name: "next_napi_bindings::next_api::project::project_trace_source_operation", .. }, this: None, arg: (ResolvedVc(RawVc::TaskCell(1, "next_api::project::ProjectContainer#0")), StackFrame { is_server: false, is_ignored: None, original_file: None, file: "file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js", line: Some(10052), column: Some(12), method_name: Some("navigateUsingPrefetchedRouteTree") }, "file:///D:/Besawit") } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00002338.meta
+    1: Unable to open static sorted file 00002334.sst
+    2: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00002334.sst
+    3: The system cannot find the path specified. (os error 3)
+
+thread 'tokio-runtime-worker' (12972) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:618:14:
+Failed to lookup task ids: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "project_trace_source_operation", global_name: "next_napi_bindings::next_api::project::project_trace_source_operation", .. }, this: None, arg: (ResolvedVc(RawVc::TaskCell(1, "next_api::project::ProjectContainer#0")), StackFrame { is_server: false, is_ignored: None, original_file: None, file: "file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js", line: Some(922), column: Some(5), method_name: Some("dispatchAppRouterAction") }, "file:///D:/Besawit") } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00003197.meta
+    1: Unable to open static sorted file 00003194.sst
+    2: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00003194.sst
+    3: The system cannot find the path specified. (os error 3)
+
+thread 'tokio-runtime-worker' (23204) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:618:14:
+Failed to lookup task ids: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "project_trace_source_operation", global_name: "next_napi_bindings::next_api::project::project_trace_source_operation", .. }, this: None, arg: (ResolvedVc(RawVc::TaskCell(1, "next_api::project::ProjectContainer#0")), StackFrame { is_server: false, is_ignored: None, original_file: None, file: "file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js", line: Some(11688), column: Some(49), method_name: Some("dispatchNavigateAction") }, "file:///D:/Besawit") } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00004816.meta
+    1: Unable to open static sorted file 00004814.sst
+    2: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00004814.sst
+    3: The system cannot find the path specified. (os error 3)
+
+thread 'tokio-runtime-worker' (7736) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:618:14:
+Failed to lookup task ids: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "project_trace_source_operation", global_name: "next_napi_bindings::next_api::project::project_trace_source_operation", .. }, this: None, arg: (ResolvedVc(RawVc::TaskCell(1, "next_api::project::ProjectContainer#0")), StackFrame { is_server: false, is_ignored: None, original_file: None, file: "file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_compiled_0rpq4pf._.js", line: Some(1279), column: Some(31), method_name: Some("Object.startTransition") }, "file:///D:/Besawit") } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00003197.meta
+    1: Unable to open static sorted file 00003194.sst
+    2: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00003194.sst
+    3: The system cannot find the path specified. (os error 3)
+
+thread 'tokio-runtime-worker' (3892) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:618:14:
+Failed to lookup task ids: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "project_trace_source_operation", global_name: "next_napi_bindings::next_api::project::project_trace_source_operation", .. }, this: None, arg: (ResolvedVc(RawVc::TaskCell(1, "next_api::project::ProjectContainer#0")), StackFrame { is_server: false, is_ignored: None, original_file: None, file: "file://D:/Besawit/.next/dev/static/chunks/node_modules_058dkac._.js", line: Some(554), column: Some(24), method_name: Some("linkClicked") }, "file:///D:/Besawit") } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00006663.meta
+    1: Unable to open static sorted file 00006659.sst
+    2: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00006659.sst
+    3: The system cannot find the path specified. (os error 3)
+
+thread 'tokio-runtime-worker' (6464) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:618:14:
+Failed to lookup task ids: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "project_trace_source_operation", global_name: "next_napi_bindings::next_api::project::project_trace_source_operation", .. }, this: None, arg: (ResolvedVc(RawVc::TaskCell(1, "next_api::project::ProjectContainer#0")), StackFrame { is_server: false, is_ignored: None, original_file: None, file: "file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js", line: Some(10329), column: Some(13), method_name: Some("executeDispatch") }, "file:///D:/Besawit") } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00003197.meta
+    1: Unable to open static sorted file 00003194.sst
+    2: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00003194.sst
+    3: The system cannot find the path specified. (os error 3)
+
+thread 'tokio-runtime-worker' (14472) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:618:14:
+Failed to lookup task ids: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "project_trace_source_operation", global_name: "next_napi_bindings::next_api::project::project_trace_source_operation", .. }, this: None, arg: (ResolvedVc(RawVc::TaskCell(1, "next_api::project::ProjectContainer#0")), StackFrame { is_server: false, is_ignored: None, original_file: None, file: "file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js", line: Some(965), column: Some(74), method_name: Some("runWithFiberInDEV") }, "file:///D:/Besawit") } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00004418.meta
+    1: Unable to open static sorted file 00004416.sst
+    2: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00004416.sst
+    3: The system cannot find the path specified. (os error 3)
+
+thread 'tokio-runtime-worker' (20152) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:618:14:
+Failed to lookup task ids: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "project_trace_source_operation", global_name: "next_napi_bindings::next_api::project::project_trace_source_operation", .. }, this: None, arg: (ResolvedVc(RawVc::TaskCell(1, "next_api::project::ProjectContainer#0")), StackFrame { is_server: false, is_ignored: None, original_file: None, file: "file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js", line: Some(10355), column: Some(41), method_name: Some("processDispatchQueue") }, "file:///D:/Besawit") } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00007552.meta
+    1: Unable to open static sorted file 00007549.sst
+    2: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00007549.sst
+    3: The system cannot find the path specified. (os error 3)
+
+thread 'tokio-runtime-worker' (24480) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:618:14:
+Failed to lookup task ids: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "project_trace_source_operation", global_name: "next_napi_bindings::next_api::project::project_trace_source_operation", .. }, this: None, arg: (ResolvedVc(RawVc::TaskCell(1, "next_api::project::ProjectContainer#0")), StackFrame { is_server: false, is_ignored: None, original_file: None, file: "file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js", line: Some(10633), column: Some(13), method_name: Some("<unknown>") }, "file:///D:/Besawit") } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00003197.meta
+    1: Unable to open static sorted file 00003194.sst
+    2: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00003194.sst
+    3: The system cannot find the path specified. (os error 3)
+
+thread 'tokio-runtime-worker' (8456) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:618:14:
+Failed to lookup task ids: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "project_trace_source_operation", global_name: "next_napi_bindings::next_api::project::project_trace_source_operation", .. }, this: None, arg: (ResolvedVc(RawVc::TaskCell(1, "next_api::project::ProjectContainer#0")), StackFrame { is_server: false, is_ignored: None, original_file: None, file: "file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js", line: Some(2253), column: Some(44), method_name: Some("batchedUpdates$1") }, "file:///D:/Besawit") } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00003197.meta
+    1: Unable to open static sorted file 00003194.sst
+    2: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00003194.sst
+    3: The system cannot find the path specified. (os error 3)
+
+thread 'tokio-runtime-worker' (5892) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:618:14:
+Failed to lookup task ids: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "project_trace_source_operation", global_name: "next_napi_bindings::next_api::project::project_trace_source_operation", .. }, this: None, arg: (ResolvedVc(RawVc::TaskCell(1, "next_api::project::ProjectContainer#0")), StackFrame { is_server: false, is_ignored: None, original_file: None, file: "file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js", line: Some(10431), column: Some(9), method_name: Some("dispatchEventForPluginEventSystem") }, "file:///D:/Besawit") } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00004418.meta
+    1: Unable to open static sorted file 00004416.sst
+    2: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00004416.sst
+    3: The system cannot find the path specified. (os error 3)
+
+thread 'tokio-runtime-worker' (26880) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:618:14:
+Failed to lookup task ids: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "project_trace_source_operation", global_name: "next_napi_bindings::next_api::project::project_trace_source_operation", .. }, this: None, arg: (ResolvedVc(RawVc::TaskCell(1, "next_api::project::ProjectContainer#0")), StackFrame { is_server: false, is_ignored: None, original_file: None, file: "file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js", line: Some(13002), column: Some(37), method_name: Some("dispatchEvent") }, "file:///D:/Besawit") } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00004762.meta
+    1: Unable to open static sorted file 00004760.sst
+    2: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00004760.sst
+    3: The system cannot find the path specified. (os error 3)
+
+thread 'tokio-runtime-worker' (2328) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:618:14:
+Failed to lookup task ids: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "project_trace_source_operation", global_name: "next_napi_bindings::next_api::project::project_trace_source_operation", .. }, this: None, arg: (ResolvedVc(RawVc::TaskCell(1, "next_api::project::ProjectContainer#0")), StackFrame { is_server: false, is_ignored: None, original_file: None, file: "file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js", line: Some(12984), column: Some(64), method_name: Some("dispatchDiscreteEvent") }, "file:///D:/Besawit") } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00004171.meta
+    1: Unable to open static sorted file 00004167.sst
+    2: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00004167.sst
+    3: The system cannot find the path specified. (os error 3)
+
+thread 'tokio-runtime-worker' (2092) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:618:14:
+Failed to lookup task ids: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "get_source_map_rope", global_name: "next_napi_bindings::next_api::project::get_source_map_rope", .. }, this: None, arg: (Vc(RawVc::TaskCell(1, "next_api::project::ProjectContainer#0")), "http://gc.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=4yU1q_1x_j2H6UDhOVuaceKCHTkEcLj-T0kyyjaB2vIJSmCvXWYeRedAmBjttX29FMO8A3T0OMuBAuJnK4kqVA") } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00002894.meta
+    1: Unable to open static sorted file 00002891.sst
+    2: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00002891.sst
+    3: The system cannot find the path specified. (os error 3)
+
+thread 'tokio-runtime-worker' (7736) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:618:14:
+Failed to lookup task ids: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "project_trace_source_operation", global_name: "next_napi_bindings::next_api::project::project_trace_source_operation", .. }, this: None, arg: (ResolvedVc(RawVc::TaskCell(1, "next_api::project::ProjectContainer#0")), StackFrame { is_server: false, is_ignored: None, original_file: None, file: "http://gc.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=4yU1q_1x_j2H6UDhOVuaceKCHTkEcLj-T0kyyjaB2vIJSmCvXWYeRedAmBjttX29FMO8A3T0OMuBAuJnK4kqVA", line: Some(4513), column: Some(21), method_name: Some("fetchCallImpl") }, "file:///D:/Besawit") } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00006606.meta
+    1: Unable to open static sorted file 00006604.sst
+    2: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00006604.sst
+    3: The system cannot find the path specified. (os error 3)
+
+thread 'tokio-runtime-worker' (2092) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:618:14:
+Failed to lookup task ids: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "project_trace_source_operation", global_name: "next_napi_bindings::next_api::project::project_trace_source_operation", .. }, this: None, arg: (ResolvedVc(RawVc::TaskCell(1, "next_api::project::ProjectContainer#0")), StackFrame { is_server: false, is_ignored: None, original_file: None, file: "file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js", line: Some(963), column: Some(29), method_name: Some("<unknown>") }, "file:///D:/Besawit") } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00003197.meta
+    1: Unable to open static sorted file 00003194.sst
+    2: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00003194.sst
+    3: The system cannot find the path specified. (os error 3)
+
+thread 'tokio-runtime-worker' (20152) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:618:14:
+Failed to lookup task ids: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "project_trace_source_operation", global_name: "next_napi_bindings::next_api::project::project_trace_source_operation", .. }, this: None, arg: (ResolvedVc(RawVc::TaskCell(1, "next_api::project::ProjectContainer#0")), StackFrame { is_server: false, is_ignored: None, original_file: None, file: "file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js", line: Some(7928), column: Some(27), method_name: Some("fetchServerResponse") }, "file:///D:/Besawit") } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00003222.meta
+    1: Unable to open static sorted file 00003218.sst
+    2: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00003218.sst
+    3: The system cannot find the path specified. (os error 3)
+
+thread 'tokio-runtime-worker' (6464) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:618:14:
+Failed to lookup task ids: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "project_trace_source_operation", global_name: "next_napi_bindings::next_api::project::project_trace_source_operation", .. }, this: None, arg: (ResolvedVc(RawVc::TaskCell(1, "next_api::project::ProjectContainer#0")), StackFrame { is_server: false, is_ignored: None, original_file: None, file: "file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js", line: Some(9341), column: Some(75), method_name: Some("fetchMissingDynamicData") }, "file:///D:/Besawit") } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00003197.meta
+    1: Unable to open static sorted file 00003194.sst
+    2: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00003194.sst
+    3: The system cannot find the path specified. (os error 3)
+
+thread 'tokio-runtime-worker' (3892) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:618:14:
+Failed to lookup task ids: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "project_trace_source_operation", global_name: "next_napi_bindings::next_api::project::project_trace_source_operation", .. }, this: None, arg: (ResolvedVc(RawVc::TaskCell(1, "next_api::project::ProjectContainer#0")), StackFrame { is_server: false, is_ignored: None, original_file: None, file: "file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js", line: Some(9149), column: Some(35), method_name: Some("spawnDynamicRequests") }, "file:///D:/Besawit") } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00007882.meta
+    1: Unable to open static sorted file 00007879.sst
+    2: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00007879.sst
+    3: The system cannot find the path specified. (os error 3)
+
+thread 'tokio-runtime-worker' (24480) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:618:14:
+Failed to lookup task ids: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "project_trace_source_operation", global_name: "next_napi_bindings::next_api::project::project_trace_source_operation", .. }, this: None, arg: (ResolvedVc(RawVc::TaskCell(1, "next_api::project::ProjectContainer#0")), StackFrame { is_server: false, is_ignored: None, original_file: None, file: "file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js", line: Some(10052), column: Some(12), method_name: Some("navigateUsingPrefetchedRouteTree") }, "file:///D:/Besawit") } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00002338.meta
+    1: Unable to open static sorted file 00002334.sst
+    2: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00002334.sst
+    3: The system cannot find the path specified. (os error 3)
+
+thread 'tokio-runtime-worker' (32036) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:618:14:
+Failed to lookup task ids: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "project_trace_source_operation", global_name: "next_napi_bindings::next_api::project::project_trace_source_operation", .. }, this: None, arg: (ResolvedVc(RawVc::TaskCell(1, "next_api::project::ProjectContainer#0")), StackFrame { is_server: false, is_ignored: None, original_file: None, file: "file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js", line: Some(10033), column: Some(54), method_name: Some("navigateToKnownRoute") }, "file:///D:/Besawit") } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00003222.meta
+    1: Unable to open static sorted file 00003218.sst
+    2: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00003218.sst
+    3: The system cannot find the path specified. (os error 3)
+
+thread 'tokio-runtime-worker' (22360) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:618:14:
+Failed to lookup task ids: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "project_trace_source_operation", global_name: "next_napi_bindings::next_api::project::project_trace_source_operation", .. }, this: None, arg: (ResolvedVc(RawVc::TaskCell(1, "next_api::project::ProjectContainer#0")), StackFrame { is_server: false, is_ignored: None, original_file: None, file: "file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js", line: Some(9962), column: Some(16), method_name: Some("navigateImpl") }, "file:///D:/Besawit") } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00007451.meta
+    1: Unable to open static sorted file 00007448.sst
+    2: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00007448.sst
+    3: The system cannot find the path specified. (os error 3)
+
+thread 'tokio-runtime-worker' (12972) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:618:14:
+Failed to lookup task ids: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "project_trace_source_operation", global_name: "next_napi_bindings::next_api::project::project_trace_source_operation", .. }, this: None, arg: (ResolvedVc(RawVc::TaskCell(1, "next_api::project::ProjectContainer#0")), StackFrame { is_server: false, is_ignored: None, original_file: None, file: "file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js", line: Some(9953), column: Some(12), method_name: Some("navigate") }, "file:///D:/Besawit") } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00003197.meta
+    1: Unable to open static sorted file 00003194.sst
+    2: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00003194.sst
+    3: The system cannot find the path specified. (os error 3)
+
+thread 'tokio-runtime-worker' (23204) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:618:14:
+Failed to lookup task ids: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "project_trace_source_operation", global_name: "next_napi_bindings::next_api::project::project_trace_source_operation", .. }, this: None, arg: (ResolvedVc(RawVc::TaskCell(1, "next_api::project::ProjectContainer#0")), StackFrame { is_server: false, is_ignored: None, original_file: None, file: "file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js", line: Some(10530), column: Some(37), method_name: Some("navigateReducer") }, "file:///D:/Besawit") } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00003197.meta
+    1: Unable to open static sorted file 00003194.sst
+    2: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00003194.sst
+    3: The system cannot find the path specified. (os error 3)
+
+thread 'tokio-runtime-worker' (8456) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:618:14:
+Failed to lookup task ids: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "project_trace_source_operation", global_name: "next_napi_bindings::next_api::project::project_trace_source_operation", .. }, this: None, arg: (ResolvedVc(RawVc::TaskCell(1, "next_api::project::ProjectContainer#0")), StackFrame { is_server: false, is_ignored: None, original_file: None, file: "file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js", line: Some(11382), column: Some(61), method_name: Some("clientReducer") }, "file:///D:/Besawit") } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00003197.meta
+    1: Unable to open static sorted file 00003194.sst
+    2: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00003194.sst
+    3: The system cannot find the path specified. (os error 3)
+
+thread 'tokio-runtime-worker' (5892) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:618:14:
+Failed to lookup task ids: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "project_trace_source_operation", global_name: "next_napi_bindings::next_api::project::project_trace_source_operation", .. }, this: None, arg: (ResolvedVc(RawVc::TaskCell(1, "next_api::project::ProjectContainer#0")), StackFrame { is_server: false, is_ignored: None, original_file: None, file: "file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js", line: Some(11631), column: Some(55), method_name: Some("Object.action") }, "file:///D:/Besawit") } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00003197.meta
+    1: Unable to open static sorted file 00003194.sst
+    2: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00003194.sst
+    3: The system cannot find the path specified. (os error 3)
+
+thread 'tokio-runtime-worker' (26880) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:618:14:
+Failed to lookup task ids: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "project_trace_source_operation", global_name: "next_napi_bindings::next_api::project::project_trace_source_operation", .. }, this: None, arg: (ResolvedVc(RawVc::TaskCell(1, "next_api::project::ProjectContainer#0")), StackFrame { is_server: false, is_ignored: None, original_file: None, file: "file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js", line: Some(11536), column: Some(38), method_name: Some("runAction") }, "file:///D:/Besawit") } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00003197.meta
+    1: Unable to open static sorted file 00003194.sst
+    2: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00003194.sst
+    3: The system cannot find the path specified. (os error 3)
+
+thread 'tokio-runtime-worker' (2328) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:618:14:
+Failed to lookup task ids: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "project_trace_source_operation", global_name: "next_napi_bindings::next_api::project::project_trace_source_operation", .. }, this: None, arg: (ResolvedVc(RawVc::TaskCell(1, "next_api::project::ProjectContainer#0")), StackFrame { is_server: false, is_ignored: None, original_file: None, file: "file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js", line: Some(11599), column: Some(9), method_name: Some("dispatchAction") }, "file:///D:/Besawit") } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00003894.meta
+    1: Unable to open static sorted file 00003890.sst
+    2: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00003890.sst
+    3: The system cannot find the path specified. (os error 3)
+
+thread 'tokio-runtime-worker' (14472) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:618:14:
+Failed to lookup task ids: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "project_trace_source_operation", global_name: "next_napi_bindings::next_api::project::project_trace_source_operation", .. }, this: None, arg: (ResolvedVc(RawVc::TaskCell(1, "next_api::project::ProjectContainer#0")), StackFrame { is_server: false, is_ignored: None, original_file: None, file: "file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js", line: Some(11629), column: Some(40), method_name: Some("Object.dispatch") }, "file:///D:/Besawit") } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00007132.meta
+    1: Unable to open static sorted file 00007130.sst
+    2: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00007130.sst
+    3: The system cannot find the path specified. (os error 3)
+
+thread 'tokio-runtime-worker' (30992) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:618:14:
+Failed to lookup task ids: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "project_trace_source_operation", global_name: "next_napi_bindings::next_api::project::project_trace_source_operation", .. }, this: None, arg: (ResolvedVc(RawVc::TaskCell(1, "next_api::project::ProjectContainer#0")), StackFrame { is_server: false, is_ignored: None, original_file: None, file: "file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js", line: Some(8084), column: Some(21), method_name: Some("createFetch") }, "file:///D:/Besawit") } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00007640.meta
+    1: Unable to open static sorted file 00007638.sst
+    2: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00007638.sst
+    3: The system cannot find the path specified. (os error 3)
+
+thread 'tokio-runtime-worker' (7736) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:618:14:
+Failed to lookup task ids: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "project_trace_source_operation", global_name: "next_napi_bindings::next_api::project::project_trace_source_operation", .. }, this: None, arg: (ResolvedVc(RawVc::TaskCell(1, "next_api::project::ProjectContainer#0")), StackFrame { is_server: false, is_ignored: None, original_file: None, file: "file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js", line: Some(5469), column: Some(31), method_name: Some("startTransition") }, "file:///D:/Besawit") } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00003197.meta
+    1: Unable to open static sorted file 00003194.sst
+    2: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00003194.sst
+    3: The system cannot find the path specified. (os error 3)
+
+thread 'tokio-runtime-worker' (2092) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:618:14:
+Failed to lookup task ids: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "project_trace_source_operation", global_name: "next_napi_bindings::next_api::project::project_trace_source_operation", .. }, this: None, arg: (ResolvedVc(RawVc::TaskCell(1, "next_api::project::ProjectContainer#0")), StackFrame { is_server: false, is_ignored: None, original_file: None, file: "file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js", line: Some(962), column: Some(13), method_name: Some("nextDispatch") }, "file:///D:/Besawit") } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00003197.meta
+    1: Unable to open static sorted file 00003194.sst
+    2: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00003194.sst
+    3: The system cannot find the path specified. (os error 3)
+
+thread 'tokio-runtime-worker' (20152) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:618:14:
+Failed to lookup task ids: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "project_trace_source_operation", global_name: "next_napi_bindings::next_api::project::project_trace_source_operation", .. }, this: None, arg: (ResolvedVc(RawVc::TaskCell(1, "next_api::project::ProjectContainer#0")), StackFrame { is_server: false, is_ignored: None, original_file: None, file: "file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js", line: Some(922), column: Some(5), method_name: Some("dispatchAppRouterAction") }, "file:///D:/Besawit") } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00003197.meta
+    1: Unable to open static sorted file 00003194.sst
+    2: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00003194.sst
+    3: The system cannot find the path specified. (os error 3)
+
+thread 'tokio-runtime-worker' (6464) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:618:14:
+Failed to lookup task ids: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "project_trace_source_operation", global_name: "next_napi_bindings::next_api::project::project_trace_source_operation", .. }, this: None, arg: (ResolvedVc(RawVc::TaskCell(1, "next_api::project::ProjectContainer#0")), StackFrame { is_server: false, is_ignored: None, original_file: None, file: "file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js", line: Some(11688), column: Some(49), method_name: Some("dispatchNavigateAction") }, "file:///D:/Besawit") } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00004816.meta
+    1: Unable to open static sorted file 00004814.sst
+    2: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00004814.sst
+    3: The system cannot find the path specified. (os error 3)
+
+thread 'tokio-runtime-worker' (3892) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:618:14:
+Failed to lookup task ids: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "project_trace_source_operation", global_name: "next_napi_bindings::next_api::project::project_trace_source_operation", .. }, this: None, arg: (ResolvedVc(RawVc::TaskCell(1, "next_api::project::ProjectContainer#0")), StackFrame { is_server: false, is_ignored: None, original_file: None, file: "file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_compiled_0rpq4pf._.js", line: Some(1279), column: Some(31), method_name: Some("Object.startTransition") }, "file:///D:/Besawit") } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00003197.meta
+    1: Unable to open static sorted file 00003194.sst
+    2: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00003194.sst
+    3: The system cannot find the path specified. (os error 3)
+
+thread 'tokio-runtime-worker' (24480) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:618:14:
+Failed to lookup task ids: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "project_trace_source_operation", global_name: "next_napi_bindings::next_api::project::project_trace_source_operation", .. }, this: None, arg: (ResolvedVc(RawVc::TaskCell(1, "next_api::project::ProjectContainer#0")), StackFrame { is_server: false, is_ignored: None, original_file: None, file: "file://D:/Besawit/.next/dev/static/chunks/node_modules_058dkac._.js", line: Some(554), column: Some(24), method_name: Some("linkClicked") }, "file:///D:/Besawit") } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00006663.meta
+    1: Unable to open static sorted file 00006659.sst
+    2: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00006659.sst
+    3: The system cannot find the path specified. (os error 3)
+
+thread 'tokio-runtime-worker' (32036) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:618:14:
+Failed to lookup task ids: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "project_trace_source_operation", global_name: "next_napi_bindings::next_api::project::project_trace_source_operation", .. }, this: None, arg: (ResolvedVc(RawVc::TaskCell(1, "next_api::project::ProjectContainer#0")), StackFrame { is_server: false, is_ignored: None, original_file: None, file: "file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js", line: Some(10329), column: Some(13), method_name: Some("executeDispatch") }, "file:///D:/Besawit") } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00003197.meta
+    1: Unable to open static sorted file 00003194.sst
+    2: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00003194.sst
+    3: The system cannot find the path specified. (os error 3)
+
+thread 'tokio-runtime-worker' (22360) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:618:14:
+Failed to lookup task ids: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "project_trace_source_operation", global_name: "next_napi_bindings::next_api::project::project_trace_source_operation", .. }, this: None, arg: (ResolvedVc(RawVc::TaskCell(1, "next_api::project::ProjectContainer#0")), StackFrame { is_server: false, is_ignored: None, original_file: None, file: "file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js", line: Some(965), column: Some(74), method_name: Some("runWithFiberInDEV") }, "file:///D:/Besawit") } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00004418.meta
+    1: Unable to open static sorted file 00004416.sst
+    2: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00004416.sst
+    3: The system cannot find the path specified. (os error 3)
+
+thread 'tokio-runtime-worker' (12972) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:618:14:
+Failed to lookup task ids: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "project_trace_source_operation", global_name: "next_napi_bindings::next_api::project::project_trace_source_operation", .. }, this: None, arg: (ResolvedVc(RawVc::TaskCell(1, "next_api::project::ProjectContainer#0")), StackFrame { is_server: false, is_ignored: None, original_file: None, file: "file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js", line: Some(10355), column: Some(41), method_name: Some("processDispatchQueue") }, "file:///D:/Besawit") } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00007552.meta
+    1: Unable to open static sorted file 00007549.sst
+    2: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00007549.sst
+    3: The system cannot find the path specified. (os error 3)
+
+thread 'tokio-runtime-worker' (23204) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:618:14:
+Failed to lookup task ids: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "project_trace_source_operation", global_name: "next_napi_bindings::next_api::project::project_trace_source_operation", .. }, this: None, arg: (ResolvedVc(RawVc::TaskCell(1, "next_api::project::ProjectContainer#0")), StackFrame { is_server: false, is_ignored: None, original_file: None, file: "file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js", line: Some(10633), column: Some(13), method_name: Some("<unknown>") }, "file:///D:/Besawit") } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00003197.meta
+    1: Unable to open static sorted file 00003194.sst
+    2: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00003194.sst
+    3: The system cannot find the path specified. (os error 3)
+
+thread 'tokio-runtime-worker' (8456) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:618:14:
+Failed to lookup task ids: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "project_trace_source_operation", global_name: "next_napi_bindings::next_api::project::project_trace_source_operation", .. }, this: None, arg: (ResolvedVc(RawVc::TaskCell(1, "next_api::project::ProjectContainer#0")), StackFrame { is_server: false, is_ignored: None, original_file: None, file: "file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js", line: Some(2253), column: Some(44), method_name: Some("batchedUpdates$1") }, "file:///D:/Besawit") } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00003197.meta
+    1: Unable to open static sorted file 00003194.sst
+    2: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00003194.sst
+    3: The system cannot find the path specified. (os error 3)
+
+thread 'tokio-runtime-worker' (5892) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:618:14:
+Failed to lookup task ids: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "project_trace_source_operation", global_name: "next_napi_bindings::next_api::project::project_trace_source_operation", .. }, this: None, arg: (ResolvedVc(RawVc::TaskCell(1, "next_api::project::ProjectContainer#0")), StackFrame { is_server: false, is_ignored: None, original_file: None, file: "file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js", line: Some(10431), column: Some(9), method_name: Some("dispatchEventForPluginEventSystem") }, "file:///D:/Besawit") } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00004418.meta
+    1: Unable to open static sorted file 00004416.sst
+    2: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00004416.sst
+    3: The system cannot find the path specified. (os error 3)
+
+thread 'tokio-runtime-worker' (26880) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:618:14:
+Failed to lookup task ids: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "project_trace_source_operation", global_name: "next_napi_bindings::next_api::project::project_trace_source_operation", .. }, this: None, arg: (ResolvedVc(RawVc::TaskCell(1, "next_api::project::ProjectContainer#0")), StackFrame { is_server: false, is_ignored: None, original_file: None, file: "file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js", line: Some(13002), column: Some(37), method_name: Some("dispatchEvent") }, "file:///D:/Besawit") } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00004762.meta
+    1: Unable to open static sorted file 00004760.sst
+    2: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00004760.sst
+    3: The system cannot find the path specified. (os error 3)
+
+thread 'tokio-runtime-worker' (2328) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:618:14:
+Failed to lookup task ids: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "project_trace_source_operation", global_name: "next_napi_bindings::next_api::project::project_trace_source_operation", .. }, this: None, arg: (ResolvedVc(RawVc::TaskCell(1, "next_api::project::ProjectContainer#0")), StackFrame { is_server: false, is_ignored: None, original_file: None, file: "file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js", line: Some(12984), column: Some(64), method_name: Some("dispatchDiscreteEvent") }, "file:///D:/Besawit") } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00004171.meta
+    1: Unable to open static sorted file 00004167.sst
+    2: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00004167.sst
+    3: The system cannot find the path specified. (os error 3)
+
+thread 'tokio-runtime-worker' (14472) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:618:14:
+Failed to lookup task ids: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "ProjectContainer::get_source_map", global_name: "next_api::project::ProjectContainer::get_source_map", .. }, this: Some(RawVc::TaskCell(1, "next_api::project::ProjectContainer#0")), arg: (FileSystemPath { fs: ResolvedVc(RawVc::TaskCell(14, "turbo_tasks_fs::DiskFileSystem#0")), path: ".next/dev/static/chunks/node_modules_058dkac._.js" }, None) } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00006872.meta
+    1: Unable to open static sorted file 00006869.sst
+    2: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00006869.sst
+    3: The system cannot find the path specified. (os error 3)
+
+thread 'tokio-runtime-worker' (14472) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:618:14:
+Failed to lookup task ids: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "project_trace_source_operation", global_name: "next_napi_bindings::next_api::project::project_trace_source_operation", .. }, this: None, arg: (ResolvedVc(RawVc::TaskCell(1, "next_api::project::ProjectContainer#0")), StackFrame { is_server: false, is_ignored: None, original_file: None, file: "file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js", line: Some(9341), column: Some(24), method_name: Some("async fetchMissingDynamicData") }, "file:///D:/Besawit") } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00007745.meta
+    1: Unable to open static sorted file 00007741.sst
+    2: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00007741.sst
+    3: The system cannot find the path specified. (os error 3)
+
+thread 'tokio-runtime-worker' (5892) panicked at turbopack\crates\turbo-tasks-backend\src\backend\operation\mod.rs:618:14:
+Failed to lookup task ids: Looking up task id for CachedTaskType { native_fn: NativeFunction { name: "project_trace_source_operation", global_name: "next_napi_bindings::next_api::project::project_trace_source_operation", .. }, this: None, arg: (ResolvedVc(RawVc::TaskCell(1, "next_api::project::ProjectContainer#0")), StackFrame { is_server: false, is_ignored: None, original_file: None, file: "file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js", line: Some(8005), column: Some(21), method_name: Some("fetchServerResponse") }, "file:///D:/Besawit") } from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00003197.meta
+    1: Unable to open static sorted file 00003194.sst
+    2: Failed to open SST file D:\Besawit\.next\dev\cache/turbopack\0ca967b8\00003194.sst
+    3: The system cannot find the path specified. (os error 3)
+[browser] Failed to fetch RSC payload for http://localhost:6001/finance/payables. Falling back to browser navigation. TypeError: Failed to fetch
+    at fetchCallImpl (http://gc.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=4yU1q_1x_j2H6UDhOVuaceKCHTkEcLj-T0kyyjaB2vIJSmCvXWYeRedAmBjttX29FMO8A3T0OMuBAuJnK4kqVA:4513:21)
+    at fetch (http://gc.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=4yU1q_1x_j2H6UDhOVuaceKCHTkEcLj-T0kyyjaB2vIJSmCvXWYeRedAmBjttX29FMO8A3T0OMuBAuJnK4kqVA:4519:60)
+    at createFetch (file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:8084:21)
+    at fetchServerResponse (file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:7928:27)
+    at fetchMissingDynamicData (file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:9341:75)
+    at spawnDynamicRequests (file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:9149:35)
+    at navigateToKnownRoute (file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:10033:54)
+    at navigateUsingPrefetchedRouteTree (file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:10052:12)
+    at navigateImpl (file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:9962:16)
+    at navigate (file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:9953:12)
+    at navigateReducer (file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:10530:37)
+    at clientReducer (file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:11382:61)
+    at Object.action (file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:11631:55)
+    at runAction (file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:11536:38)
+    at dispatchAction (file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:11599:9)
+    at Object.dispatch (file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:11629:40)
+    at <unknown> (file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:963:29)
+    at startTransition (file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:5469:31)
+    at nextDispatch (file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:962:13)
+    at dispatchAppRouterAction (file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:922:5)
+    at dispatchNavigateAction (file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:11688:49)
+    at <unknown> (file://D:/Besawit/.next/dev/static/chunks/node_modules_058dkac._.js:555:13)
+    at Object.startTransition (file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_compiled_0rpq4pf._.js:1279:31)
+    at linkClicked (file://D:/Besawit/.next/dev/static/chunks/node_modules_058dkac._.js:554:24)
+    at onClick (file://D:/Besawit/.next/dev/static/chunks/node_modules_058dkac._.js:794:13)
+    at executeDispatch (file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:10329:13)
+    at runWithFiberInDEV (file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:965:74)
+    at processDispatchQueue (file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:10355:41)
+    at <unknown> (file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:10633:13)
+    at batchedUpdates$1 (file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:2253:44)
+    at dispatchEventForPluginEventSystem (file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:10431:9)
+    at dispatchEvent (file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:13002:37)
+    at dispatchDiscreteEvent (file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:12984:64) (file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:8005:21)
+[browser] Failed to fetch RSC payload for http://localhost:6001/master/farmers. Falling back to browser navigation. TypeError: Failed to fetch
+    at fetchCallImpl (http://gc.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=4yU1q_1x_j2H6UDhOVuaceKCHTkEcLj-T0kyyjaB2vIJSmCvXWYeRedAmBjttX29FMO8A3T0OMuBAuJnK4kqVA:4513:21)
+    at fetch (http://gc.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=4yU1q_1x_j2H6UDhOVuaceKCHTkEcLj-T0kyyjaB2vIJSmCvXWYeRedAmBjttX29FMO8A3T0OMuBAuJnK4kqVA:4519:60)
+    at createFetch (file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:8084:21)
+    at fetchServerResponse (file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:7928:27)
+    at fetchMissingDynamicData (file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:9341:75)
+    at spawnDynamicRequests (file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:9149:35)
+    at navigateToKnownRoute (file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:10033:54)
+    at navigateUsingPrefetchedRouteTree (file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:10052:12)
+    at navigateImpl (file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:9962:16)
+    at navigate (file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:9953:12)
+    at navigateReducer (file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:10530:37)
+    at clientReducer (file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:11382:61)
+    at Object.action (file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:11631:55)
+    at runAction (file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:11536:38)
+    at dispatchAction (file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:11599:9)
+    at Object.dispatch (file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:11629:40)
+    at <unknown> (file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:963:29)
+    at startTransition (file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:5469:31)
+    at nextDispatch (file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:962:13)
+    at dispatchAppRouterAction (file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:922:5)
+    at dispatchNavigateAction (file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:11688:49)
+    at <unknown> (file://D:/Besawit/.next/dev/static/chunks/node_modules_058dkac._.js:555:13)
+    at Object.startTransition (file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_compiled_0rpq4pf._.js:1279:31)
+    at linkClicked (file://D:/Besawit/.next/dev/static/chunks/node_modules_058dkac._.js:554:24)
+    at onClick (file://D:/Besawit/.next/dev/static/chunks/node_modules_058dkac._.js:794:13)
+    at executeDispatch (file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:10329:13)
+    at runWithFiberInDEV (file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:965:74)
+    at processDispatchQueue (file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:10355:41)
+    at <unknown> (file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:10633:13)
+    at batchedUpdates$1 (file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:2253:44)
+    at dispatchEventForPluginEventSystem (file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:10431:9)
+    at dispatchEvent (file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:13002:37)
+    at dispatchDiscreteEvent (file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:12984:64) (file://D:/Besawit/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:8005:21)
+Persisting failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Compaction failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)

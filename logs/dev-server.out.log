@@ -5344,3 +5344,4 @@ Creating turbopack project { dir: 'D:\\Besawit', testMode: true }
  GET /finance/payables 200 in 836ms (next.js: 466ms, application-code: 370ms)
  GET /master/farmers 200 in 869ms (next.js: 425ms, application-code: 444ms)
 ○ Compiling /_error ...
+[?25h

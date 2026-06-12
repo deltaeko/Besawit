@@ -4,19 +4,16 @@ import {
   canPerformAction,
   type AppActionPermissionKey,
 } from "@/lib/auth/permissions";
-import { getSession, type SessionPayload } from "@/lib/auth/session";
+import { requireSessionUser } from "@/lib/auth/api-guard";
+import type { SessionPayload } from "@/lib/auth/session";
 
 export async function requireActionPermission(key: AppActionPermissionKey) {
-  const session = await getSession();
-
-  if (!session) {
-    return {
-      session: null,
-      response: NextResponse.json({ error: "Unauthorized." }, { status: 401 }),
-    };
+  const auth = await requireSessionUser();
+  if (auth.response || !auth.session) {
+    return auth;
   }
 
-  if (!canPerformAction(session.role, session.permissions, key)) {
+  if (!canPerformAction(auth.session.role, auth.session.permissions, key)) {
     return {
       session: null,
       response: NextResponse.json(
@@ -26,5 +23,5 @@ export async function requireActionPermission(key: AppActionPermissionKey) {
     };
   }
 
-  return { session: session as SessionPayload, response: null };
+  return { session: auth.session as SessionPayload, response: null };
 }

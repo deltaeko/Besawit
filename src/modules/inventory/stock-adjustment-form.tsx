@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowRightLeft, ClipboardList, Wallet } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -85,16 +85,8 @@ export function StockAdjustmentForm({
     [products],
   );
 
-  useEffect(() => {
-    const selected = productOptions.find((option) => option.id === productId);
-    if (selected) {
-      setProductQuery(selected.label);
-      return;
-    }
-    if (!productId) {
-      setProductQuery("");
-    }
-  }, [productId, productOptions]);
+  const displayedProductQuery =
+    showProductDropdown || !productId ? productQuery : selectedProduct?.name ?? "";
 
   const selectedBalance = useMemo(() => {
     if (!warehouseId || !productId) return null;
@@ -163,6 +155,8 @@ export function StockAdjustmentForm({
       unitCost: 0,
       notes: "",
     });
+    setProductQuery("");
+    setShowProductDropdown(false);
     setSubmitting(false);
   }
 
@@ -234,7 +228,7 @@ export function StockAdjustmentForm({
                   <Input
                     id="productId"
                     placeholder="Cari produk"
-                    value={productQuery}
+                    value={displayedProductQuery}
                     onChange={(event) => {
                       const nextValue = event.target.value;
                       setProductQuery(nextValue);
@@ -243,7 +237,10 @@ export function StockAdjustmentForm({
                         form.setValue("productId", "", { shouldDirty: true, shouldValidate: true });
                       }
                     }}
-                    onFocus={() => setShowProductDropdown(true)}
+                    onFocus={() => {
+                      setProductQuery(selectedProduct?.name ?? "");
+                      setShowProductDropdown(true);
+                    }}
                     onBlur={() => window.setTimeout(() => setShowProductDropdown(false), 120)}
                   />
                   <input type="hidden" {...form.register("productId")} />

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { getSession } from "@/lib/auth/session";
+import { requirePermission } from "@/lib/auth/api-guard";
 import { changeProductPrice, getMasterDetail, getProductPriceHistoryList } from "@/services/master-service";
 
 export async function GET(
@@ -30,10 +30,13 @@ export async function POST(
 ) {
   const { id } = await context.params;
   const payload = await request.json();
-  const session = await getSession();
+  const auth = await requirePermission("master.products");
+  if (auth.response || !auth.session) {
+    return auth.response;
+  }
 
   try {
-    const result = await changeProductPrice(id, payload, session?.sub);
+    const result = await changeProductPrice(id, payload, auth.session.sub);
     return NextResponse.json(result, { status: 201 });
   } catch (error) {
     return NextResponse.json(

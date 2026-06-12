@@ -22,7 +22,7 @@ export function PalmPurchaseFormActions({
   const primaryLabel = mode === "create" ? "Simpan" : "Simpan Perubahan";
 
   return (
-    <div className="flex flex-wrap items-center justify-end gap-2 rounded-2xl border border-border/70 bg-background/80 p-1.5 shadow-sm">
+    <div className="flex flex-wrap items-center justify-end gap-2 rounded-[1.35rem] border border-white/85 bg-card/92 p-1.5 shadow-[0_20px_56px_-36px_rgba(20,37,24,0.22)] ring-1 ring-black/[0.02]">
       <Button
         className="h-9 px-3 text-sm"
         disabled={submitting}

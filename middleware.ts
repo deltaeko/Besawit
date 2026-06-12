@@ -6,7 +6,7 @@ import { env } from "@/lib/env";
 import type { RolePermissionMap } from "@/lib/auth/permissions";
 import type { AppRole } from "@/types/domain";
 
-const publicPaths = ["/login"];
+const publicPaths = ["/", "/login", "/setup-account"];
 const cookieName = "besawit_session";
 const secret = new TextEncoder().encode(env.SESSION_SECRET);
 

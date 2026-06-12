@@ -5,15 +5,19 @@ import { usePathname } from "next/navigation";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { useMemo, useState } from "react";
 
+import { AppLogo } from "@/components/branding/app-logo";
 import { appNavigation, type NavigationItem } from "@/components/layout/navigation";
 import { canAccessPermission, type RolePermissionMap } from "@/lib/auth/permissions";
+import type { ResolvedBrandingSettings } from "@/services/branding-service";
 import { cn } from "@/lib/utils";
 import type { AppRole } from "@/types/domain";
 
 export function AppSidebar({
+  branding,
   role,
   permissions,
 }: {
+  branding: ResolvedBrandingSettings;
   role: AppRole;
   permissions: RolePermissionMap;
 }) {
@@ -23,10 +27,15 @@ export function AppSidebar({
   const navGroups = useMemo(
     () =>
       appNavigation
+        .filter((item) => item.roles.includes(role))
         .map((item) => ({
           ...item,
           children:
-            item.children?.filter((child) => canAccessPermission(role, permissions, child.permission)) ??
+            item.children?.filter(
+              (child) =>
+                child.roles.includes(role) &&
+                canAccessPermission(role, permissions, child.permission),
+            ) ??
             [],
         }))
         .filter(
@@ -51,14 +60,34 @@ export function AppSidebar({
   return (
     <aside className="sticky top-0 hidden h-screen min-h-0 w-[286px] shrink-0 border-r border-border/80 bg-white/90 backdrop-blur lg:flex lg:flex-col">
       <div className="border-b border-border/80 px-6 py-6">
-        <div className="font-mono text-[11px] uppercase tracking-[0.35em] text-primary/80">
-          Besawit
+        <AppLogo
+          fallbackImageUrl={branding.logoUrl}
+          imageAlt={branding.appDisplayName}
+          imageUrl={branding.logoSquareUrl}
+          mark={branding.mark}
+          markClassName="h-12 w-12 rounded-[1.1rem] text-sm"
+          name={branding.appDisplayName}
+        />
+        <div className="mt-4 flex flex-wrap gap-2">
+          <Link
+            className="inline-flex items-center rounded-full border border-border/80 bg-background px-3 py-1.5 text-xs font-semibold text-foreground transition-colors hover:bg-muted"
+            href="/dashboard"
+          >
+            Dashboard
+          </Link>
+          {canAccessPermission(role, permissions, "settings.branding") ? (
+            <Link
+              className="inline-flex items-center rounded-full border border-border/80 bg-background px-3 py-1.5 text-xs font-semibold text-foreground transition-colors hover:bg-muted"
+              href="/settings/branding"
+            >
+              Branding Settings
+            </Link>
+          ) : null}
         </div>
-        <div className="mt-3 text-2xl font-semibold tracking-tight text-foreground">
-          Operations Core
-        </div>
-        <p className="mt-2 text-sm leading-6 text-muted-foreground">
-          Dashboard operasional untuk transaksi sawit, toko, persediaan, dan keuangan.
+        <p className="mt-3 text-sm leading-6 text-muted-foreground">
+          {branding.companyName === branding.appDisplayName
+            ? branding.tagline
+            : `${branding.companyName} · ${branding.tagline}`}
         </p>
       </div>
 

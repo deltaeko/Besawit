@@ -1,7 +1,7 @@
 import { and, count, desc, eq, getTableColumns, gte, lte, sql, type SQL } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 
-import { db } from "@/lib/db/client";
+import { getDb } from "@/lib/db/client";
 import {
   products,
   stockAdjustmentItems,
@@ -15,6 +15,7 @@ import {
 } from "@/lib/db/schema";
 
 export async function getProductById(productId: string) {
+  const db = await getDb();
   const [row] = await db
     .select()
     .from(products)
@@ -24,6 +25,7 @@ export async function getProductById(productId: string) {
 }
 
 export async function getProductByCode(code: string) {
+  const db = await getDb();
   const [row] = await db
     .select()
     .from(products)
@@ -33,11 +35,13 @@ export async function getProductByCode(code: string) {
 }
 
 export async function createProduct(values: typeof products.$inferInsert) {
+  const db = await getDb();
   const [row] = await db.insert(products).values(values).returning();
   return row;
 }
 
 export async function getStockBalance(warehouseId: string, productId: string) {
+  const db = await getDb();
   const [row] = await db
     .select()
     .from(stockBalances)
@@ -53,6 +57,7 @@ export async function getStockBalance(warehouseId: string, productId: string) {
 }
 
 export async function upsertStockBalance(values: typeof stockBalances.$inferInsert) {
+  const db = await getDb();
   const existing = await getStockBalance(values.warehouseId, values.productId);
 
   if (!existing) {
@@ -80,11 +85,13 @@ export async function upsertStockBalance(values: typeof stockBalances.$inferInse
 }
 
 export async function createStockMovement(values: typeof stockMovements.$inferInsert) {
+  const db = await getDb();
   const [row] = await db.insert(stockMovements).values(values).returning();
   return row;
 }
 
 export async function hasStockMovementHistory(warehouseId: string, productId: string) {
+  const db = await getDb();
   const [row] = await db
     .select({ value: count() })
     .from(stockMovements)
@@ -102,6 +109,7 @@ export async function hasStockMovementByReference(
   referenceType: typeof stockMovements.$inferSelect.referenceType,
   referenceId: string,
 ) {
+  const db = await getDb();
   const [row] = await db
     .select({ value: count() })
     .from(stockMovements)
@@ -119,6 +127,7 @@ export async function listStockMovementsByReference(
   referenceType: typeof stockMovements.$inferSelect.referenceType,
   referenceId: string,
 ) {
+  const db = await getDb();
   return db
     .select({
       ...getTableColumns(stockMovements),
@@ -145,6 +154,7 @@ export async function listStockMovements(
     warehouseId?: string;
   },
 ) {
+  const db = await getDb();
   const conditions = [];
   if (filters?.productId) conditions.push(eq(stockMovements.productId, filters.productId));
   if (filters?.warehouseId) conditions.push(eq(stockMovements.warehouseId, filters.warehouseId));
@@ -167,6 +177,7 @@ export async function listStockMovements(
 }
 
 export async function getStockMovementById(id: string) {
+  const db = await getDb();
   const counterpartyWarehouses = alias(warehouses, "counterparty_warehouses");
   const [row] = await db
     .select({
@@ -201,6 +212,7 @@ export async function listStockMovementsPage(
     dateTo?: Date;
   },
 ) {
+  const db = await getDb();
   const conditions: SQL[] = [];
   if (filters?.productId) conditions.push(eq(stockMovements.productId, filters.productId));
   if (filters?.warehouseId) conditions.push(eq(stockMovements.warehouseId, filters.warehouseId));
@@ -240,6 +252,7 @@ export async function listStockMovementsPage(
 }
 
 export async function listStockBalances(limit = 100) {
+  const db = await getDb();
   return db
     .select({
       ...getTableColumns(stockBalances),
@@ -266,6 +279,7 @@ export async function listStockBalancesPage(
     lowStockOnly?: boolean;
   },
 ) {
+  const db = await getDb();
   const conditions: SQL[] = [];
   if (filters?.productId) conditions.push(eq(stockBalances.productId, filters.productId));
   if (filters?.warehouseId) conditions.push(eq(stockBalances.warehouseId, filters.warehouseId));
@@ -305,6 +319,7 @@ export async function listStockBalancesPage(
 }
 
 export async function summarizeStockBalances() {
+  const db = await getDb();
   const [row] = await db
     .select({
       totalRows: count(),
@@ -324,6 +339,7 @@ export async function summarizeStockBalances() {
 }
 
 export async function createStockTake(values: typeof stockTakes.$inferInsert) {
+  const db = await getDb();
   const [row] = await db.insert(stockTakes).values(values).returning();
   return row;
 }
@@ -331,15 +347,18 @@ export async function createStockTake(values: typeof stockTakes.$inferInsert) {
 export async function createStockTakeItems(
   values: (typeof stockTakeItems.$inferInsert)[],
 ) {
+  const db = await getDb();
   return db.insert(stockTakeItems).values(values).returning();
 }
 
 export async function getStockTakeById(id: string) {
+  const db = await getDb();
   const [row] = await db.select().from(stockTakes).where(eq(stockTakes.id, id)).limit(1);
   return row ?? null;
 }
 
 export async function listStockTakes(limit = 50) {
+  const db = await getDb();
   return db
     .select()
     .from(stockTakes)
@@ -355,6 +374,7 @@ export async function listStockTakesPage(
     status?: typeof stockTakes.$inferSelect.status;
   },
 ) {
+  const db = await getDb();
   const conditions: SQL[] = [];
   if (filters?.warehouseId) conditions.push(eq(stockTakes.warehouseId, filters.warehouseId));
   if (filters?.status) conditions.push(eq(stockTakes.status, filters.status));
@@ -387,6 +407,7 @@ export async function listStockTakesPage(
 }
 
 export async function summarizeStockTakes() {
+  const db = await getDb();
   const [row] = await db
     .select({
       totalCount: count(),
@@ -403,6 +424,7 @@ export async function summarizeStockTakes() {
 }
 
 export async function listStockTakeItems(stockTakeId: string) {
+  const db = await getDb();
   return db
     .select({
       ...getTableColumns(stockTakeItems),
@@ -419,6 +441,7 @@ export async function updateStockTake(
   id: string,
   values: Partial<typeof stockTakes.$inferInsert>,
 ) {
+  const db = await getDb();
   const [row] = await db
     .update(stockTakes)
     .set(values)
@@ -430,11 +453,13 @@ export async function updateStockTake(
 export async function createStockAdjustment(
   values: typeof stockAdjustments.$inferInsert,
 ) {
+  const db = await getDb();
   const [row] = await db.insert(stockAdjustments).values(values).returning();
   return row;
 }
 
 export async function getStockAdjustmentById(id: string) {
+  const db = await getDb();
   const [row] = await db.select().from(stockAdjustments).where(eq(stockAdjustments.id, id)).limit(1);
   return row ?? null;
 }
@@ -443,6 +468,7 @@ export async function updateStockAdjustment(
   id: string,
   values: Partial<typeof stockAdjustments.$inferInsert>,
 ) {
+  const db = await getDb();
   const [row] = await db
     .update(stockAdjustments)
     .set(values)
@@ -455,10 +481,12 @@ export async function updateStockAdjustment(
 export async function createStockAdjustmentItems(
   values: (typeof stockAdjustmentItems.$inferInsert)[],
 ) {
+  const db = await getDb();
   return db.insert(stockAdjustmentItems).values(values).returning();
 }
 
 export async function listStockAdjustments(limit = 50) {
+  const db = await getDb();
   return db
     .select({
       ...getTableColumns(stockAdjustments),
@@ -481,6 +509,7 @@ export async function listStockAdjustmentsPage(
     status?: typeof stockAdjustments.$inferSelect.status;
   },
 ) {
+  const db = await getDb();
   const conditions: SQL[] = [];
   if (filters?.warehouseId) conditions.push(eq(stockAdjustments.warehouseId, filters.warehouseId));
   if (filters?.status) conditions.push(eq(stockAdjustments.status, filters.status));
@@ -515,6 +544,7 @@ export async function listStockAdjustmentsPage(
 }
 
 export async function summarizeStockAdjustments() {
+  const db = await getDb();
   const [row] = await db
     .select({
       totalCount: count(),
@@ -529,6 +559,7 @@ export async function summarizeStockAdjustments() {
 }
 
 export async function listStockAdjustmentItems(adjustmentId: string) {
+  const db = await getDb();
   return db
     .select({
       ...getTableColumns(stockAdjustmentItems),
@@ -545,6 +576,7 @@ export async function updateStockAdjustmentItem(
   id: string,
   values: Partial<typeof stockAdjustmentItems.$inferInsert>,
 ) {
+  const db = await getDb();
   const [row] = await db
     .update(stockAdjustmentItems)
     .set(values)

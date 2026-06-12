@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { getSession } from "@/lib/auth/session";
+import { requireMasterEntityPermission } from "@/lib/auth/api-guard";
 import { isMasterEntity } from "@/modules/master/helpers";
 import {
   createMaster,
@@ -43,12 +43,15 @@ export async function POST(
   }
 
   const payload = await request.json();
-  const session = await getSession();
+  const auth = await requireMasterEntityPermission(entity);
+  if (auth.response || !auth.session) {
+    return auth.response;
+  }
 
   try {
-    const record = await createMaster(entity, payload, session?.sub);
+    const record = await createMaster(entity, payload, auth.session.sub);
     if (entity === "products") {
-      await recordInitialProductPriceHistory(record.id, payload, session?.sub);
+      await recordInitialProductPriceHistory(record.id, payload, auth.session.sub);
     }
     return NextResponse.json(record, { status: 201 });
   } catch (error) {

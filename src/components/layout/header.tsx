@@ -1,22 +1,26 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo, useState, type FormEvent } from "react";
 import { usePathname } from "next/navigation";
 import { ChevronDown, ChevronRight, LogOut, Menu, X } from "lucide-react";
 
-import { appNavigation } from "@/components/layout/navigation";
+import { AppLogo } from "@/components/branding/app-logo";
+import { appNavigation, resolveNavigationContext } from "@/components/layout/navigation";
 import { canAccessPermission, type RolePermissionMap } from "@/lib/auth/permissions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import type { ResolvedBrandingSettings } from "@/services/branding-service";
 import { cn } from "@/lib/utils";
 import type { AppRole } from "@/types/domain";
 
 export function AppHeader({
+  branding,
   userName,
   role,
   permissions,
 }: {
+  branding: ResolvedBrandingSettings;
   userName: string;
   role: AppRole;
   permissions: RolePermissionMap;
@@ -28,10 +32,15 @@ export function AppHeader({
   const navItems = useMemo(
     () =>
       appNavigation
+        .filter((item) => item.roles.includes(role))
         .map((item) => ({
           ...item,
           children:
-            item.children?.filter((child) => canAccessPermission(role, permissions, child.permission)) ??
+            item.children?.filter(
+              (child) =>
+                child.roles.includes(role) &&
+                canAccessPermission(role, permissions, child.permission),
+            ) ??
             [],
         }))
         .filter(
@@ -50,12 +59,30 @@ export function AppHeader({
       }, {}),
     [navItems],
   );
+  const navigationContext = useMemo(
+    () => resolveNavigationContext(pathname, navItems) ?? {
+      group: "Dashboard",
+      pageTitle: "Workspace",
+      sectionTitle: branding.appDisplayName,
+    },
+    [branding.appDisplayName, navItems, pathname],
+  );
 
   function toggleGroup(title: string) {
     setOpenGroups((current) => ({
       ...current,
       [title]: !current[title],
     }));
+  }
+
+  async function handleLogout(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    await fetch("/api/auth/logout", {
+      method: "POST",
+    });
+
+    window.location.assign("/login");
   }
 
   return (
@@ -73,11 +100,8 @@ export function AppHeader({
               <Menu className="size-4" />
             </Button>
             <div className="min-w-0">
-              <div className="font-mono text-[11px] uppercase tracking-[0.26em] text-primary/85">
-                Besawit Console
-              </div>
-              <div className="mt-1 text-sm text-muted-foreground">
-                Sistem operasional transaksi, stok, dan keuangan.
+              <div className="truncate text-2xl font-semibold tracking-tight text-foreground">
+                {navigationContext.pageTitle}
               </div>
             </div>
           </div>
@@ -90,7 +114,7 @@ export function AppHeader({
               <div className="text-sm font-semibold text-foreground">{userName}</div>
               <div className="text-xs text-muted-foreground">Pengguna aktif</div>
             </div>
-            <form action="/api/auth/logout" method="post">
+            <form action="/api/auth/logout" method="post" onSubmit={handleLogout}>
               <Button className="bg-white" size="sm" type="submit" variant="outline">
                 <LogOut className="size-4" />
                 <span className="hidden sm:inline">Logout</span>
@@ -111,10 +135,15 @@ export function AppHeader({
           <div className="absolute inset-y-0 left-0 flex w-[88vw] max-w-sm flex-col bg-white text-foreground shadow-2xl">
             <div className="flex items-center justify-between border-b border-border px-5 py-5">
               <div>
-                <div className="font-mono text-xs uppercase tracking-[0.35em] text-primary/85">
-                  Besawit
-                </div>
-                <div className="mt-2 text-xl font-semibold">Operations Core</div>
+                <AppLogo
+                  fallbackImageUrl={branding.logoUrl}
+                  imageAlt={branding.appDisplayName}
+                  imageUrl={branding.logoSquareUrl}
+                  mark={branding.mark}
+                  markClassName="h-10 w-10 rounded-2xl text-xs"
+                  name={branding.appDisplayName}
+                />
+                <div className="mt-3 text-xl font-semibold">Operations Core</div>
                 <p className="mt-1 text-sm text-muted-foreground">
                   Dashboard operasional transaksi, stok, dan keuangan.
                 </p>
@@ -240,7 +269,7 @@ export function AppHeader({
             </nav>
 
             <div className="border-t border-border p-4">
-              <form action="/api/auth/logout" method="post">
+              <form action="/api/auth/logout" method="post" onSubmit={handleLogout}>
                 <Button className="w-full bg-white" type="submit" variant="outline">
                   <LogOut className="size-4" />
                   Logout

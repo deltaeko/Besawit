@@ -1,5 +1,6 @@
 import Decimal from "decimal.js";
 
+import { runInDbTransaction } from "@/lib/db/client";
 import { palmPurchaseSchema, palmSaleSchema } from "@/lib/validation/palm";
 import {
   createTbsPurchase,
@@ -340,101 +341,103 @@ export async function getPalmSaleFormOptions() {
 }
 
 export async function createPalmPurchase(payload: unknown, actorId?: string | null) {
-  const parsed = palmPurchaseSchema.parse(payload);
-  if (!parsed.warehouseId) {
-    throw new Error("Gudang wajib diisi untuk membentuk stok TBS.");
-  }
+  return runInDbTransaction(async () => {
+    const parsed = palmPurchaseSchema.parse(payload);
+    if (!parsed.warehouseId) {
+      throw new Error("Gudang wajib diisi untuk membentuk stok TBS.");
+    }
 
-  const netWeight = new Decimal(parsed.grossWeight).minus(parsed.tareWeight);
-  const totalPurchase = netWeight.mul(parsed.buyingPricePerKg);
-  const totalOperationalCost = new Decimal(parsed.transportCost)
-    .plus(parsed.loadingCost)
-    .plus(parsed.otherCost);
+    const netWeight = new Decimal(parsed.grossWeight).minus(parsed.tareWeight);
+    const totalPurchase = netWeight.mul(parsed.buyingPricePerKg);
+    const totalOperationalCost = new Decimal(parsed.transportCost)
+      .plus(parsed.loadingCost)
+      .plus(parsed.otherCost);
 
-  if (netWeight.lte(0)) {
-    throw new Error("Net weight must be greater than zero.");
-  }
+    if (netWeight.lte(0)) {
+      throw new Error("Net weight must be greater than zero.");
+    }
 
-  const storeDebtPlanResult = await buildStoreDebtOffsetPlan({
-    farmerId: parsed.farmerId,
-    totalPurchase,
-    deduction: {
-      mode: parsed.storeDebtDeductionMode,
-      value: parsed.storeDebtDeductionValue,
-      percentage: parsed.storeDebtDeductionPercent,
-      notes: parsed.storeDebtDeductionNotes,
-    },
+    const storeDebtPlanResult = await buildStoreDebtOffsetPlan({
+      farmerId: parsed.farmerId,
+      totalPurchase,
+      deduction: {
+        mode: parsed.storeDebtDeductionMode,
+        value: parsed.storeDebtDeductionValue,
+        percentage: parsed.storeDebtDeductionPercent,
+        notes: parsed.storeDebtDeductionNotes,
+      },
+    });
+    const storeDebtAppliedAmount = storeDebtPlanResult.plan?.appliedAmount ?? new Decimal(0);
+    const payableAmount = Decimal.max(totalPurchase.minus(storeDebtAppliedAmount), 0);
+    const tbsPoolProduct = await ensureTbsPoolProduct();
+    const purchaseWarehouseId = parsed.warehouseId;
+
+    const purchase = await createTbsPurchase({
+      code: generateTransactionCode("TBP"),
+      purchaseDate: new Date(parsed.purchaseDate),
+      farmerId: parsed.farmerId,
+      driverId: parsed.driverId || null,
+      vehicleId: parsed.vehicleId || null,
+      warehouseId: parsed.warehouseId || null,
+      grossWeight: parsed.grossWeight.toFixed(2),
+      tareWeight: parsed.tareWeight.toFixed(2),
+      netWeight: netWeight.toFixed(2),
+      buyingPricePerKg: parsed.buyingPricePerKg.toFixed(2),
+      totalPurchase: totalPurchase.toFixed(2),
+      transportCost: parsed.transportCost.toFixed(2),
+      loadingCost: parsed.loadingCost.toFixed(2),
+      otherCost: parsed.otherCost.toFixed(2),
+      totalOperationalCost: totalOperationalCost.toFixed(2),
+      notes: parsed.notes || null,
+      createdBy: actorId ?? null,
+      paymentStatus: "unpaid",
+      status: "active",
+    });
+
+    const payable = await createPayableEntry({
+      sourceType: "tbs_purchase",
+      sourceId: purchase.id,
+      partyType: "farmer",
+      farmerId: purchase.farmerId,
+      amount: Number(payableAmount.toFixed(2)),
+      notes: "Auto-generated from TBS purchase",
+      createdBy: actorId,
+    });
+
+    await applyTbsPurchaseStoreOffset({
+      purchaseId: purchase.id,
+      payableId: payable.id,
+      farmerId: purchase.farmerId,
+      actorId,
+      plan: storeDebtPlanResult.plan,
+    });
+
+    await applyStockMovement({
+      warehouseId: purchaseWarehouseId,
+      productId: tbsPoolProduct.id,
+      referenceType: "tbs_purchase",
+      referenceId: purchase.id,
+      movementType: "purchase_in",
+      quantity: Number(netWeight.toFixed(2)),
+      unitCost: Number(parsed.buyingPricePerKg),
+      notes: "Stok TBS masuk dari pembelian petani",
+      createdBy: actorId,
+    });
+
+    await logAudit({
+      entityType: "tbs_purchases",
+      entityId: purchase.id,
+      action: "create",
+      actorId,
+      after: purchase,
+      metadata: {
+        storeDebtDeductionApplied: storeDebtAppliedAmount.toFixed(2),
+        storeDebtReceivableCount: storeDebtPlanResult.summary.receivableCount,
+      },
+    });
+
+    return purchase;
   });
-  const storeDebtAppliedAmount = storeDebtPlanResult.plan?.appliedAmount ?? new Decimal(0);
-  const payableAmount = Decimal.max(totalPurchase.minus(storeDebtAppliedAmount), 0);
-  const tbsPoolProduct = await ensureTbsPoolProduct();
-  const purchaseWarehouseId = parsed.warehouseId;
-
-  const purchase = await createTbsPurchase({
-    code: generateTransactionCode("TBP"),
-    purchaseDate: new Date(parsed.purchaseDate),
-    farmerId: parsed.farmerId,
-    driverId: parsed.driverId || null,
-    vehicleId: parsed.vehicleId || null,
-    warehouseId: parsed.warehouseId || null,
-    grossWeight: parsed.grossWeight.toFixed(2),
-    tareWeight: parsed.tareWeight.toFixed(2),
-    netWeight: netWeight.toFixed(2),
-    buyingPricePerKg: parsed.buyingPricePerKg.toFixed(2),
-    totalPurchase: totalPurchase.toFixed(2),
-    transportCost: parsed.transportCost.toFixed(2),
-    loadingCost: parsed.loadingCost.toFixed(2),
-    otherCost: parsed.otherCost.toFixed(2),
-    totalOperationalCost: totalOperationalCost.toFixed(2),
-    notes: parsed.notes || null,
-    createdBy: actorId ?? null,
-    paymentStatus: "unpaid",
-    status: "active",
-  });
-
-  const payable = await createPayableEntry({
-    sourceType: "tbs_purchase",
-    sourceId: purchase.id,
-    partyType: "farmer",
-    farmerId: purchase.farmerId,
-    amount: Number(payableAmount.toFixed(2)),
-    notes: "Auto-generated from TBS purchase",
-    createdBy: actorId,
-  });
-
-  await applyTbsPurchaseStoreOffset({
-    purchaseId: purchase.id,
-    payableId: payable.id,
-    farmerId: purchase.farmerId,
-    actorId,
-    plan: storeDebtPlanResult.plan,
-  });
-
-  await applyStockMovement({
-    warehouseId: purchaseWarehouseId,
-    productId: tbsPoolProduct.id,
-    referenceType: "tbs_purchase",
-    referenceId: purchase.id,
-    movementType: "purchase_in",
-    quantity: Number(netWeight.toFixed(2)),
-    unitCost: Number(parsed.buyingPricePerKg),
-    notes: "Stok TBS masuk dari pembelian petani",
-    createdBy: actorId,
-  });
-
-  await logAudit({
-    entityType: "tbs_purchases",
-    entityId: purchase.id,
-    action: "create",
-    actorId,
-    after: purchase,
-    metadata: {
-      storeDebtDeductionApplied: storeDebtAppliedAmount.toFixed(2),
-      storeDebtReceivableCount: storeDebtPlanResult.summary.receivableCount,
-    },
-  });
-
-  return purchase;
 }
 
 export async function updatePalmPurchase(
@@ -442,10 +445,11 @@ export async function updatePalmPurchase(
   payload: unknown,
   actorId?: string | null,
 ) {
-  const existing = await getTbsPurchaseById(id);
-  if (!existing) {
-    throw new Error("Transaksi pembelian tidak ditemukan.");
-  }
+  return runInDbTransaction(async () => {
+    const existing = await getTbsPurchaseById(id);
+    if (!existing) {
+      throw new Error("Transaksi pembelian tidak ditemukan.");
+    }
 
   const parsed = palmPurchaseSchema.parse(payload);
   if (!parsed.warehouseId) {
@@ -565,13 +569,15 @@ export async function updatePalmPurchase(
     },
   });
 
-  return refreshedPurchase ?? purchase;
+    return refreshedPurchase ?? purchase;
+  });
 }
 
 export async function createPalmSale(payload: unknown, actorId?: string | null) {
-  const parsed = palmSaleSchema.parse(payload);
-  const deductionConfigMap = await getDeductionConfigMap();
-  const tbsPoolProduct = await ensureTbsPoolProduct();
+  return runInDbTransaction(async () => {
+    const parsed = palmSaleSchema.parse(payload);
+    const deductionConfigMap = await getDeductionConfigMap();
+    const tbsPoolProduct = await ensureTbsPoolProduct();
 
   const netWeightInitial = new Decimal(parsed.grossWeight).minus(parsed.tareWeight);
   const deductionSummary = calculateSaleDeductions(
@@ -683,19 +689,21 @@ export async function createPalmSale(payload: unknown, actorId?: string | null) 
     createdBy: actorId,
   });
 
-  await logAudit({
-    entityType: "tbs_sales",
-    entityId: sale.id,
-    action: "create",
-    actorId,
-    after: sale,
-  });
+    await logAudit({
+      entityType: "tbs_sales",
+      entityId: sale.id,
+      action: "create",
+      actorId,
+      after: sale,
+    });
 
-  return sale;
+    return sale;
+  });
 }
 
 export async function voidPalmPurchase(id: string, actorId?: string | null) {
-  const existing = await getTbsPurchaseById(id);
+  return runInDbTransaction(async () => {
+    const existing = await getTbsPurchaseById(id);
 
   if (!existing) {
     throw new Error("Transaksi pembelian tidak ditemukan.");
@@ -767,11 +775,13 @@ export async function voidPalmPurchase(id: string, actorId?: string | null) {
     },
   });
 
-  return updated ?? existing;
+    return updated ?? existing;
+  });
 }
 
 export async function voidPalmSale(id: string, actorId?: string | null) {
-  const existing = await getTbsSaleById(id);
+  return runInDbTransaction(async () => {
+    const existing = await getTbsSaleById(id);
 
   if (!existing) {
     throw new Error("Transaksi penjualan tidak ditemukan.");
@@ -818,5 +828,6 @@ export async function voidPalmSale(id: string, actorId?: string | null) {
     },
   });
 
-  return updated ?? existing;
+    return updated ?? existing;
+  });
 }

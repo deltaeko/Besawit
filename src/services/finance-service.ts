@@ -1,5 +1,6 @@
 import Decimal from "decimal.js";
 
+import { runInDbTransaction } from "@/lib/db/client";
 import { paymentSchema } from "@/lib/validation/finance";
 import { updateTbsPurchase, updateTbsSale } from "@/repositories/palm-repository";
 import { updateStorePurchase, updateStoreSale } from "@/repositories/store-repository";
@@ -832,135 +833,137 @@ export async function getStoreDebtOffsetReport(limit = 200) {
 }
 
 export async function postPayment(payload: unknown, actorId?: string | null) {
-  const parsed = paymentSchema.parse(payload);
-  const code = generateTransactionCode("PMT");
-  const amount = new Decimal(parsed.amount);
+  return runInDbTransaction(async () => {
+    const parsed = paymentSchema.parse(payload);
+    const code = generateTransactionCode("PMT");
+    const amount = new Decimal(parsed.amount);
 
-  if (parsed.payableId) {
-    const payable = await getPayableById(parsed.payableId);
-    if (!payable) throw new Error("Referensi hutang tidak ditemukan.");
+    if (parsed.payableId) {
+      const payable = await getPayableById(parsed.payableId);
+      if (!payable) throw new Error("Referensi hutang tidak ditemukan.");
 
-    const outstanding = new Decimal(payable.outstandingAmount);
-    if (amount.gt(outstanding)) {
-      throw new Error("Nominal pembayaran tidak boleh melebihi sisa hutang.");
+      const outstanding = new Decimal(payable.outstandingAmount);
+      if (amount.gt(outstanding)) {
+        throw new Error("Nominal pembayaran tidak boleh melebihi sisa hutang.");
+      }
+
+      const nextPaid = new Decimal(payable.paidAmount).plus(amount);
+      const nextOutstanding = outstanding.minus(amount);
+      const status = resolvePaymentStatus(new Decimal(payable.amount), nextPaid);
+
+      const payment = await createPayment({
+        code,
+        paymentDate: new Date(parsed.paymentDate),
+        direction: "out",
+        method: parsed.method,
+        payableId: parsed.payableId,
+        amount: amount.toFixed(2),
+        notes: parsed.notes || null,
+        createdBy: actorId ?? null,
+        status: "active",
+      });
+
+      await updatePayable(parsed.payableId, {
+        paidAmount: nextPaid.toFixed(2),
+        outstandingAmount: nextOutstanding.toFixed(2),
+        status,
+        updatedAt: new Date(),
+      });
+      await syncSourcePaymentStatus(payable.sourceType, payable.sourceId, status);
+
+      await createCashTransaction({
+        code: generateTransactionCode("CASH"),
+        transactionDate: new Date(parsed.paymentDate),
+        type: "credit",
+        category: resolveLedgerCategory("out", parsed.method),
+        referenceType: "payment",
+        referenceId: payment.id,
+        amount: amount.toFixed(2),
+        description: resolveLedgerDescription(
+          "out",
+          parsed.method,
+          payable.code,
+          payable.partyType === "farmer" ? "petani" : payable.partyType === "supplier" ? "supplier" : "pihak lain",
+          parsed.notes,
+        ),
+        createdBy: actorId ?? null,
+        status: "active",
+      });
+
+      await logAudit({
+        entityType: "payments",
+        entityId: payment.id,
+        action: "post_payable_payment",
+        actorId,
+        after: payment,
+      });
+
+      return payment;
     }
 
-    const nextPaid = new Decimal(payable.paidAmount).plus(amount);
-    const nextOutstanding = outstanding.minus(amount);
-    const status = resolvePaymentStatus(new Decimal(payable.amount), nextPaid);
+    if (parsed.receivableId) {
+      const receivable = await getReceivableById(parsed.receivableId);
+      if (!receivable) throw new Error("Referensi piutang tidak ditemukan.");
 
-    const payment = await createPayment({
-      code,
-      paymentDate: new Date(parsed.paymentDate),
-      direction: "out",
-      method: parsed.method,
-      payableId: parsed.payableId,
-      amount: amount.toFixed(2),
-      notes: parsed.notes || null,
-      createdBy: actorId ?? null,
-      status: "active",
-    });
+      const outstanding = new Decimal(receivable.outstandingAmount);
+      if (amount.gt(outstanding)) {
+        throw new Error("Nominal penerimaan tidak boleh melebihi sisa piutang.");
+      }
 
-    await updatePayable(parsed.payableId, {
-      paidAmount: nextPaid.toFixed(2),
-      outstandingAmount: nextOutstanding.toFixed(2),
-      status,
-      updatedAt: new Date(),
-    });
-    await syncSourcePaymentStatus(payable.sourceType, payable.sourceId, status);
+      const nextPaid = new Decimal(receivable.paidAmount).plus(amount);
+      const nextOutstanding = outstanding.minus(amount);
+      const status = resolvePaymentStatus(new Decimal(receivable.amount), nextPaid);
 
-    await createCashTransaction({
-      code: generateTransactionCode("CASH"),
-      transactionDate: new Date(parsed.paymentDate),
-      type: "credit",
-      category: resolveLedgerCategory("out", parsed.method),
-      referenceType: "payment",
-      referenceId: payment.id,
-      amount: amount.toFixed(2),
-      description: resolveLedgerDescription(
-        "out",
-        parsed.method,
-        payable.code,
-        payable.partyType === "farmer" ? "petani" : payable.partyType === "supplier" ? "supplier" : "pihak lain",
-        parsed.notes,
-      ),
-      createdBy: actorId ?? null,
-      status: "active",
-    });
+      const payment = await createPayment({
+        code,
+        paymentDate: new Date(parsed.paymentDate),
+        direction: "in",
+        method: parsed.method,
+        receivableId: parsed.receivableId,
+        amount: amount.toFixed(2),
+        notes: parsed.notes || null,
+        createdBy: actorId ?? null,
+        status: "active",
+      });
 
-    await logAudit({
-      entityType: "payments",
-      entityId: payment.id,
-      action: "post_payable_payment",
-      actorId,
-      after: payment,
-    });
+      await updateReceivable(parsed.receivableId, {
+        paidAmount: nextPaid.toFixed(2),
+        outstandingAmount: nextOutstanding.toFixed(2),
+        status,
+        updatedAt: new Date(),
+      });
+      await syncSourcePaymentStatus(receivable.sourceType, receivable.sourceId, status);
 
-    return payment;
-  }
+      await createCashTransaction({
+        code: generateTransactionCode("CASH"),
+        transactionDate: new Date(parsed.paymentDate),
+        type: "debit",
+        category: resolveLedgerCategory("in", parsed.method),
+        referenceType: "payment",
+        referenceId: payment.id,
+        amount: amount.toFixed(2),
+        description: resolveLedgerDescription(
+          "in",
+          parsed.method,
+          receivable.code,
+          receivable.partyType === "factory" ? "pabrik" : receivable.partyType === "customer" ? "pelanggan" : "pihak lain",
+          parsed.notes,
+        ),
+        createdBy: actorId ?? null,
+        status: "active",
+      });
 
-  if (parsed.receivableId) {
-    const receivable = await getReceivableById(parsed.receivableId);
-    if (!receivable) throw new Error("Referensi piutang tidak ditemukan.");
+      await logAudit({
+        entityType: "payments",
+        entityId: payment.id,
+        action: "post_receivable_payment",
+        actorId,
+        after: payment,
+      });
 
-    const outstanding = new Decimal(receivable.outstandingAmount);
-    if (amount.gt(outstanding)) {
-      throw new Error("Nominal penerimaan tidak boleh melebihi sisa piutang.");
+      return payment;
     }
 
-    const nextPaid = new Decimal(receivable.paidAmount).plus(amount);
-    const nextOutstanding = outstanding.minus(amount);
-    const status = resolvePaymentStatus(new Decimal(receivable.amount), nextPaid);
-
-    const payment = await createPayment({
-      code,
-      paymentDate: new Date(parsed.paymentDate),
-      direction: "in",
-      method: parsed.method,
-      receivableId: parsed.receivableId,
-      amount: amount.toFixed(2),
-      notes: parsed.notes || null,
-      createdBy: actorId ?? null,
-      status: "active",
-    });
-
-    await updateReceivable(parsed.receivableId, {
-      paidAmount: nextPaid.toFixed(2),
-      outstandingAmount: nextOutstanding.toFixed(2),
-      status,
-      updatedAt: new Date(),
-    });
-    await syncSourcePaymentStatus(receivable.sourceType, receivable.sourceId, status);
-
-    await createCashTransaction({
-      code: generateTransactionCode("CASH"),
-      transactionDate: new Date(parsed.paymentDate),
-      type: "debit",
-      category: resolveLedgerCategory("in", parsed.method),
-      referenceType: "payment",
-      referenceId: payment.id,
-      amount: amount.toFixed(2),
-      description: resolveLedgerDescription(
-        "in",
-        parsed.method,
-        receivable.code,
-        receivable.partyType === "factory" ? "pabrik" : receivable.partyType === "customer" ? "pelanggan" : "pihak lain",
-        parsed.notes,
-      ),
-      createdBy: actorId ?? null,
-      status: "active",
-    });
-
-    await logAudit({
-      entityType: "payments",
-      entityId: payment.id,
-      action: "post_receivable_payment",
-      actorId,
-      after: payment,
-    });
-
-    return payment;
-  }
-
-  throw new Error("Pilih referensi hutang atau piutang yang ingin dicatat.");
+    throw new Error("Pilih referensi hutang atau piutang yang ingin dicatat.");
+  });
 }

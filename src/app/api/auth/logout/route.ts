@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
 
-import { env } from "@/lib/env";
 import { clearSession } from "@/lib/auth/session";
 
-export async function POST() {
+export async function POST(request: Request) {
   await clearSession();
-  return NextResponse.redirect(new URL("/login", env.APP_URL), { status: 303 });
+  return NextResponse.redirect(new URL("/login", request.url), { status: 303 });
 }

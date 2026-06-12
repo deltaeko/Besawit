@@ -1,0 +1,98 @@
+[
+  {
+    "file": "01-login.png",
+    "title": "Halaman Login",
+    "caption": "Gambar 1. Halaman login Besawit.",
+    "route": "/login"
+  },
+  {
+    "file": "02-dashboard.png",
+    "title": "Dashboard Utama",
+    "caption": "Gambar 2. Dashboard utama setelah login.",
+    "route": "/dashboard"
+  },
+  {
+    "file": "03-master-customers-list.png",
+    "title": "Daftar Pelanggan Toko",
+    "caption": "Gambar 3. Daftar pelanggan toko pada modul Master Data.",
+    "route": "/master/customers"
+  },
+  {
+    "file": "04-master-customers-new.png",
+    "title": "Form Tambah Pelanggan Toko",
+    "caption": "Gambar 4. Form tambah pelanggan toko dengan pilihan petani terkait.",
+    "route": "/master/customers/new"
+  },
+  {
+    "file": "05-palm-purchases-list.png",
+    "title": "Daftar Pembelian TBS",
+    "caption": "Gambar 5. Daftar transaksi pembelian TBS.",
+    "route": "/palm/purchases"
+  },
+  {
+    "file": "06-palm-purchase-new.png",
+    "title": "Form Pembelian TBS",
+    "caption": "Gambar 6. Form pembelian TBS dari petani.",
+    "route": "/palm/purchases/new"
+  },
+  {
+    "file": "07-palm-purchase-detail.png",
+    "title": "Detail Pembelian TBS",
+    "caption": "Gambar 7. Halaman detail pembelian TBS.",
+    "route": "/palm/purchases/46371e9b-d4b0-4d6e-b96c-8023aa039da3"
+  },
+  {
+    "file": "08-palm-sale-detail.png",
+    "title": "Detail Penjualan ke Pabrik",
+    "caption": "Gambar 8. Halaman detail penjualan TBS ke pabrik.",
+    "route": "/palm/sales/5e7350d7-aff9-4d09-8560-c157282a78be"
+  },
+  {
+    "file": "09-store-purchases-list.png",
+    "title": "Daftar Pembelian Barang",
+    "caption": "Gambar 9. Daftar pembelian barang toko.",
+    "route": "/store/purchases"
+  },
+  {
+    "file": "10-store-purchase-detail.png",
+    "title": "Detail Pembelian Barang",
+    "caption": "Gambar 10. Detail pembelian barang toko beserta item dan retur.",
+    "route": "/store/purchases/78c69ec3-317a-4b73-b2bf-d707af859358"
+  },
+  {
+    "file": "11-store-sale-detail.png",
+    "title": "Detail Penjualan Toko",
+    "caption": "Gambar 11. Detail penjualan toko.",
+    "route": "/store/sales/3e357a34-1d36-41d6-b189-a6d13288b1b3"
+  },
+  {
+    "file": "12-finance-payment-form.png",
+    "title": "Form Pembayaran / Penerimaan",
+    "caption": "Gambar 12. Form pembayaran atau penerimaan pada modul Finance.",
+    "route": "/finance/payments?payableId=916008a4-179f-471b-b02a-43fe87cccc73"
+  },
+  {
+    "file": "13-finance-payable-detail.png",
+    "title": "Detail Hutang",
+    "caption": "Gambar 13. Detail hutang pada modul Finance.",
+    "route": "/finance/payables/916008a4-179f-471b-b02a-43fe87cccc73"
+  },
+  {
+    "file": "14-inventory-stock.png",
+    "title": "Saldo Stok",
+    "caption": "Gambar 14. Halaman saldo stok dan posisi TBS pool.",
+    "route": "/inventory/stock"
+  },
+  {
+    "file": "15-report-transactions.png",
+    "title": "Laporan Transaksi",
+    "caption": "Gambar 15. Halaman laporan transaksi lintas modul.",
+    "route": "/reports/transactions"
+  },
+  {
+    "file": "16-palm-sale-document.png",
+    "title": "Preview Dokumen Penjualan Pabrik",
+    "caption": "Gambar 16. Preview dokumen penjualan TBS ke pabrik.",
+    "route": "/palm/sales/5e7350d7-aff9-4d09-8560-c157282a78be/document"
+  }
+]

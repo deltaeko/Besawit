@@ -1,6 +1,6 @@
 import { and, count, desc, eq, getTableColumns, ilike, lte, gte, or } from "drizzle-orm";
 
-import { db } from "@/lib/db/client";
+import { getDb } from "@/lib/db/client";
 import {
   customers,
   products,
@@ -15,6 +15,7 @@ import {
 } from "@/lib/db/schema";
 
 export async function listStorePurchases(limit = 20) {
+  const db = await getDb();
   return db
     .select({
       ...getTableColumns(storePurchases),
@@ -29,6 +30,7 @@ export async function listStorePurchases(limit = 20) {
 }
 
 export async function listAllStorePurchases() {
+  const db = await getDb();
   return db
     .select({
       ...getTableColumns(storePurchases),
@@ -42,6 +44,7 @@ export async function listAllStorePurchases() {
 }
 
 export async function listStoreSales(limit = 20) {
+  const db = await getDb();
   return db
     .select({
       ...getTableColumns(storeSales),
@@ -65,6 +68,7 @@ export async function listStorePurchasesPage(
     dateTo?: Date;
   },
 ) {
+  const db = await getDb();
   const offset = (page - 1) * pageSize;
   const conditions = [];
 
@@ -131,6 +135,7 @@ export async function listStoreSalesPage(
     dateTo?: Date;
   },
 ) {
+  const db = await getDb();
   const offset = (page - 1) * pageSize;
   const conditions = [];
 
@@ -191,6 +196,7 @@ export async function listStoreSalesPage(
 }
 
 export async function listAllStoreSales() {
+  const db = await getDb();
   return db
     .select({
       ...getTableColumns(storeSales),
@@ -204,6 +210,7 @@ export async function listAllStoreSales() {
 }
 
 export async function getStorePurchaseById(id: string) {
+  const db = await getDb();
   const [row] = await db
     .select({
       ...getTableColumns(storePurchases),
@@ -219,6 +226,7 @@ export async function getStorePurchaseById(id: string) {
 }
 
 export async function getStoreSaleById(id: string) {
+  const db = await getDb();
   const [row] = await db
     .select({
       ...getTableColumns(storeSales),
@@ -236,6 +244,7 @@ export async function getStoreSaleById(id: string) {
 export async function createStorePurchase(
   values: typeof storePurchases.$inferInsert,
 ) {
+  const db = await getDb();
   const [row] = await db.insert(storePurchases).values(values).returning();
   return row;
 }
@@ -244,6 +253,7 @@ export async function updateStorePurchase(
   id: string,
   values: Partial<typeof storePurchases.$inferInsert>,
 ) {
+  const db = await getDb();
   const [row] = await db
     .update(storePurchases)
     .set(values)
@@ -255,10 +265,12 @@ export async function updateStorePurchase(
 export async function createStorePurchaseItems(
   values: (typeof storePurchaseItems.$inferInsert)[],
 ) {
+  const db = await getDb();
   return db.insert(storePurchaseItems).values(values).returning();
 }
 
 export async function listStorePurchaseItemsByPurchaseId(purchaseId: string) {
+  const db = await getDb();
   return db
     .select({
       ...getTableColumns(storePurchaseItems),
@@ -275,6 +287,7 @@ export async function listStorePurchaseItemsByPurchaseId(purchaseId: string) {
 export async function createStorePurchaseReturn(
   values: typeof storePurchaseReturns.$inferInsert,
 ) {
+  const db = await getDb();
   const [row] = await db.insert(storePurchaseReturns).values(values).returning();
   return row;
 }
@@ -282,10 +295,12 @@ export async function createStorePurchaseReturn(
 export async function createStorePurchaseReturnItems(
   values: (typeof storePurchaseReturnItems.$inferInsert)[],
 ) {
+  const db = await getDb();
   return db.insert(storePurchaseReturnItems).values(values).returning();
 }
 
 export async function listStorePurchaseReturnsByPurchaseId(purchaseId: string) {
+  const db = await getDb();
   return db
     .select()
     .from(storePurchaseReturns)
@@ -294,6 +309,7 @@ export async function listStorePurchaseReturnsByPurchaseId(purchaseId: string) {
 }
 
 export async function getStorePurchaseReturnById(id: string) {
+  const db = await getDb();
   const [row] = await db
     .select({
       ...getTableColumns(storePurchaseReturns),
@@ -315,6 +331,7 @@ export async function getStorePurchaseReturnById(id: string) {
 }
 
 export async function listStorePurchaseReturnItemsByPurchaseId(purchaseId: string) {
+  const db = await getDb();
   return db
     .select({
       ...getTableColumns(storePurchaseReturnItems),
@@ -333,6 +350,7 @@ export async function listStorePurchaseReturnItemsByPurchaseId(purchaseId: strin
 }
 
 export async function listStorePurchaseReturnItemsByReturnId(returnId: string) {
+  const db = await getDb();
   return db
     .select({
       ...getTableColumns(storePurchaseReturnItems),
@@ -347,6 +365,7 @@ export async function listStorePurchaseReturnItemsByReturnId(returnId: string) {
 }
 
 export async function createStoreSale(values: typeof storeSales.$inferInsert) {
+  const db = await getDb();
   const [row] = await db.insert(storeSales).values(values).returning();
   return row;
 }
@@ -355,6 +374,7 @@ export async function updateStoreSale(
   id: string,
   values: Partial<typeof storeSales.$inferInsert>,
 ) {
+  const db = await getDb();
   const [row] = await db
     .update(storeSales)
     .set(values)
@@ -366,10 +386,12 @@ export async function updateStoreSale(
 export async function createStoreSaleItems(
   values: (typeof storeSaleItems.$inferInsert)[],
 ) {
+  const db = await getDb();
   return db.insert(storeSaleItems).values(values).returning();
 }
 
 export async function listStoreSaleItemsBySaleId(saleId: string) {
+  const db = await getDb();
   return db
     .select({
       ...getTableColumns(storeSaleItems),
@@ -384,17 +406,21 @@ export async function listStoreSaleItemsBySaleId(saleId: string) {
 }
 
 export async function listProducts(limit = 100) {
+  const db = await getDb();
   return db.select().from(products).orderBy(desc(products.createdAt)).limit(limit);
 }
 
 export async function listSuppliers(limit = 100) {
+  const db = await getDb();
   return db.select().from(suppliers).orderBy(desc(suppliers.createdAt)).limit(limit);
 }
 
 export async function listCustomers(limit = 100) {
+  const db = await getDb();
   return db.select().from(customers).orderBy(desc(customers.createdAt)).limit(limit);
 }
 
 export async function listWarehouses(limit = 100) {
+  const db = await getDb();
   return db.select().from(warehouses).orderBy(desc(warehouses.createdAt)).limit(limit);
 }

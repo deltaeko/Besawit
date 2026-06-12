@@ -5,31 +5,6 @@ import {
   resolvePalmStatusBadgeVariant,
 } from "@/modules/palm/status-utils";
 
-function InfoField({
-  label,
-  value,
-  emphasis = false,
-}: {
-  label: string;
-  value: string;
-  emphasis?: boolean;
-}) {
-  return (
-    <div className="rounded-2xl border bg-muted/30 p-3">
-      <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-        {label}
-      </div>
-      <div
-        className={
-          emphasis ? "mt-2 text-lg font-semibold tracking-tight" : "mt-2 text-sm font-semibold"
-        }
-      >
-        {value}
-      </div>
-    </div>
-  );
-}
-
 function HighlightMetric({
   label,
   value,
@@ -43,13 +18,13 @@ function HighlightMetric({
 }) {
   const toneClass =
     tone === "primary"
-      ? "border-primary/20 bg-primary/10"
+      ? "border-primary/20 bg-[linear-gradient(180deg,rgba(72,115,74,0.12),rgba(72,115,74,0.06))]"
       : tone === "warning"
-        ? "border-amber-200 bg-amber-50/70"
+        ? "border-amber-200 bg-[linear-gradient(180deg,rgba(254,243,199,0.7),rgba(255,251,235,0.86))]"
         : "border-border bg-card/90";
 
   return (
-    <div className={`rounded-2xl border p-4 ${toneClass}`}>
+    <div className={`rounded-[1.45rem] border p-4 shadow-[0_18px_46px_-34px_rgba(20,37,24,0.18)] ${toneClass}`}>
       <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
         {label}
       </div>
@@ -79,7 +54,7 @@ function InfoList({
 }) {
   return (
     <SectionCard description={description} title={title}>
-      <div className="rounded-2xl border border-border/70 bg-muted/10">
+      <div className="rounded-[1.35rem] border border-border/70 bg-muted/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.22)]">
         {fields.map((field, index) => (
           <div
             className={`grid gap-2 px-4 py-3 text-sm md:grid-cols-[200px_minmax(0,1fr)] ${
@@ -145,7 +120,7 @@ export function PalmTransactionDetailView({
 
   return (
     <div className="space-y-6">
-      <div className="rounded-2xl border border-border/80 bg-card/85 p-4">
+      <div className="overflow-hidden rounded-[1.8rem] border border-white/90 bg-[radial-gradient(circle_at_top_left,rgba(97,143,96,0.14),transparent_34%),linear-gradient(180deg,rgba(255,255,255,0.98),rgba(246,249,244,0.94))] p-4 shadow-[0_26px_72px_-42px_rgba(20,37,24,0.28)] ring-1 ring-black/[0.02]">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div className="space-y-2">
             <div className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
@@ -155,8 +130,8 @@ export function PalmTransactionDetailView({
               {view.code}
             </div>
           </div>
-          <div className="flex flex-wrap gap-2">
-            <div className="rounded-full border border-border/70 bg-card/80 px-3 py-1.5">
+            <div className="flex flex-wrap gap-2">
+            <div className="rounded-[1.15rem] border border-border/70 bg-card/80 px-3 py-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.22)]">
               <div className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground">
                 Status Transaksi
               </div>
@@ -166,7 +141,7 @@ export function PalmTransactionDetailView({
                 </Badge>
               </div>
             </div>
-            <div className="rounded-full border border-border/70 bg-card/80 px-3 py-1.5">
+            <div className="rounded-[1.15rem] border border-border/70 bg-card/80 px-3 py-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.22)]">
               <div className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground">
                 Status Pembayaran
               </div>
@@ -182,7 +157,7 @@ export function PalmTransactionDetailView({
 
       {view.stockNotice ? (
         <div
-          className={`rounded-2xl border px-4 py-3 text-sm ${
+          className={`rounded-[1.35rem] border px-4 py-3 text-sm shadow-[inset_0_1px_0_rgba(255,255,255,0.22)] ${
             view.stockNotice.tone === "success"
               ? "border-green-200 bg-green-50/70"
               : view.stockNotice.tone === "warning"
@@ -251,7 +226,7 @@ export function PalmTransactionDetailView({
               description={statusDanCatatan.description}
               title={statusDanCatatan.title}
             >
-              <div className="rounded-2xl border border-border/70 bg-muted/10">
+              <div className="rounded-[1.35rem] border border-border/70 bg-muted/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.22)]">
                 {statusDanCatatan.fields.map((field, index) => (
                   <div
                     className={`grid gap-2 px-4 py-3 text-sm md:grid-cols-[200px_minmax(0,1fr)] ${
@@ -264,7 +239,7 @@ export function PalmTransactionDetailView({
                   </div>
                 ))}
               </div>
-              <div className="mt-4 rounded-2xl border border-border/70 bg-muted/10 px-4 py-3">
+              <div className="mt-4 rounded-[1.35rem] border border-border/70 bg-muted/10 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.22)]">
                 <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
                   Catatan
                 </div>
@@ -281,7 +256,7 @@ export function PalmTransactionDetailView({
         title="Jejak Audit & Metadata"
         description="Informasi pencatatan transaksi, referensi keuangan, dan penelusuran administrasi."
       >
-        <div className="rounded-2xl border border-border/70 bg-muted/10">
+        <div className="rounded-[1.35rem] border border-border/70 bg-muted/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.22)]">
           {view.auditFields.map((field, index) => (
             <div
               className={`grid gap-2 px-4 py-3 text-sm md:grid-cols-[200px_minmax(0,1fr)] ${

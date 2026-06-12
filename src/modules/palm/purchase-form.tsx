@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AlertTriangle, Calculator, ChevronDown, Info, Scale, Wallet } from "lucide-react";
+import { AlertTriangle, Calculator, ChevronDown, Scale, Wallet } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
@@ -105,8 +105,8 @@ function InfoBlock({
   return (
     <div
       className={cn(
-        "min-h-[92px] rounded-2xl border border-border/80 bg-muted/20 p-3",
-        emphasis && "border-primary/20 bg-primary/10",
+        "min-h-[92px] rounded-[1.35rem] border border-border/80 bg-card/88 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]",
+        emphasis && "border-primary/20 bg-[linear-gradient(180deg,rgba(72,115,74,0.12),rgba(72,115,74,0.06))]",
       )}
     >
       <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
@@ -240,16 +240,8 @@ export function PalmPurchaseForm({
     [farmers],
   );
 
-  useEffect(() => {
-    const selected = farmerOptions.find((item) => item.id === farmerId);
-    if (selected) {
-      setFarmerQuery(selected.label);
-      return;
-    }
-    if (!farmerId) {
-      setFarmerQuery("");
-    }
-  }, [farmerId, farmerOptions]);
+  const displayedFarmerQuery =
+    showFarmerDropdown || !farmerId ? farmerQuery : farmerOptions.find((item) => item.id === farmerId)?.label ?? "";
 
   const calculations = useMemo(() => {
     const storeDebtSummary = farmerStoreDebtMap[farmerId] ?? {
@@ -412,8 +404,8 @@ export function PalmPurchaseForm({
   >;
 
   return (
-    <div className="space-y-4">
-      <div className="rounded-2xl border border-border/80 bg-card px-5 py-4 shadow-sm">
+    <div className="space-y-5">
+      <div className="overflow-hidden rounded-[1.8rem] border border-white/90 bg-[radial-gradient(circle_at_top_left,rgba(97,143,96,0.14),transparent_34%),linear-gradient(180deg,rgba(255,255,255,0.98),rgba(246,249,244,0.94))] px-5 py-5 shadow-[0_26px_72px_-42px_rgba(20,37,24,0.28)] ring-1 ring-black/[0.02]">
         <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-start xl:gap-5">
           <div className="space-y-2.5">
             <div className="font-mono text-xs uppercase tracking-[0.3em] text-primary">
@@ -425,6 +417,9 @@ export function PalmPurchaseForm({
                   ? "Buat Transaksi Pembelian"
                   : "Ubah Transaksi Pembelian"}
               </h1>
+              <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
+                Kelola hasil timbang, potong hutang toko petani, dan pembentukan hutang pembelian dalam satu form yang lebih ringkas.
+              </p>
             </div>
             <div className="flex flex-wrap items-center gap-2 pt-0.5">
               {transactionCode ? (
@@ -481,7 +476,7 @@ export function PalmPurchaseForm({
                   <Input
                     id="farmerId"
                     placeholder="Cari petani"
-                    value={farmerQuery}
+                    value={displayedFarmerQuery}
                     onChange={(event) => {
                       const nextValue = event.target.value;
                       setFarmerQuery(nextValue);
@@ -490,14 +485,17 @@ export function PalmPurchaseForm({
                         form.setValue("farmerId", "", { shouldDirty: true, shouldValidate: true });
                       }
                     }}
-                    onFocus={() => setShowFarmerDropdown(true)}
+                    onFocus={() => {
+                      setFarmerQuery(farmerOptions.find((item) => item.id === farmerId)?.label ?? "");
+                      setShowFarmerDropdown(true);
+                    }}
                     onBlur={() => {
                       window.setTimeout(() => setShowFarmerDropdown(false), 120);
                     }}
                   />
                   <input type="hidden" {...form.register("farmerId")} />
                   {showFarmerDropdown ? (
-                    <div className="absolute z-20 mt-2 max-h-56 w-full overflow-auto rounded-2xl border border-border/80 bg-card p-2 shadow-lg">
+                    <div className="absolute z-20 mt-2 max-h-56 w-full overflow-auto rounded-[1.35rem] border border-border/80 bg-card p-2 shadow-[0_22px_60px_-34px_rgba(20,37,24,0.32)]">
                       {farmerOptions.filter((option) =>
                         option.label.toLowerCase().includes(farmerQuery.toLowerCase()),
                       ).length ? (
@@ -652,7 +650,7 @@ export function PalmPurchaseForm({
                         <FieldHint>Berat Bersih = Berat Kotor - Berat Tara</FieldHint>
                       </div>
                     </div>
-                    <div className="rounded-3xl border border-border/80 bg-muted/25 p-4">
+                    <div className="rounded-[1.6rem] border border-border/80 bg-muted/25 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.24)]">
                       <div className="flex items-start gap-3">
                         <Scale className="mt-1 size-5 text-primary" />
                         <div className="space-y-2.5">
@@ -681,7 +679,7 @@ export function PalmPurchaseForm({
             title="Potong Hutang Toko Petani"
           >
             <button
-              className="flex w-full items-center justify-between rounded-2xl border border-border/70 bg-muted/15 px-4 py-3 text-left"
+              className="flex w-full items-center justify-between rounded-[1.35rem] border border-border/70 bg-muted/15 px-4 py-3 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.22)]"
               onClick={() => setShowStoreDebtSection((prev) => !prev)}
               type="button"
             >
@@ -759,7 +757,7 @@ export function PalmPurchaseForm({
                       <FieldError message={getErrorMessage(errors, "storeDebtDeductionNotes")} />
                     </div>
 
-                    <div className="rounded-2xl border border-border/80 bg-muted/20 p-4 text-sm text-muted-foreground">
+                    <div className="rounded-[1.35rem] border border-border/80 bg-muted/20 p-4 text-sm text-muted-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.22)]">
                       <div className="font-medium text-foreground">
                         Status hutang toko petani
                       </div>
@@ -830,7 +828,7 @@ export function PalmPurchaseForm({
                   </div>
                 </div>
 
-                <div className="rounded-3xl border border-border/80 bg-muted/25 p-4">
+                <div className="rounded-[1.6rem] border border-border/80 bg-muted/25 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.24)]">
                   <div className="flex items-start gap-3">
                     <Wallet className="mt-1 size-5 text-primary" />
                     <div className="space-y-3">
@@ -929,7 +927,7 @@ export function PalmPurchaseForm({
                   <FieldError message={getErrorMessage(errors, "otherCost")} />
                 </div>
               </div>
-                <div className="rounded-2xl border border-border/80 bg-muted/20 px-4 py-3">
+                <div className="rounded-[1.35rem] border border-border/80 bg-muted/20 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.22)]">
                   <SummaryRow
                     label="Biaya Operasional Saat Ini"
                     value={formatCurrency(calculations.operationalCost)}
@@ -937,7 +935,7 @@ export function PalmPurchaseForm({
                 </div>
               </div>
 
-              <div className="rounded-3xl border border-border/80 bg-muted/20 p-3">
+              <div className="rounded-[1.6rem] border border-border/80 bg-muted/20 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.24)]">
                 <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
                   <Calculator className="size-4 text-primary" />
                   Alur Perhitungan
@@ -978,7 +976,7 @@ export function PalmPurchaseForm({
             description="Informasi pembayaran ditampilkan sebagai referensi. Pencatatan pembayaran tetap dilakukan pada modul Finance."
             title="Status & Pembayaran"
           >
-            <div className="rounded-2xl border border-border/80 bg-card/80 px-4 py-3">
+            <div className="rounded-[1.35rem] border border-border/80 bg-card/80 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.22)]">
               <SummaryRow
                 label="Status Transaksi"
                 value={
@@ -1000,7 +998,7 @@ export function PalmPurchaseForm({
                 value={formatCurrency(calculations.outstandingAmount)}
               />
             </div>
-            <div className="mt-3 rounded-2xl border border-border/80 bg-card/80 px-4 py-3">
+            <div className="mt-3 rounded-[1.35rem] border border-border/80 bg-card/80 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.22)]">
               <SummaryRow
                 label="Referensi Hutang"
                 value={paymentSnapshot?.payableCode ?? "Otomatis setelah disimpan"}
@@ -1011,7 +1009,7 @@ export function PalmPurchaseForm({
               />
             </div>
             {calculations.hasPaymentConflict ? (
-              <div className="mt-4 rounded-2xl border border-destructive/20 bg-destructive/5 p-4 text-sm text-destructive">
+              <div className="mt-4 rounded-[1.2rem] border border-destructive/20 bg-destructive/5 p-4 text-sm text-destructive">
                 <div className="flex items-start gap-3">
                   <AlertTriangle className="mt-0.5 size-4" />
                   <p>
@@ -1038,7 +1036,7 @@ export function PalmPurchaseForm({
             </div>
           </SectionCard>
 
-          <div className="rounded-2xl border border-border/80 bg-card px-4 py-3 shadow-sm">
+          <div className="rounded-[1.5rem] border border-white/90 bg-card/94 px-4 py-3 shadow-[0_20px_56px_-36px_rgba(20,37,24,0.22)] ring-1 ring-black/[0.02]">
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
               <div className="text-sm text-muted-foreground">
                 Periksa kembali petani, hasil timbang, potongan, dan total akhir sebelum

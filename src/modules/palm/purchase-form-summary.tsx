@@ -57,9 +57,12 @@ export function PalmPurchaseFormSummary({
   hasPaymentConflict: boolean;
 }) {
   return (
-    <Card className="sticky top-6 self-start">
-      <CardHeader className="space-y-2 border-b border-border/70 pb-3">
+    <Card className="sticky top-24 self-start overflow-hidden border-white/90 bg-card/96">
+      <CardHeader className="space-y-2 border-b border-border/70 bg-[radial-gradient(circle_at_top_left,rgba(72,115,74,0.12),transparent_52%),linear-gradient(180deg,rgba(246,248,243,0.96),rgba(255,255,255,0.94))] pb-3">
         <div className="space-y-2">
+          <div className="font-mono text-[11px] uppercase tracking-[0.28em] text-primary/80">
+            Ringkasan Live
+          </div>
           <CardTitle className="text-[1.35rem] tracking-tight">Ringkasan Perhitungan</CardTitle>
           <p className="text-sm leading-5 text-muted-foreground">
             Periksa angka timbangan, nilai pembelian, dan posisi hutang sebelum menyimpan.
@@ -75,7 +78,7 @@ export function PalmPurchaseFormSummary({
         </div>
       </CardHeader>
       <CardContent className="space-y-3 p-3.5 pt-3.5">
-        <div className="rounded-2xl border border-border/80 bg-card/80 px-4 py-2">
+        <div className="rounded-[1.35rem] border border-border/80 bg-card/88 px-4 py-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]">
           <SummaryRow
             emphasis
             label="Sisa Hutang"
@@ -100,7 +103,7 @@ export function PalmPurchaseFormSummary({
           />
         </div>
         {hasPaymentConflict ? (
-          <div className="rounded-2xl border border-destructive/20 bg-destructive/5 p-4 text-sm leading-6 text-destructive">
+          <div className="rounded-[1.2rem] border border-destructive/20 bg-destructive/5 p-4 text-sm leading-6 text-destructive">
             Nilai yang sudah dibayar melebihi total akhir hasil edit. Sesuaikan nominal transaksi atau koreksi pembayaran lebih dulu.
           </div>
         ) : null}

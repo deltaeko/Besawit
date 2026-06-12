@@ -13,29 +13,28 @@ export function PageHeader({
   action?: ReactNode;
   stackAction?: boolean;
 }) {
+  void eyebrow;
+  void title;
+
+  if (!description && !action) {
+    return null;
+  }
+
   return (
     <div
       className={
         stackAction
-          ? "flex flex-col gap-4 rounded-2xl border border-border/80 bg-card px-5 py-4 shadow-sm"
-          : "flex flex-col gap-4 rounded-2xl border border-border/80 bg-card px-5 py-4 shadow-sm md:flex-row md:items-start md:justify-between md:gap-6"
+          ? "flex flex-col gap-3 rounded-[1.35rem] border border-white/85 bg-card/94 px-5 py-4 shadow-[0_20px_56px_-40px_rgba(20,37,24,0.18)] ring-1 ring-black/[0.02]"
+          : "flex flex-col gap-3 rounded-[1.35rem] border border-white/85 bg-card/94 px-5 py-4 shadow-[0_20px_56px_-40px_rgba(20,37,24,0.18)] ring-1 ring-black/[0.02] md:flex-row md:items-start md:justify-between md:gap-6"
       }
     >
-      <div className="space-y-1.5 md:flex-1">
-        {eyebrow ? (
-          <div className="font-mono text-[11px] uppercase tracking-[0.26em] text-primary/80">
-            {eyebrow}
-          </div>
-        ) : null}
-        <div>
-          <h1 className="text-xl font-semibold tracking-tight text-foreground md:text-2xl">{title}</h1>
-          {description ? (
-            <p className="mt-1.5 max-w-3xl text-sm leading-6 text-muted-foreground">
-              {description}
-            </p>
-          ) : null}
-        </div>
-      </div>
+      {description ? (
+        <p className="max-w-3xl text-sm leading-6 text-muted-foreground md:flex-1">
+          {description}
+        </p>
+      ) : (
+        <div className="md:flex-1" />
+      )}
       {action ? (
         <div
           className={

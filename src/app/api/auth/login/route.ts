@@ -1,10 +1,27 @@
 import { NextResponse } from "next/server";
 
 import { createSession } from "@/lib/auth/session";
+import { resolveTenantContextByHost } from "@/lib/platform/tenant-resolver";
 import { loginSchema } from "@/lib/validation/auth";
-import { authenticateUser, resolveUserPermissions } from "@/services/auth-service";
+import {
+  authenticateUser,
+  recordSuccessfulLogin,
+  resolveUserPermissions,
+} from "@/services/auth-service";
 
 export async function POST(request: Request) {
+  const tenantContext = await resolveTenantContextByHost(request.headers.get("host"));
+
+  if (tenantContext.kind === "tenant" && tenantContext.instance?.status !== "ready") {
+    return NextResponse.json(
+      {
+        error:
+          "Instance trial belum siap dipakai. Silakan tunggu proses provisioning selesai.",
+      },
+      { status: 423 },
+    );
+  }
+
   const json = await request.json();
   const parsed = loginSchema.safeParse(json);
 
@@ -24,6 +41,8 @@ export async function POST(request: Request) {
     );
   }
 
+  const isFirstLogin = !user.lastLoginAt;
+
   await createSession({
     sub: user.id,
     email: user.email,
@@ -31,6 +50,7 @@ export async function POST(request: Request) {
     role: user.roleCode,
     permissions: resolveUserPermissions(user),
   });
+  await recordSuccessfulLogin(user.id);
 
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true, firstLogin: isFirstLogin });
 }

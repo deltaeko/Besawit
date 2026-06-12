@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { requirePermission } from "@/lib/auth/api-guard";
 import { createPalmSale, getPalmSaleList } from "@/services/palm-service";
 
 export async function GET() {
@@ -8,9 +9,14 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const auth = await requirePermission("palm.sales");
+  if (auth.response || !auth.session) {
+    return auth.response;
+  }
+
   try {
     const payload = await request.json();
-    const sale = await createPalmSale(payload);
+    const sale = await createPalmSale(payload, auth.session.sub);
     return NextResponse.json(sale, { status: 201 });
   } catch (error) {
     return NextResponse.json(

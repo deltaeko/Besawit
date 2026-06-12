@@ -1,22 +1,71 @@
-version: "3.9"
-
 services:
   app:
     build:
       context: .
       dockerfile: Dockerfile
+      target: runner
+    restart: unless-stopped
     ports:
       - "6001:3000"
     environment:
       NODE_ENV: production
-      APP_NAME: Besawit
-      APP_URL: http://localhost:6001
-      DATABASE_URL: postgresql://postgres:postgres@db:5432/besawit
-      SESSION_SECRET: change-this-in-production
-      ALLOW_NEGATIVE_STOCK: "false"
-      DEFAULT_CURRENCY: IDR
+      APP_NAME: ${APP_NAME:-Besawit}
+      NEXT_PUBLIC_APP_NAME: ${NEXT_PUBLIC_APP_NAME:-Besawit}
+      NEXT_PUBLIC_APP_SHORT_NAME: ${NEXT_PUBLIC_APP_SHORT_NAME:-BS}
+      NEXT_PUBLIC_APP_MARK: ${NEXT_PUBLIC_APP_MARK:-BS}
+      NEXT_PUBLIC_APP_TAGLINE: ${NEXT_PUBLIC_APP_TAGLINE:-Platform operasional sawit, inventory, toko pertanian, dan finance.}
+      APP_URL: ${APP_URL:-http://localhost:6001}
+      APP_BASE_DOMAIN: ${APP_BASE_DOMAIN:-localhost}
+      DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:postgres@db:5432/besawit_app}
+      CONTROL_DATABASE_URL: ${CONTROL_DATABASE_URL:-postgresql://postgres:postgres@db:5432/besawit_control}
+      TENANT_DATABASE_ADMIN_URL: ${TENANT_DATABASE_ADMIN_URL:-postgresql://postgres:postgres@db:5432/postgres}
+      SESSION_SECRET: ${SESSION_SECRET:-change-this-in-production}
+      ALLOW_NEGATIVE_STOCK: ${ALLOW_NEGATIVE_STOCK:-false}
+      DEFAULT_CURRENCY: ${DEFAULT_CURRENCY:-IDR}
+      TRIAL_DURATION_DAYS: ${TRIAL_DURATION_DAYS:-7}
+      TRIAL_CONTACT_WHATSAPP: ${TRIAL_CONTACT_WHATSAPP:-}
+      TRIAL_DATABASE_PREFIX: ${TRIAL_DATABASE_PREFIX:-besawit_trial}
+      PROVISION_POLL_INTERVAL_MS: ${PROVISION_POLL_INTERVAL_MS:-10000}
+      TRIAL_READY_WEBHOOK_URL: ${TRIAL_READY_WEBHOOK_URL:-}
+      BRANDING_UPLOAD_DIR: ${BRANDING_UPLOAD_DIR:-/var/lib/besawit/branding-assets}
+      BRANDING_MAX_UPLOAD_MB: ${BRANDING_MAX_UPLOAD_MB:-4}
     depends_on:
       - db
+    volumes:
+      - branding_assets:/var/lib/besawit/branding-assets
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: worker
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      APP_NAME: ${APP_NAME:-Besawit}
+      NEXT_PUBLIC_APP_NAME: ${NEXT_PUBLIC_APP_NAME:-Besawit}
+      NEXT_PUBLIC_APP_SHORT_NAME: ${NEXT_PUBLIC_APP_SHORT_NAME:-BS}
+      NEXT_PUBLIC_APP_MARK: ${NEXT_PUBLIC_APP_MARK:-BS}
+      NEXT_PUBLIC_APP_TAGLINE: ${NEXT_PUBLIC_APP_TAGLINE:-Platform operasional sawit, inventory, toko pertanian, dan finance.}
+      APP_URL: ${APP_URL:-http://localhost:6001}
+      APP_BASE_DOMAIN: ${APP_BASE_DOMAIN:-localhost}
+      DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:postgres@db:5432/besawit_app}
+      CONTROL_DATABASE_URL: ${CONTROL_DATABASE_URL:-postgresql://postgres:postgres@db:5432/besawit_control}
+      TENANT_DATABASE_ADMIN_URL: ${TENANT_DATABASE_ADMIN_URL:-postgresql://postgres:postgres@db:5432/postgres}
+      SESSION_SECRET: ${SESSION_SECRET:-change-this-in-production}
+      ALLOW_NEGATIVE_STOCK: ${ALLOW_NEGATIVE_STOCK:-false}
+      DEFAULT_CURRENCY: ${DEFAULT_CURRENCY:-IDR}
+      TRIAL_DURATION_DAYS: ${TRIAL_DURATION_DAYS:-7}
+      TRIAL_CONTACT_WHATSAPP: ${TRIAL_CONTACT_WHATSAPP:-}
+      TRIAL_DATABASE_PREFIX: ${TRIAL_DATABASE_PREFIX:-besawit_trial}
+      PROVISION_POLL_INTERVAL_MS: ${PROVISION_POLL_INTERVAL_MS:-10000}
+      TRIAL_READY_WEBHOOK_URL: ${TRIAL_READY_WEBHOOK_URL:-}
+      BRANDING_UPLOAD_DIR: ${BRANDING_UPLOAD_DIR:-/var/lib/besawit/branding-assets}
+      BRANDING_MAX_UPLOAD_MB: ${BRANDING_MAX_UPLOAD_MB:-4}
+    depends_on:
+      - db
+    volumes:
+      - branding_assets:/var/lib/besawit/branding-assets
 
   db:
     image: postgres:17-alpine
@@ -24,11 +73,13 @@ services:
     ports:
       - "7000:5432"
     environment:
-      POSTGRES_DB: besawit
+      POSTGRES_DB: postgres
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/initdb:/docker-entrypoint-initdb.d:ro
 
 volumes:
   postgres_data:
+  branding_assets:

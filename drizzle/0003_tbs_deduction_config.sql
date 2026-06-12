@@ -67,7 +67,7 @@ UPDATE "tbs_sale_deductions"
 SET
   "label" = COALESCE(
     "label",
-    CASE "type"
+    CASE "type"::text
       WHEN 'trash' THEN 'Sampah'
       WHEN 'water' THEN 'Air'
       WHEN 'sand_mud' THEN 'Pasir/Lumpur'

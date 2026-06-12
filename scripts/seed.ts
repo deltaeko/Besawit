@@ -40,6 +40,7 @@ import {
   createStorePurchaseTx,
   createStoreSaleTx,
   getStorePurchaseList,
+  getStoreSaleList,
 } from "../src/services/store-service";
 
 async function ensureMasters() {
@@ -418,6 +419,7 @@ async function ensureTransactions() {
     await createPalmSale(
       {
         saleDate: new Date().toISOString().slice(0, 10),
+        dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
         referencePurchaseId: purchase.id,
         warehouseId: warehouse.id,
         factoryId: factory.id,
@@ -443,7 +445,10 @@ async function ensureTransactions() {
     );
   }
 
-  const storePurchases = await getStorePurchaseList(1);
+  const [storePurchases, storeSales] = await Promise.all([
+    getStorePurchaseList(1),
+    getStoreSaleList(1),
+  ]);
 
   if (storePurchases.length === 0 && productRows.length >= 2) {
     await createStorePurchaseTx(
@@ -462,7 +467,9 @@ async function ensureTransactions() {
       },
       owner.id,
     );
+  }
 
+  if (storeSales.length === 0 && productRows.length >= 2) {
     await createStoreSaleTx(
       {
         transactionDate: new Date().toISOString().slice(0, 10),
@@ -470,6 +477,7 @@ async function ensureTransactions() {
         warehouseId: warehouse.id,
         invoiceNumber: "INV-SS-001",
         saleType: "credit",
+        dueDate: new Date(Date.now() + 30 * 86_400_000).toISOString().slice(0, 10),
         discount: 25000,
         tax: 0,
         items: [

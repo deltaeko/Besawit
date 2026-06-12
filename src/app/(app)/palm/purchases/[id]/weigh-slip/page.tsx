@@ -1,10 +1,10 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Printer } from "lucide-react";
 
+import { DocumentPreviewActions } from "@/components/shared/document-preview-actions";
 import { PageHeader } from "@/components/shared/page-header";
-import { Button } from "@/components/ui/button";
 import { WeighSlipDocument } from "@/modules/palm/weigh-slip-document";
+import { buildWeighSlipPaymentSummary } from "@/modules/palm/weigh-slip-sharing";
+import { getPayableByReference, getPayableDetail } from "@/services/finance-service";
 import { getPalmPurchase } from "@/services/palm-service";
 
 export default async function PalmPurchaseWeighSlipPreviewPage({
@@ -13,7 +13,12 @@ export default async function PalmPurchaseWeighSlipPreviewPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const purchase = await getPalmPurchase(id).catch(() => null);
+  const [purchase, payable] = await Promise.all([
+    getPalmPurchase(id).catch(() => null),
+    getPayableByReference("tbs_purchase", id).catch(() => null),
+  ]);
+  const payableDetail = payable ? await getPayableDetail(payable.id).catch(() => null) : null;
+  const paymentSummary = buildWeighSlipPaymentSummary(payableDetail ?? { payable, paymentHistory: [] });
 
   if (!purchase) notFound();
 
@@ -24,21 +29,22 @@ export default async function PalmPurchaseWeighSlipPreviewPage({
         title="Preview Slip Timbang Petani"
         description="Tinjau data timbang pembelian TBS sebelum slip dicetak untuk petani atau arsip lapangan."
         action={
-          <div className="flex flex-wrap gap-3">
-            <Button asChild variant="outline">
-              <Link href={`/palm/purchases/${id}`}>Kembali</Link>
-            </Button>
-            <Button asChild variant="outline">
-              <Link href={`/print/palm-purchases/${id}/weigh-slip`} target="_blank">
-                <Printer className="size-4" />
-                Print
-              </Link>
-            </Button>
-          </div>
+          <DocumentPreviewActions
+            backHref={`/palm/purchases/${id}`}
+            printHref={`/print/palm-purchases/${id}/weigh-slip`}
+            printLabel="Print Preview"
+            whatsappMessage={`Slip timbang pembelian TBS ${String(purchase.code ?? id)} siap ditinjau.`}
+            whatsappSharePath={`/print/palm-purchases/${id}/weigh-slip`}
+          />
         }
       />
 
-      <WeighSlipDocument mode="preview" printedAt={new Date()} purchase={purchase as Record<string, unknown>} />
+      <WeighSlipDocument
+        mode="preview"
+        paymentSummary={paymentSummary}
+        printedAt={new Date()}
+        purchase={purchase as Record<string, unknown>}
+      />
     </div>
   );
 }

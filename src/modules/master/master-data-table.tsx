@@ -104,7 +104,7 @@ export function MasterDataTable({
   rows: MasterRow[];
 }) {
   return (
-    <div className="overflow-hidden rounded-2xl border bg-card/95">
+    <div className="overflow-hidden rounded-[1.35rem] border border-white/85 bg-card/95 shadow-[0_18px_50px_-34px_rgba(20,37,24,0.22)]">
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>
@@ -120,7 +120,7 @@ export function MasterDataTable({
               rows.map((row) => (
                 <TableRow key={row.id}>
                   {config.listColumns.map((column) => (
-                    <TableCell key={`${row.id}-${column.key}`}>
+                    <TableCell className="text-[15px]" key={`${row.id}-${column.key}`}>
                       {column.type === "status" ? (
                         <StatusBadge status={row.isActive ? "active" : "cancelled"} />
                       ) : entity === "roles" && column.key === "permissionCount" ? (
@@ -134,7 +134,7 @@ export function MasterDataTable({
                       )}
                     </TableCell>
                   ))}
-                  <TableCell>
+                  <TableCell className="w-[88px]">
                     <EntityActionMenu
                       editHref={`/master/${entity}/${row.id}/edit`}
                       extraHref={entity === "products" ? `/master/products/${row.id}/prices` : undefined}
@@ -153,7 +153,7 @@ export function MasterDataTable({
               ))
             ) : (
               <TableRow>
-                <TableCell className="py-10 text-center text-muted-foreground" colSpan={config.listColumns.length + 1}>
+                <TableCell className="py-12 text-center text-muted-foreground" colSpan={config.listColumns.length + 1}>
                   Belum ada data.
                 </TableCell>
               </TableRow>

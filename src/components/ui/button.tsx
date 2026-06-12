@@ -5,20 +5,24 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-semibold transition-colors disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-semibold transition-[background-color,border-color,color,box-shadow,transform] duration-150 disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:translate-y-px",
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90",
-        outline: "border bg-card text-foreground hover:bg-accent",
-        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/90",
-        ghost: "text-foreground hover:bg-accent",
-        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+        default:
+          "bg-primary text-primary-foreground shadow-[0_12px_28px_-16px_rgba(47,107,70,0.55)] hover:bg-primary/92 hover:shadow-[0_16px_34px_-18px_rgba(47,107,70,0.5)]",
+        outline:
+          "border border-border/90 bg-card/92 text-foreground shadow-[0_10px_24px_-20px_rgba(20,37,24,0.28)] hover:bg-accent/80",
+        secondary:
+          "bg-secondary text-secondary-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.75)] hover:bg-secondary/92",
+        ghost: "text-foreground hover:bg-accent/80",
+        destructive:
+          "bg-destructive text-destructive-foreground shadow-[0_12px_28px_-16px_rgba(196,83,63,0.45)] hover:bg-destructive/92",
       },
       size: {
-        default: "h-10 px-4 py-2",
-        sm: "h-9 px-3",
-        lg: "h-11 px-6 text-base",
+        default: "h-11 px-4 py-2",
+        sm: "h-9 px-3.5 text-[13px]",
+        lg: "h-12 px-6 text-base",
         icon: "h-10 w-10",
       },
     },

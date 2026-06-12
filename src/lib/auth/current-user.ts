@@ -2,12 +2,13 @@ import { eq } from "drizzle-orm";
 
 import { normalizeRolePermissions } from "@/lib/auth/permissions";
 import { getSession } from "@/lib/auth/session";
-import { db } from "@/lib/db/client";
+import { getDb } from "@/lib/db/client";
 import { roles, users } from "@/lib/db/schema";
 
 export async function getCurrentUser() {
   const session = await getSession();
   if (!session) return null;
+  const db = await getDb();
 
   const [user] = await db
     .select({

@@ -8,6 +8,7 @@ import {
   DashboardMetricCard,
   formatWeight,
 } from "@/modules/dashboard/metric-card";
+import { RankedBarList } from "@/modules/dashboard/ranked-bar-list";
 import {
   formatPalmStatusLabel,
   resolvePalmStatusBadgeVariant,
@@ -145,38 +146,18 @@ export function TbsSaleDailyWidget({
                 </CardDescription>
               </CardHeader>
               <CardContent className="pt-0">
-                {summary.topFactories.length ? (
-                  <div className="space-y-3">
-                    {summary.topFactories.map((row, index) => (
-                      <div
-                        key={`${row.factoryId}-${index}`}
-                        className="rounded-2xl border border-border/70 bg-card/70 p-4"
-                      >
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="min-w-0">
-                            <div className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
-                              Peringkat {index + 1}
-                            </div>
-                            <div className="mt-1 truncate font-semibold">{row.factoryName}</div>
-                            <div className="mt-1 text-sm text-muted-foreground">
-                              {formatNumber(row.transactionCount, 0)} transaksi
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <div className="font-semibold">{formatCurrency(row.totalSales)}</div>
-                            <div className="mt-1 text-sm text-muted-foreground">
-                              {formatWeight(row.netWeightFinal)}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="rounded-2xl border border-dashed border-border/80 bg-muted/20 p-6 text-sm text-muted-foreground">
-                    Belum ada transaksi penjualan yang bisa dirangking pada tanggal terpilih.
-                  </div>
-                )}
+                <RankedBarList
+                  emptyMessage="Belum ada transaksi penjualan yang bisa dirangking pada tanggal terpilih."
+                  items={summary.topFactories.map((row, index) => ({
+                    id: `${row.factoryId}-${index}`,
+                    label: row.factoryName,
+                    secondary: `${formatNumber(row.transactionCount, 0)} transaksi`,
+                    value: row.totalSales,
+                    valueLabel: formatCurrency(row.totalSales),
+                    helper: formatWeight(row.netWeightFinal),
+                  }))}
+                  tone="amber"
+                />
               </CardContent>
             </Card>
           </div>

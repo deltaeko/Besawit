@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { getSession } from "@/lib/auth/session";
+import { requirePermission } from "@/lib/auth/api-guard";
 import {
   applyProductImport,
   previewProductImport,
@@ -55,11 +55,14 @@ export async function POST(request: Request) {
 
   try {
     if (action === "apply") {
-      const session = await getSession();
+      const auth = await requirePermission("master.products");
+      if (auth.response || !auth.session) {
+        return auth.response;
+      }
       const result = await applyProductImport(
         source,
         duplicateStrategy,
-        session?.sub,
+        auth.session.sub,
       );
 
       return NextResponse.json(result);

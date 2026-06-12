@@ -185,6 +185,45 @@ export const users = pgTable(
   ],
 );
 
+export const brandingSettings = pgTable(
+  "branding_settings",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    scope: varchar("scope", { length: 32 }).default("default").notNull(),
+    companyName: varchar("company_name", { length: 150 }).notNull(),
+    appDisplayName: varchar("app_display_name", { length: 150 }),
+    tagline: text("tagline"),
+    logoUrl: text("logo_url"),
+    logoSquareUrl: text("logo_square_url"),
+    faviconUrl: text("favicon_url"),
+    primaryColor: varchar("primary_color", { length: 20 }),
+    accentColor: varchar("accent_color", { length: 20 }),
+    supportEmail: varchar("support_email", { length: 150 }),
+    supportPhone: varchar("support_phone", { length: 30 }),
+    ...timestamps,
+  },
+  (table) => [uniqueIndex("branding_settings_scope_idx").on(table.scope)],
+);
+
+export const dashboardLayouts = pgTable(
+  "dashboard_layouts",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id")
+      .references(() => users.id)
+      .notNull(),
+    pageKey: varchar("page_key", { length: 64 }).default("main_dashboard").notNull(),
+    layout: jsonb("layout")
+      .$type<Array<{ widgetId: string; visible: boolean }>>()
+      .notNull(),
+    ...timestamps,
+  },
+  (table) => [
+    uniqueIndex("dashboard_layouts_user_page_idx").on(table.userId, table.pageKey),
+    index("dashboard_layouts_user_id_idx").on(table.userId),
+  ],
+);
+
 export const farmers = pgTable(
   "farmers",
   {
@@ -924,6 +963,7 @@ export const payables = pgTable(
   (table) => [
     uniqueIndex("payables_code_idx").on(table.code),
     index("payables_status_idx").on(table.status),
+    index("payables_status_due_date_idx").on(table.status, table.dueDate),
     index("payables_source_idx").on(table.sourceType, table.sourceId),
   ],
 );
@@ -955,6 +995,7 @@ export const receivables = pgTable(
   (table) => [
     uniqueIndex("receivables_code_idx").on(table.code),
     index("receivables_status_idx").on(table.status),
+    index("receivables_status_due_date_idx").on(table.status, table.dueDate),
     index("receivables_source_idx").on(table.sourceType, table.sourceId),
   ],
 );
@@ -1124,6 +1165,7 @@ export const auditLogs = pgTable(
 
 export type Role = typeof roles.$inferSelect;
 export type User = typeof users.$inferSelect;
+export type BrandingSetting = typeof brandingSettings.$inferSelect;
 export type Farmer = typeof farmers.$inferSelect;
 export type Factory = typeof factories.$inferSelect;
 export type Customer = typeof customers.$inferSelect;

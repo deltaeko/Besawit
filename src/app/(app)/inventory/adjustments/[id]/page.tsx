@@ -55,8 +55,8 @@ function SummaryCard({
     <div
       className={
         emphasis
-          ? "rounded-2xl border border-primary/20 bg-primary/10 p-4"
-          : "rounded-2xl border border-border/70 bg-muted/20 p-4"
+          ? "rounded-[1.35rem] border border-primary/20 bg-[linear-gradient(180deg,rgba(72,115,74,0.12),rgba(72,115,74,0.06))] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.28)]"
+          : "rounded-[1.35rem] border border-border/70 bg-card/88 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]"
       }
     >
       <div className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">{label}</div>
@@ -73,7 +73,7 @@ function InfoList({
   items: Array<{ label: string; value: string }>;
 }) {
   return (
-    <div className="overflow-hidden rounded-2xl border border-border/70 bg-muted/10">
+    <div className="overflow-hidden rounded-[1.35rem] border border-border/70 bg-muted/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.22)]">
       {items.map((item, index) => (
         <div
           key={item.label}
@@ -153,7 +153,7 @@ export default async function InventoryAdjustmentDetailPage({
         }
       />
 
-      <div className="rounded-2xl border border-border/80 bg-card p-5 shadow-sm">
+      <div className="overflow-hidden rounded-[1.8rem] border border-white/90 bg-[radial-gradient(circle_at_top_left,rgba(97,143,96,0.14),transparent_34%),linear-gradient(180deg,rgba(255,255,255,0.98),rgba(246,249,244,0.94))] p-5 shadow-[0_26px_72px_-42px_rgba(20,37,24,0.28)] ring-1 ring-black/[0.02]">
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
           <div className="space-y-3">
             <div className="font-mono text-xs uppercase tracking-[0.3em] text-primary">Inventory</div>
@@ -168,7 +168,7 @@ export default async function InventoryAdjustmentDetailPage({
               <Badge variant="neutral">{getReasonLabel(String(adjustment.reason))}</Badge>
             </div>
           </div>
-          <div className="rounded-xl border border-border/70 bg-muted/20 px-4 py-3 text-sm text-muted-foreground">
+          <div className="rounded-[1.2rem] border border-border/70 bg-card/80 px-4 py-3 text-sm text-muted-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.22)]">
             Dicatat {formatDateTime(adjustment.createdAt)}
           </div>
         </div>
@@ -254,7 +254,7 @@ export default async function InventoryAdjustmentDetailPage({
         title="Item Mutasi"
         description="Rincian saldo sebelum, qty mutasi, saldo sesudah, dan nilai perubahan persediaan per produk."
       >
-        <div className="mb-4 flex items-center gap-2 rounded-xl border border-border/70 bg-muted/20 px-4 py-3 text-sm text-muted-foreground">
+        <div className="mb-4 flex items-center gap-2 rounded-[1.2rem] border border-border/70 bg-muted/20 px-4 py-3 text-sm text-muted-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.22)]">
           <Warehouse className="size-4" />
           {items.length} baris item mutasi tercatat untuk dokumen ini.
         </div>
@@ -309,21 +309,21 @@ export default async function InventoryAdjustmentDetailPage({
         description="Snapshot singkat jumlah item, nilai mutasi, dan status dokumen untuk pengecekan cepat."
       >
         <div className="grid gap-4 md:grid-cols-3">
-          <div className="rounded-2xl border border-border/70 bg-muted/20 px-4 py-3">
+          <div className="rounded-[1.35rem] border border-border/70 bg-muted/20 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.22)]">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <PackageSearch className="size-4" />
               Baris item
             </div>
             <div className="mt-2 text-xl font-semibold">{items.length}</div>
           </div>
-          <div className="rounded-2xl border border-border/70 bg-muted/20 px-4 py-3">
+          <div className="rounded-[1.35rem] border border-border/70 bg-muted/20 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.22)]">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <FileStack className="size-4" />
               Nilai dokumen
             </div>
             <div className="mt-2 text-xl font-semibold">{formatCurrency(adjustment.totalVarianceValue)}</div>
           </div>
-          <div className="rounded-2xl border border-border/70 bg-muted/20 px-4 py-3">
+          <div className="rounded-[1.35rem] border border-border/70 bg-muted/20 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.22)]">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <ClipboardCheck className="size-4" />
               Status

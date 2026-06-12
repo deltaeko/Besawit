@@ -1,5 +1,8 @@
 import Decimal from "decimal.js";
+import { and, eq, sql } from "drizzle-orm";
 
+import { getDb, runInDbTransaction } from "@/lib/db/client";
+import { stockBalances } from "@/lib/db/schema";
 import { env } from "@/lib/env";
 import { stockAdjustmentSchema, stockTakeSchema } from "@/lib/validation/inventory";
 import {
@@ -34,7 +37,6 @@ import {
   updateStockTake,
   updateStockAdjustment,
   updateStockAdjustmentItem,
-  upsertStockBalance,
 } from "@/repositories/inventory-repository";
 import { logAudit } from "@/services/audit-service";
 import { generateTransactionCode } from "@/services/code-service";
@@ -80,59 +82,90 @@ export async function applyStockMovement(input: {
   notes?: string;
   createdBy?: string | null;
 }) {
-  const product = await getProductById(input.productId);
-  const currentBalance = await getStockBalance(input.warehouseId, input.productId);
-  const currentQty = new Decimal(currentBalance?.quantity ?? "0");
-  const currentAvgCost = new Decimal(currentBalance?.averageCost ?? "0");
-  const qty = new Decimal(input.quantity);
-  const direction = input.movementType.endsWith("_out") ? -1 : 1;
-  const beforeQty = currentQty;
-  const nextQty = currentQty.plus(qty.mul(direction));
+  return runInDbTransaction(async () => {
+    const db = await getDb();
+    const product = await getProductById(input.productId);
+    const qty = new Decimal(input.quantity);
+    const direction = input.movementType.endsWith("_out") ? -1 : 1;
 
-  if (
-    nextQty.isNegative() &&
-    !env.ALLOW_NEGATIVE_STOCK &&
-    !product?.allowNegativeStock
-  ) {
-    throw new Error("Stock cannot be negative.");
-  }
+    await db.execute(sql`
+      insert into stock_balances (warehouse_id, product_id, quantity, average_cost, updated_at)
+      values (${input.warehouseId}, ${input.productId}, '0.00', '0.00', now())
+      on conflict (warehouse_id, product_id) do nothing
+    `);
 
-  const unitCost =
-    input.movementType === "sales_out"
-      ? currentAvgCost.gt(0)
-        ? currentAvgCost
-        : new Decimal(product?.purchasePrice ?? input.unitCost)
-      : new Decimal(input.unitCost);
-  const totalValue = qty.mul(unitCost);
+    const lockedBalanceResult = await db.execute(sql`
+      select
+        quantity::text as quantity,
+        average_cost::text as average_cost
+      from stock_balances
+      where warehouse_id = ${input.warehouseId}
+        and product_id = ${input.productId}
+      for update
+    `);
+    const lockedBalance = lockedBalanceResult.rows[0] as
+      | {
+          quantity?: string;
+          average_cost?: string;
+        }
+      | undefined;
+    const currentQty = new Decimal(lockedBalance?.quantity ?? "0");
+    const currentAvgCost = new Decimal(lockedBalance?.average_cost ?? "0");
+    const beforeQty = currentQty;
+    const nextQty = currentQty.plus(qty.mul(direction));
 
-  const nextAvgCost =
-    direction > 0 && nextQty.gt(0)
-      ? currentQty.mul(currentAvgCost).plus(totalValue).div(nextQty)
-      : currentAvgCost;
+    if (
+      nextQty.isNegative() &&
+      !env.ALLOW_NEGATIVE_STOCK &&
+      !product?.allowNegativeStock
+    ) {
+      throw new Error("Stock cannot be negative.");
+    }
 
-  await createStockMovement({
-    warehouseId: input.warehouseId,
-    productId: input.productId,
-    referenceType: input.referenceType,
-    referenceId: input.referenceId ?? null,
-    movementType: input.movementType,
-    reason: input.reason ?? "other",
-    counterpartyWarehouseId: input.counterpartyWarehouseId ?? null,
-    beforeQuantity: beforeQty.toFixed(2),
-    quantity: qty.toFixed(2),
-    afterQuantity: nextQty.toFixed(2),
-    unitCost: unitCost.toFixed(2),
-    totalValue: totalValue.toFixed(2),
-    notes: input.notes ?? null,
-    createdBy: input.createdBy ?? null,
-  });
+    const unitCost =
+      input.movementType === "sales_out"
+        ? currentAvgCost.gt(0)
+          ? currentAvgCost
+          : new Decimal(product?.purchasePrice ?? input.unitCost)
+        : new Decimal(input.unitCost);
+    const totalValue = qty.mul(unitCost);
 
-  await upsertStockBalance({
-    warehouseId: input.warehouseId,
-    productId: input.productId,
-    quantity: nextQty.toFixed(2),
-    averageCost: nextAvgCost.toFixed(2),
-    lastMovementAt: new Date(),
+    const nextAvgCost =
+      direction > 0 && nextQty.gt(0)
+        ? currentQty.mul(currentAvgCost).plus(totalValue).div(nextQty)
+        : currentAvgCost;
+
+    await createStockMovement({
+      warehouseId: input.warehouseId,
+      productId: input.productId,
+      referenceType: input.referenceType,
+      referenceId: input.referenceId ?? null,
+      movementType: input.movementType,
+      reason: input.reason ?? "other",
+      counterpartyWarehouseId: input.counterpartyWarehouseId ?? null,
+      beforeQuantity: beforeQty.toFixed(2),
+      quantity: qty.toFixed(2),
+      afterQuantity: nextQty.toFixed(2),
+      unitCost: unitCost.toFixed(2),
+      totalValue: totalValue.toFixed(2),
+      notes: input.notes ?? null,
+      createdBy: input.createdBy ?? null,
+    });
+
+    await db
+      .update(stockBalances)
+      .set({
+        quantity: nextQty.toFixed(2),
+        averageCost: nextAvgCost.toFixed(2),
+        lastMovementAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(
+        and(
+          eq(stockBalances.warehouseId, input.warehouseId),
+          eq(stockBalances.productId, input.productId),
+        ),
+      );
   });
 }
 

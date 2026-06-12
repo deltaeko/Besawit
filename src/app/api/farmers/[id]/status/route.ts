@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { getSession } from "@/lib/auth/session";
+import { requirePermission } from "@/lib/auth/api-guard";
 import { changeMasterStatus } from "@/services/master-service";
 
 export async function PATCH(
@@ -9,10 +9,13 @@ export async function PATCH(
 ) {
   const { id } = await context.params;
   const { isActive } = (await request.json()) as { isActive?: boolean };
-  const session = await getSession();
+  const auth = await requirePermission("master.farmers");
+  if (auth.response || !auth.session) {
+    return auth.response;
+  }
 
   try {
-    const record = await changeMasterStatus("farmers", id, Boolean(isActive), session?.sub);
+    const record = await changeMasterStatus("farmers", id, Boolean(isActive), auth.session.sub);
     return NextResponse.json(record);
   } catch (error) {
     return NextResponse.json(

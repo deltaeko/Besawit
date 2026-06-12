@@ -19,6 +19,8 @@
 
 # production
 /build
+/storage/branding-assets/
+/logs/
 
 # misc
 .DS_Store

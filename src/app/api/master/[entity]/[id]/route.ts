@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { getSession } from "@/lib/auth/session";
+import { requireMasterEntityPermission } from "@/lib/auth/api-guard";
 import { isMasterEntity } from "@/modules/master/helpers";
 import { getMasterRecordById } from "@/repositories/master-repository";
 import { recordUpdatedProductPriceHistory, updateMaster } from "@/services/master-service";
@@ -35,17 +35,20 @@ export async function PUT(
   }
 
   const payload = await request.json();
-  const session = await getSession();
+  const auth = await requireMasterEntityPermission(entity);
+  if (auth.response || !auth.session) {
+    return auth.response;
+  }
   const previousRecord = entity === "products" ? await getMasterRecordById(entity, id) : null;
 
   try {
-    const record = await updateMaster(entity, id, payload, session?.sub);
+    const record = await updateMaster(entity, id, payload, auth.session.sub);
     if (entity === "products" && previousRecord) {
       await recordUpdatedProductPriceHistory(
         id,
         previousRecord as { purchasePrice?: unknown; sellingPrice?: unknown },
         payload,
-        session?.sub,
+        auth.session.sub,
       );
     }
     return NextResponse.json(record);
@@ -68,17 +71,20 @@ export async function PATCH(
   }
 
   const payload = await request.json();
-  const session = await getSession();
+  const auth = await requireMasterEntityPermission(entity);
+  if (auth.response || !auth.session) {
+    return auth.response;
+  }
   const previousRecord = entity === "products" ? await getMasterRecordById(entity, id) : null;
 
   try {
-    const record = await updateMaster(entity, id, payload, session?.sub);
+    const record = await updateMaster(entity, id, payload, auth.session.sub);
     if (entity === "products" && previousRecord) {
       await recordUpdatedProductPriceHistory(
         id,
         previousRecord as { purchasePrice?: unknown; sellingPrice?: unknown },
         payload,
-        session?.sub,
+        auth.session.sub,
       );
     }
     return NextResponse.json(record);

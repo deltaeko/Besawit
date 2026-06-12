@@ -1,9 +1,7 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Printer } from "lucide-react";
 
+import { DocumentPreviewActions } from "@/components/shared/document-preview-actions";
 import { PageHeader } from "@/components/shared/page-header";
-import { Button } from "@/components/ui/button";
 import { StorePurchaseInvoiceDocument } from "@/modules/store/store-purchase-invoice-document";
 import { getStorePurchaseInvoice } from "@/services/store-service";
 
@@ -24,17 +22,12 @@ export default async function StorePurchaseInvoicePreviewPage({
         title="Preview Slip Pembelian Barang"
         description="Tinjau item, total pembelian, dan informasi supplier sebelum slip dicetak."
         action={
-          <div className="flex flex-wrap gap-3">
-            <Button asChild variant="outline">
-              <Link href={`/store/purchases/${id}`}>Kembali</Link>
-            </Button>
-            <Button asChild variant="outline">
-              <Link href={`/print/store-purchases/${id}/invoice`} target="_blank">
-                <Printer className="size-4" />
-                Print
-              </Link>
-            </Button>
-          </div>
+          <DocumentPreviewActions
+            backHref={`/store/purchases/${id}`}
+            printHref={`/print/store-purchases/${id}/invoice`}
+            printLabel="Print Preview"
+            whatsappMessage={`Slip pembelian barang ${String(invoice.purchase.code ?? id)} siap ditinjau.`}
+          />
         }
       />
 

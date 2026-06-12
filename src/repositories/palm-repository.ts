@@ -1,6 +1,6 @@
 import { and, asc, count, desc, eq, getTableColumns, gte, ilike, lte, or } from "drizzle-orm";
 
-import { db } from "@/lib/db/client";
+import { getDb } from "@/lib/db/client";
 import {
   factoryDeductionDefaults,
   factories,
@@ -17,6 +17,7 @@ import {
 } from "@/lib/db/schema";
 
 export async function listTbsPurchases(limit = 20) {
+  const db = await getDb();
   return db
     .select({
       ...getTableColumns(tbsPurchases),
@@ -31,6 +32,7 @@ export async function listTbsPurchases(limit = 20) {
 }
 
 export async function listAllTbsPurchases() {
+  const db = await getDb();
   return db
     .select({
       ...getTableColumns(tbsPurchases),
@@ -44,6 +46,7 @@ export async function listAllTbsPurchases() {
 }
 
 export async function listTbsSales(limit = 20) {
+  const db = await getDb();
   return db
     .select({
       ...getTableColumns(tbsSales),
@@ -58,6 +61,7 @@ export async function listTbsSales(limit = 20) {
 }
 
 export async function listAllTbsSales() {
+  const db = await getDb();
   return db
     .select({
       ...getTableColumns(tbsSales),
@@ -80,6 +84,7 @@ export async function listTbsPurchasesPage(
     dateTo?: Date;
   },
 ) {
+  const db = await getDb();
   const offset = (page - 1) * pageSize;
   const conditions = [];
 
@@ -146,6 +151,7 @@ export async function listTbsSalesPage(
     dateTo?: Date;
   },
 ) {
+  const db = await getDb();
   const offset = (page - 1) * pageSize;
   const conditions = [];
 
@@ -203,6 +209,7 @@ export async function listTbsSalesPage(
 }
 
 export async function getTbsPurchaseById(id: string) {
+  const db = await getDb();
   const [row] = await db
     .select({
       ...getTableColumns(tbsPurchases),
@@ -226,6 +233,7 @@ export async function getTbsPurchaseById(id: string) {
 }
 
 export async function getTbsSaleById(id: string) {
+  const db = await getDb();
   const [row] = await db
     .select({
       ...getTableColumns(tbsSales),
@@ -245,6 +253,7 @@ export async function getTbsSaleById(id: string) {
 }
 
 export async function listTbsSaleDeductionsBySaleId(saleId: string) {
+  const db = await getDb();
   return db
     .select({
       ...getTableColumns(tbsSaleDeductions),
@@ -258,6 +267,7 @@ export async function listTbsSaleDeductionsBySaleId(saleId: string) {
 }
 
 export async function listTbsSaleReturnsBySaleId(saleId: string) {
+  const db = await getDb();
   return db
     .select()
     .from(tbsSaleReturns)
@@ -266,6 +276,7 @@ export async function listTbsSaleReturnsBySaleId(saleId: string) {
 }
 
 export async function listActiveTbsDeductionConfigs() {
+  const db = await getDb();
   return db
     .select()
     .from(tbsDeductionConfigs)
@@ -274,6 +285,7 @@ export async function listActiveTbsDeductionConfigs() {
 }
 
 export async function listFactoryDeductionDefaults(factoryId?: string | null) {
+  const db = await getDb();
   if (!factoryId) return [];
 
   return db
@@ -297,6 +309,7 @@ export async function listFactoryDeductionDefaults(factoryId?: string | null) {
 }
 
 export async function createTbsPurchase(values: typeof tbsPurchases.$inferInsert) {
+  const db = await getDb();
   const [row] = await db.insert(tbsPurchases).values(values).returning();
   return row;
 }
@@ -305,6 +318,7 @@ export async function updateTbsPurchase(
   id: string,
   values: Partial<typeof tbsPurchases.$inferInsert>,
 ) {
+  const db = await getDb();
   const [row] = await db
     .update(tbsPurchases)
     .set(values)
@@ -314,11 +328,13 @@ export async function updateTbsPurchase(
 }
 
 export async function createTbsSale(values: typeof tbsSales.$inferInsert) {
+  const db = await getDb();
   const [row] = await db.insert(tbsSales).values(values).returning();
   return row;
 }
 
 export async function hasActiveTbsSalesByReferencePurchaseId(referencePurchaseId: string) {
+  const db = await getDb();
   const [row] = await db
     .select({ value: count() })
     .from(tbsSales)
@@ -336,6 +352,7 @@ export async function hasActiveTbsSalesInWarehouseSince(
   warehouseId: string,
   since: Date,
 ) {
+  const db = await getDb();
   const [row] = await db
     .select({ value: count() })
     .from(tbsSales)
@@ -354,6 +371,7 @@ export async function updateTbsSale(
   id: string,
   values: Partial<typeof tbsSales.$inferInsert>,
 ) {
+  const db = await getDb();
   const [row] = await db
     .update(tbsSales)
     .set(values)
@@ -365,11 +383,13 @@ export async function updateTbsSale(
 export async function createTbsSaleDeductions(
   values: (typeof tbsSaleDeductions.$inferInsert)[],
 ) {
+  const db = await getDb();
   return db.insert(tbsSaleDeductions).values(values).returning();
 }
 
 export async function createTbsSaleReturns(
   values: (typeof tbsSaleReturns.$inferInsert)[],
 ) {
+  const db = await getDb();
   return db.insert(tbsSaleReturns).values(values).returning();
 }

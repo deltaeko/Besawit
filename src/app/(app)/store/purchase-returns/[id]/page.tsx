@@ -1,9 +1,7 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Printer } from "lucide-react";
 
+import { DocumentPreviewActions } from "@/components/shared/document-preview-actions";
 import { PageHeader } from "@/components/shared/page-header";
-import { Button } from "@/components/ui/button";
 import { StorePurchaseReturnDocument } from "@/modules/store/store-purchase-return-document";
 import { getStorePurchaseReturnDocument } from "@/services/store-service";
 
@@ -24,17 +22,12 @@ export default async function StorePurchaseReturnPreviewPage({
         title="Preview Dokumen Retur Pembelian"
         description="Tinjau item retur, total nilai retur, dan referensi pembelian sebelum dokumen dicetak."
         action={
-          <div className="flex flex-wrap gap-3">
-            <Button asChild variant="outline">
-              <Link href={`/store/purchases/${document.storeReturn.purchaseId}`}>Kembali</Link>
-            </Button>
-            <Button asChild variant="outline">
-              <Link href={`/print/store-purchase-returns/${id}`} target="_blank">
-                <Printer className="size-4" />
-                Print
-              </Link>
-            </Button>
-          </div>
+          <DocumentPreviewActions
+            backHref={`/store/purchases/${document.storeReturn.purchaseId}`}
+            printHref={`/print/store-purchase-returns/${id}`}
+            printLabel="Print Preview"
+            whatsappMessage={`Dokumen retur pembelian ${String(document.storeReturn.code ?? id)} siap ditinjau.`}
+          />
         }
       />
 

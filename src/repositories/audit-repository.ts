@@ -1,6 +1,6 @@
 import { and, desc, eq, getTableColumns } from "drizzle-orm";
 
-import { db } from "@/lib/db/client";
+import { getDb } from "@/lib/db/client";
 import { auditLogs, users } from "@/lib/db/schema";
 
 export async function listAuditLogsByEntity(
@@ -8,6 +8,7 @@ export async function listAuditLogsByEntity(
   entityId: string,
   limit = 20,
 ) {
+  const db = await getDb();
   return db
     .select({
       ...getTableColumns(auditLogs),

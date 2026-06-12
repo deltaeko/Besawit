@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { requirePermission } from "@/lib/auth/api-guard";
 import { getPalmPurchase, updatePalmPurchase } from "@/services/palm-service";
 
 export async function GET(
@@ -20,10 +21,15 @@ export async function PUT(
   request: Request,
   context: { params: Promise<{ id: string }> },
 ) {
+  const auth = await requirePermission("palm.purchases");
+  if (auth.response || !auth.session) {
+    return auth.response;
+  }
+
   try {
     const { id } = await context.params;
     const payload = await request.json();
-    const purchase = await updatePalmPurchase(id, payload);
+    const purchase = await updatePalmPurchase(id, payload, auth.session.sub);
     return NextResponse.json(purchase);
   } catch (error) {
     return NextResponse.json(

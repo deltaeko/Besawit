@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { getSession } from "@/lib/auth/session";
+import { requireMasterEntityPermission } from "@/lib/auth/api-guard";
 import { isMasterEntity } from "@/modules/master/helpers";
 import { changeMasterStatus } from "@/services/master-service";
 
@@ -15,10 +15,13 @@ export async function PATCH(
   }
 
   const { isActive } = (await request.json()) as { isActive?: boolean };
-  const session = await getSession();
+  const auth = await requireMasterEntityPermission(entity);
+  if (auth.response || !auth.session) {
+    return auth.response;
+  }
 
   try {
-    const record = await changeMasterStatus(entity, id, Boolean(isActive), session?.sub);
+    const record = await changeMasterStatus(entity, id, Boolean(isActive), auth.session.sub);
     return NextResponse.json(record);
   } catch (error) {
     return NextResponse.json(

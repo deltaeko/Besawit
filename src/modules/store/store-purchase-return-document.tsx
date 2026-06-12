@@ -24,8 +24,8 @@ export function StorePurchaseReturnDocument({
 }) {
   const wrapperClass =
     mode === "print"
-      ? "space-y-6"
-      : "space-y-6 rounded-3xl border border-border/80 bg-card/85 p-5 md:p-6";
+      ? "document-sheet document-sheet-print space-y-6"
+      : "document-sheet document-sheet-preview space-y-6";
   const storeReturn = document.storeReturn;
 
   return (
@@ -57,7 +57,7 @@ export function StorePurchaseReturnDocument({
         <InfoBlock label="Status" value={String(storeReturn.status === "void" ? "Void" : "Aktif")} />
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div className="document-avoid-break grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <SummaryCard label="Referensi Pembelian" value={String(storeReturn.purchaseCode ?? "-")} />
         <SummaryCard
           label="Tanggal Pembelian"
@@ -71,7 +71,7 @@ export function StorePurchaseReturnDocument({
         />
       </div>
 
-      <div className="overflow-x-auto rounded-2xl border border-border/80">
+      <div className="document-avoid-break overflow-x-auto rounded-2xl border border-border/80">
         <table className="min-w-full border-collapse text-sm">
           <thead className="bg-muted/30">
             <tr>
@@ -108,7 +108,7 @@ export function StorePurchaseReturnDocument({
       </div>
 
       <DocumentSection title="Catatan Retur">
-        <div className="rounded-2xl border bg-muted/20 p-4 text-sm text-muted-foreground">
+        <div className="document-avoid-break rounded-2xl border bg-muted/20 p-4 text-sm text-muted-foreground">
           {String(storeReturn.notes ?? "").trim() || "Tidak ada catatan retur."}
         </div>
       </DocumentSection>

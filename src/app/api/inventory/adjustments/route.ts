@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { requirePermission } from "@/lib/auth/api-guard";
 import {
   createManualStockAdjustment,
   getStockAdjustmentList,
@@ -11,9 +12,14 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const auth = await requirePermission("inventory.adjustments");
+  if (auth.response || !auth.session) {
+    return auth.response;
+  }
+
   try {
     const payload = await request.json();
-    const adjustment = await createManualStockAdjustment(payload);
+    const adjustment = await createManualStockAdjustment(payload, auth.session.sub);
     return NextResponse.json(adjustment, { status: 201 });
   } catch (error) {
     return NextResponse.json(

@@ -12,7 +12,7 @@ import {
   type SQL,
 } from "drizzle-orm";
 
-import { db } from "@/lib/db/client";
+import { getDb } from "@/lib/db/client";
 import {
   customers,
   factories,
@@ -100,6 +100,7 @@ export async function listMasterRecords(
   entity: MasterEntityKey,
   query: MasterListQuery,
 ) {
+  const db = await getDb();
   if (entity === "users") {
     const conditions: SQL[] = [];
 
@@ -442,6 +443,7 @@ export async function listMasterRecords(
 }
 
 async function hasAnyRows(table: { id?: unknown }, condition?: SQL) {
+  const db = await getDb();
   if (!condition) return false;
   const [{ value }] = await db.select({ value: count() }).from(table as never).where(condition);
   return Number(value) > 0;
@@ -524,6 +526,7 @@ export async function hasMasterTransactions(
 }
 
 export async function getMasterRecordById(entity: MasterEntityKey, id: string) {
+  const db = await getDb();
   if (entity === "users") {
     const rows = await db
       .select({
@@ -644,6 +647,7 @@ export async function getMasterRecordById(entity: MasterEntityKey, id: string) {
 }
 
 export async function listProductPriceHistories(productId: string, limit = 20) {
+  const db = await getDb();
   return db
     .select({
       ...getTableColumns(productPriceHistories),
@@ -659,6 +663,7 @@ export async function listProductPriceHistories(productId: string, limit = 20) {
 export async function createProductPriceHistory(
   values: typeof productPriceHistories.$inferInsert,
 ) {
+  const db = await getDb();
   const [row] = await db
     .insert(productPriceHistories)
     .values(values)
@@ -668,6 +673,7 @@ export async function createProductPriceHistory(
 }
 
 export async function getLatestProductPriceHistory(productId: string) {
+  const db = await getDb();
   const [row] = await db
     .select()
     .from(productPriceHistories)
@@ -679,6 +685,7 @@ export async function getLatestProductPriceHistory(productId: string) {
 }
 
 export async function listProductsByCodes(codes: string[]) {
+  const db = await getDb();
   if (!codes.length) return [];
 
   return db
@@ -692,6 +699,7 @@ export async function listProductsByCodes(codes: string[]) {
 }
 
 export async function listProductCategoriesByCodes(codes: string[]) {
+  const db = await getDb();
   if (!codes.length) return [];
 
   return db
@@ -701,6 +709,7 @@ export async function listProductCategoriesByCodes(codes: string[]) {
 }
 
 export async function listFarmersByCodes(codes: string[]) {
+  const db = await getDb();
   if (!codes.length) return [];
 
   return db
@@ -714,6 +723,7 @@ export async function findMasterByCode(
   code: string,
   excludeId?: string,
 ) {
+  const db = await getDb();
   const table =
     entity === "products"
       ? products
@@ -747,6 +757,7 @@ export async function findMasterByCode(
 }
 
 export async function findCustomerByFarmerId(farmerId: string, excludeId?: string) {
+  const db = await getDb();
   const rows = await db
     .select()
     .from(customers)
@@ -761,6 +772,7 @@ export async function createMasterRecord(
   entity: MasterEntityKey,
   values: Record<string, unknown>,
 ) {
+  const db = await getDb();
   if (entity === "users") {
     const [row] = await db.insert(users).values(values as typeof users.$inferInsert).returning();
     return row;
@@ -796,6 +808,7 @@ export async function updateMasterRecord(
   id: string,
   values: Record<string, unknown>,
 ) {
+  const db = await getDb();
   if (entity === "users") {
     const [row] = await db
       .update(users)
@@ -838,6 +851,7 @@ export async function updateMasterStatus(
   id: string,
   isActive: boolean,
 ) {
+  const db = await getDb();
   if (entity === "roles") {
     throw new Error("Roles do not support activate/deactivate.");
   }
@@ -864,6 +878,7 @@ export async function updateMasterStatus(
 }
 
 export async function getMasterFormOptions() {
+  const db = await getDb();
   const [roleOptions, categoryOptions, vehicleOptions, farmerOptions] = await Promise.all([
     db.select({ id: roles.id, label: roles.name }).from(roles).orderBy(asc(roles.name)),
     db

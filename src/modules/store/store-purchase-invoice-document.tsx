@@ -24,8 +24,8 @@ export function StorePurchaseInvoiceDocument({
 }) {
   const wrapperClass =
     mode === "print"
-      ? "space-y-6"
-      : "space-y-6 rounded-3xl border border-border/80 bg-card/85 p-5 md:p-6";
+      ? "document-sheet document-sheet-print space-y-6"
+      : "document-sheet document-sheet-preview space-y-6";
   const purchase = invoice.purchase;
 
   return (
@@ -53,7 +53,7 @@ export function StorePurchaseInvoiceDocument({
         <InfoBlock label="Status Pembayaran" value={String(purchase.paymentStatus === "paid" ? "Lunas" : purchase.paymentStatus === "partial" ? "Parsial" : "Belum Dibayar")} />
       </div>
 
-      <div className="overflow-x-auto rounded-2xl border border-border/80">
+      <div className="document-avoid-break overflow-x-auto rounded-2xl border border-border/80">
         <table className="min-w-full border-collapse text-sm">
           <thead className="bg-muted/30">
             <tr>
@@ -89,7 +89,7 @@ export function StorePurchaseInvoiceDocument({
         </table>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div className="document-avoid-break grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <SummaryCard label="Subtotal" value={formatCurrency(purchase.subtotal as string | number)} />
         <SummaryCard label="Diskon" value={formatCurrency(purchase.discount as string | number)} />
         <SummaryCard label="Pajak" value={formatCurrency(purchase.tax as string | number)} />
@@ -97,7 +97,7 @@ export function StorePurchaseInvoiceDocument({
       </div>
 
       <DocumentSection title="Catatan">
-        <div className="rounded-2xl border bg-muted/20 p-4 text-sm text-muted-foreground">
+        <div className="document-avoid-break rounded-2xl border bg-muted/20 p-4 text-sm text-muted-foreground">
           {String(purchase.notes ?? "").trim() || "Tidak ada catatan."}
         </div>
       </DocumentSection>

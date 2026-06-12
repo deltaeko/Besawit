@@ -1,4 +1,4 @@
-import { db } from "@/lib/db/client";
+import { getDb } from "@/lib/db/client";
 import { auditLogs } from "@/lib/db/schema";
 import { listAuditLogsByEntity } from "@/repositories/audit-repository";
 
@@ -11,6 +11,7 @@ export async function logAudit(input: {
   after?: unknown;
   metadata?: unknown;
 }) {
+  const db = await getDb();
   await db.insert(auditLogs).values({
     entityType: input.entityType,
     entityId: input.entityId ?? null,

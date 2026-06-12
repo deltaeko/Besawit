@@ -1,7 +1,7 @@
 import { and, asc, count, desc, eq, ilike, inArray, or, sql, type SQL } from "drizzle-orm";
 import { getTableColumns } from "drizzle-orm";
 
-import { db } from "@/lib/db/client";
+import { getDb } from "@/lib/db/client";
 import {
   cashTransactions,
   customers,
@@ -21,16 +21,19 @@ import {
 } from "@/lib/db/schema";
 
 export async function createPayable(values: typeof payables.$inferInsert) {
+  const db = await getDb();
   const [row] = await db.insert(payables).values(values).returning();
   return row;
 }
 
 export async function createReceivable(values: typeof receivables.$inferInsert) {
+  const db = await getDb();
   const [row] = await db.insert(receivables).values(values).returning();
   return row;
 }
 
 export async function listPayables(limit = 50) {
+  const db = await getDb();
   return db
     .select({
       ...getTableColumns(payables),
@@ -63,6 +66,7 @@ export async function listPayablesPage(
     partyType?: typeof payables.$inferSelect.partyType;
   },
 ) {
+  const db = await getDb();
   const conditions: SQL[] = [];
   const keyword = filters?.q?.trim();
 
@@ -140,6 +144,7 @@ export async function getPayableAgingSummary(filters?: {
   status?: typeof payables.$inferSelect.status;
   partyType?: typeof payables.$inferSelect.partyType;
 }) {
+  const db = await getDb();
   const conditions: SQL[] = [];
   const keyword = filters?.q?.trim();
 
@@ -198,6 +203,7 @@ export async function getPayableAgingSummary(filters?: {
 }
 
 export async function listReceivables(limit = 50) {
+  const db = await getDb();
   return db
     .select({
       ...getTableColumns(receivables),
@@ -233,6 +239,7 @@ export async function listReceivablesPage(
     partyType?: typeof receivables.$inferSelect.partyType;
   },
 ) {
+  const db = await getDb();
   const conditions: SQL[] = [];
   const keyword = filters?.q?.trim();
 
@@ -315,6 +322,7 @@ export async function getReceivableAgingSummary(filters?: {
   status?: typeof receivables.$inferSelect.status;
   partyType?: typeof receivables.$inferSelect.partyType;
 }) {
+  const db = await getDb();
   const conditions: SQL[] = [];
   const keyword = filters?.q?.trim();
 
@@ -375,11 +383,13 @@ export async function getReceivableAgingSummary(filters?: {
 }
 
 export async function getPayableById(id: string) {
+  const db = await getDb();
   const [row] = await db.select().from(payables).where(eq(payables.id, id)).limit(1);
   return row ?? null;
 }
 
 export async function getPayableDetailById(id: string) {
+  const db = await getDb();
   const [row] = await db
     .select({
       ...getTableColumns(payables),
@@ -413,6 +423,7 @@ export async function getPayableBySource(
   sourceType: "tbs_purchase" | "store_purchase" | "manual",
   sourceId: string,
 ) {
+  const db = await getDb();
   const [row] = await db
     .select()
     .from(payables)
@@ -422,6 +433,7 @@ export async function getPayableBySource(
 }
 
 export async function getReceivableById(id: string) {
+  const db = await getDb();
   const [row] = await db
     .select()
     .from(receivables)
@@ -431,6 +443,7 @@ export async function getReceivableById(id: string) {
 }
 
 export async function getReceivableDetailById(id: string) {
+  const db = await getDb();
   const [row] = await db
     .select({
       ...getTableColumns(receivables),
@@ -467,6 +480,7 @@ export async function getReceivableBySource(
   sourceType: "tbs_sale" | "store_sale" | "manual",
   sourceId: string,
 ) {
+  const db = await getDb();
   const [row] = await db
     .select()
     .from(receivables)
@@ -476,6 +490,7 @@ export async function getReceivableBySource(
 }
 
 export async function updatePayable(id: string, values: Partial<typeof payables.$inferInsert>) {
+  const db = await getDb();
   const [row] = await db
     .update(payables)
     .set(values)
@@ -488,6 +503,7 @@ export async function updateReceivable(
   id: string,
   values: Partial<typeof receivables.$inferInsert>,
 ) {
+  const db = await getDb();
   const [row] = await db
     .update(receivables)
     .set(values)
@@ -497,6 +513,7 @@ export async function updateReceivable(
 }
 
 export async function createPayment(values: typeof payments.$inferInsert) {
+  const db = await getDb();
   const [row] = await db.insert(payments).values(values).returning();
   return row;
 }
@@ -504,11 +521,13 @@ export async function createPayment(values: typeof payments.$inferInsert) {
 export async function createCashTransaction(
   values: typeof cashTransactions.$inferInsert,
 ) {
+  const db = await getDb();
   const [row] = await db.insert(cashTransactions).values(values).returning();
   return row;
 }
 
 export async function listPayments(limit = 50) {
+  const db = await getDb();
   return db
     .select()
     .from(payments)
@@ -525,6 +544,7 @@ export async function listPaymentsPage(
     method?: typeof payments.$inferSelect.method;
   },
 ) {
+  const db = await getDb();
   const conditions: SQL[] = [];
   const keyword = filters?.q?.trim();
 
@@ -601,6 +621,7 @@ export async function listPaymentsPage(
 }
 
 export async function getPaymentDetailById(id: string) {
+  const db = await getDb();
   const [row] = await db
     .select({
       ...getTableColumns(payments),
@@ -646,6 +667,7 @@ export async function getPaymentDetailById(id: string) {
 }
 
 export async function listPaymentsByPayableId(payableId: string) {
+  const db = await getDb();
   return db
     .select({
       ...getTableColumns(payments),
@@ -664,6 +686,7 @@ export async function listPaymentsByPayableId(payableId: string) {
 }
 
 export async function listPaymentsByReceivableId(receivableId: string) {
+  const db = await getDb();
   return db
     .select({
       ...getTableColumns(payments),
@@ -682,6 +705,7 @@ export async function listPaymentsByReceivableId(receivableId: string) {
 }
 
 export async function listFarmerPayables(farmerId: string, limit = 100) {
+  const db = await getDb();
   return db
     .select({
       ...getTableColumns(payables),
@@ -699,6 +723,7 @@ export async function listFarmerPayables(farmerId: string, limit = 100) {
 }
 
 export async function listFarmerPayments(farmerId: string, limit = 100) {
+  const db = await getDb();
   return db
     .select({
       ...getTableColumns(payments),
@@ -724,6 +749,7 @@ export async function listFarmerPayments(farmerId: string, limit = 100) {
 }
 
 export async function listFarmerStoreOffsets(farmerId: string, limit = 100) {
+  const db = await getDb();
   return db
     .select({
       ...getTableColumns(tbsPurchaseStoreOffsets),
@@ -754,6 +780,7 @@ export async function listFarmerStoreOffsets(farmerId: string, limit = 100) {
 }
 
 export async function listStoreDebtOffsets(limit = 200) {
+  const db = await getDb();
   return db
     .select({
       ...getTableColumns(tbsPurchaseStoreOffsets),
@@ -788,6 +815,7 @@ export async function listStoreDebtOffsets(limit = 200) {
 }
 
 export async function listFactoryReceivables(factoryId: string, limit = 100) {
+  const db = await getDb();
   return db
     .select({
       ...getTableColumns(receivables),
@@ -805,6 +833,7 @@ export async function listFactoryReceivables(factoryId: string, limit = 100) {
 }
 
 export async function listFactoryPayments(factoryId: string, limit = 100) {
+  const db = await getDb();
   return db
     .select({
       ...getTableColumns(payments),
@@ -830,6 +859,7 @@ export async function listFactoryPayments(factoryId: string, limit = 100) {
 }
 
 export async function listOutstandingPayables(limit = 100) {
+  const db = await getDb();
   return db
     .select({
       ...getTableColumns(payables),
@@ -854,6 +884,7 @@ export async function listOutstandingPayables(limit = 100) {
 }
 
 export async function listOutstandingReceivables(limit = 100) {
+  const db = await getDb();
   return db
     .select({
       ...getTableColumns(receivables),
@@ -878,6 +909,7 @@ export async function listOutstandingReceivables(limit = 100) {
 }
 
 export async function listOutstandingStoreReceivablesByFarmer(farmerId: string) {
+  const db = await getDb();
   return db
     .select({
       ...getTableColumns(receivables),
@@ -903,6 +935,7 @@ export async function listOutstandingStoreReceivablesByFarmer(farmerId: string) 
 }
 
 export async function listStoreReceivablesByFarmer(farmerId: string, limit = 100) {
+  const db = await getDb();
   return db
     .select({
       ...getTableColumns(receivables),
@@ -928,6 +961,7 @@ export async function listStoreReceivablesByFarmer(farmerId: string, limit = 100
 }
 
 export async function listStoreReceivableSummariesByFarmerIds(farmerIds: string[]) {
+  const db = await getDb();
   if (!farmerIds.length) return [];
 
   return db
@@ -952,6 +986,7 @@ export async function listStoreReceivableSummariesByFarmerIds(farmerIds: string[
 export async function createTbsPurchaseStoreOffset(
   values: typeof tbsPurchaseStoreOffsets.$inferInsert,
 ) {
+  const db = await getDb();
   const [row] = await db.insert(tbsPurchaseStoreOffsets).values(values).returning();
   return row;
 }
@@ -959,11 +994,13 @@ export async function createTbsPurchaseStoreOffset(
 export async function createTbsPurchaseStoreOffsetItems(
   values: (typeof tbsPurchaseStoreOffsetItems.$inferInsert)[],
 ) {
+  const db = await getDb();
   if (!values.length) return [];
   return db.insert(tbsPurchaseStoreOffsetItems).values(values).returning();
 }
 
 export async function getTbsPurchaseStoreOffsetByPurchaseId(purchaseId: string) {
+  const db = await getDb();
   const [row] = await db
     .select()
     .from(tbsPurchaseStoreOffsets)
@@ -974,6 +1011,7 @@ export async function getTbsPurchaseStoreOffsetByPurchaseId(purchaseId: string) 
 }
 
 export async function listTbsPurchaseStoreOffsetItemsByOffsetId(offsetId: string) {
+  const db = await getDb();
   return db
     .select({
       ...getTableColumns(tbsPurchaseStoreOffsetItems),
@@ -995,6 +1033,7 @@ export async function listTbsPurchaseStoreOffsetItemsByOffsetId(offsetId: string
 }
 
 export async function deleteTbsPurchaseStoreOffsetItemsByOffsetId(offsetId: string) {
+  const db = await getDb();
   return db
     .delete(tbsPurchaseStoreOffsetItems)
     .where(eq(tbsPurchaseStoreOffsetItems.offsetId, offsetId))
@@ -1002,6 +1041,7 @@ export async function deleteTbsPurchaseStoreOffsetItemsByOffsetId(offsetId: stri
 }
 
 export async function deleteTbsPurchaseStoreOffsetByPurchaseId(purchaseId: string) {
+  const db = await getDb();
   const [row] = await db
     .delete(tbsPurchaseStoreOffsets)
     .where(eq(tbsPurchaseStoreOffsets.purchaseId, purchaseId))
@@ -1011,6 +1051,7 @@ export async function deleteTbsPurchaseStoreOffsetByPurchaseId(purchaseId: strin
 }
 
 export async function listCashTransactions(limit = 50) {
+  const db = await getDb();
   return db
     .select()
     .from(cashTransactions)
@@ -1027,6 +1068,7 @@ export async function listCashTransactionsPage(
     category?: string;
   },
 ) {
+  const db = await getDb();
   const conditions: SQL[] = [];
   const keyword = filters?.q?.trim();
 

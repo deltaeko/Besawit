@@ -71,6 +71,34 @@
       "when": 1774688400000,
       "tag": "0009_tbs_sale_reference_optional",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1774774800000,
+      "tag": "0010_store_purchase_returns",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1774861200000,
+      "tag": "0011_branding_settings",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1774947600000,
+      "tag": "0012_dashboard_layouts",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1777946400000,
+      "tag": "0013_finance_dashboard_indexes",
+      "breakpoints": true
     }
   ]
 }

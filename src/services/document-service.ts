@@ -1,4 +1,4 @@
-import { db } from "@/lib/db/client";
+import { getDb } from "@/lib/db/client";
 import { documentLogs } from "@/lib/db/schema";
 
 export async function logDocumentPrint(input: {
@@ -22,6 +22,7 @@ export async function logDocumentPrint(input: {
   printedBy?: string | null;
   payload?: unknown;
 }) {
+  const db = await getDb();
   const [row] = await db
     .insert(documentLogs)
     .values({

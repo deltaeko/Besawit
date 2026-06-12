@@ -2,10 +2,11 @@ import { compare } from "bcryptjs";
 import { eq } from "drizzle-orm";
 
 import { normalizeRolePermissions } from "@/lib/auth/permissions";
-import { db } from "@/lib/db/client";
+import { getDb } from "@/lib/db/client";
 import { roles, users } from "@/lib/db/schema";
 
 export async function authenticateUser(email: string, password: string) {
+  const db = await getDb();
   const [user] = await db
     .select({
       id: users.id,
@@ -13,6 +14,7 @@ export async function authenticateUser(email: string, password: string) {
       fullName: users.fullName,
       passwordHash: users.passwordHash,
       isActive: users.isActive,
+      lastLoginAt: users.lastLoginAt,
       roleCode: roles.code,
       roleName: roles.name,
       permissions: roles.permissions,
@@ -32,6 +34,17 @@ export async function authenticateUser(email: string, password: string) {
   }
 
   return user;
+}
+
+export async function recordSuccessfulLogin(userId: string) {
+  const db = await getDb();
+  await db
+    .update(users)
+    .set({
+      lastLoginAt: new Date(),
+      updatedAt: new Date(),
+    })
+    .where(eq(users.id, userId));
 }
 
 export function resolveUserPermissions(user: { permissions?: unknown }) {

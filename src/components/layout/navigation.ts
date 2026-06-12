@@ -4,6 +4,7 @@ import {
   CreditCard,
   LayoutDashboard,
   Leaf,
+  Palette,
   Package2,
   Settings2,
 } from "lucide-react";
@@ -19,13 +20,27 @@ export type NavigationChild = {
 };
 
 export type NavigationItem = {
-  group: "Dashboard" | "Transactions" | "Finance" | "Inventory" | "Master Data" | "Reports";
+  group:
+    | "Dashboard"
+    | "Transactions"
+    | "Finance"
+    | "Inventory"
+    | "Master Data"
+    | "Settings"
+    | "Reports"
+    | "Platform";
   title: string;
   href?: string;
   icon: React.ComponentType<{ className?: string }>;
   roles: AppRole[];
   permission?: AppPermissionKey;
   children?: NavigationChild[];
+};
+
+export type ResolvedNavigationContext = {
+  group: NavigationItem["group"];
+  pageTitle: string;
+  sectionTitle: string;
 };
 
 export const appNavigation = [
@@ -36,6 +51,30 @@ export const appNavigation = [
     icon: LayoutDashboard,
     permission: "dashboard.view",
     roles: ["owner", "admin_sawit", "admin_store", "finance", "supervisor"],
+  },
+  {
+    group: "Platform",
+    title: "Platform Trials",
+    href: "/platform/trials",
+    icon: Settings2,
+    permission: "dashboard.view",
+    roles: ["owner"],
+  },
+  {
+    group: "Platform",
+    title: "Platform SMTP",
+    href: "/platform/smtp",
+    icon: Settings2,
+    permission: "dashboard.view",
+    roles: ["owner"],
+  },
+  {
+    group: "Settings",
+    title: "Branding",
+    href: "/settings/branding",
+    icon: Palette,
+    permission: "settings.branding",
+    roles: ["owner", "admin_sawit", "admin_store", "supervisor"],
   },
   {
     group: "Master Data",
@@ -278,3 +317,39 @@ export const appNavigation = [
     ],
   },
 ] satisfies NavigationItem[];
+
+export function resolveNavigationContext(
+  pathname: string,
+  items: NavigationItem[],
+): ResolvedNavigationContext | null {
+  const directMatches = items
+    .filter((item) => item.href && pathname.startsWith(item.href))
+    .sort((left, right) => (right.href?.length ?? 0) - (left.href?.length ?? 0));
+
+  const directMatch = directMatches[0];
+  if (directMatch?.href) {
+    return {
+      group: directMatch.group,
+      pageTitle: directMatch.title,
+      sectionTitle: directMatch.title,
+    };
+  }
+
+  for (const item of items) {
+    const matchingChildren =
+      item.children
+        ?.filter((child) => pathname.startsWith(child.href))
+        .sort((left, right) => right.href.length - left.href.length) ?? [];
+    const child = matchingChildren[0];
+
+    if (child) {
+      return {
+        group: item.group,
+        pageTitle: child.title,
+        sectionTitle: item.title,
+      };
+    }
+  }
+
+  return null;
+}

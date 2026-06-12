@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { getSession } from "@/lib/auth/session";
+import { requirePermission } from "@/lib/auth/api-guard";
 import { createMaster, getMasterList } from "@/services/master-service";
 
 export async function GET(request: Request) {
@@ -20,10 +20,13 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   const payload = await request.json();
-  const session = await getSession();
+  const auth = await requirePermission("master.farmers");
+  if (auth.response || !auth.session) {
+    return auth.response;
+  }
 
   try {
-    const record = await createMaster("farmers", payload, session?.sub);
+    const record = await createMaster("farmers", payload, auth.session.sub);
     return NextResponse.json(record, { status: 201 });
   } catch (error) {
     return NextResponse.json(

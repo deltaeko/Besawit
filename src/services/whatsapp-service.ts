@@ -1,4 +1,4 @@
-import { db } from "@/lib/db/client";
+import { getDb } from "@/lib/db/client";
 import { whatsappLogs } from "@/lib/db/schema";
 
 export async function sendManualWhatsapp(input: {
@@ -15,6 +15,7 @@ export async function sendManualWhatsapp(input: {
   message: string;
   sentBy?: string | null;
 }) {
+  const db = await getDb();
   const [row] = await db
     .insert(whatsappLogs)
     .values({

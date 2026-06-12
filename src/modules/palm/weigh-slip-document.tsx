@@ -1,18 +1,21 @@
 import { formatCurrency, formatDate, formatNumber } from "@/lib/utils";
+import type { WeighSlipPaymentSummary } from "@/modules/palm/weigh-slip-sharing";
 
 export function WeighSlipDocument({
   purchase,
+  paymentSummary,
   printedAt,
   mode = "preview",
 }: {
   purchase: Record<string, unknown>;
+  paymentSummary: WeighSlipPaymentSummary;
   printedAt: Date;
   mode?: "preview" | "print";
 }) {
   const wrapperClass =
     mode === "print"
-      ? "space-y-6"
-      : "space-y-6 rounded-3xl border border-border/80 bg-card/85 p-5 md:p-6";
+      ? "document-sheet document-sheet-print space-y-6"
+      : "document-sheet document-sheet-preview space-y-6";
 
   return (
     <div className={wrapperClass}>
@@ -42,7 +45,7 @@ export function WeighSlipDocument({
         />
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="document-avoid-break grid gap-4 md:grid-cols-3">
         <MetricCard label="Berat Kotor" value={`${formatNumber(purchase.grossWeight as string | number)} kg`} />
         <MetricCard label="Berat Tara" value={`${formatNumber(purchase.tareWeight as string | number)} kg`} />
         <MetricCard
@@ -59,11 +62,54 @@ export function WeighSlipDocument({
         <Field label="Total Pembelian" value={formatCurrency(purchase.totalPurchase as string | number)} emphasis />
       </div>
 
-      <div className="rounded-2xl border border-dashed border-border/80 p-4 text-sm text-muted-foreground">
+      <div className="grid gap-4 border-b border-border/70 py-6 md:grid-cols-2 xl:grid-cols-4">
+        <Field label="Kode Hutang" value={paymentSummary.payableCode ?? "-"} />
+        <Field label="Status Pembayaran" value={formatPaymentStatus(paymentSummary.paymentStatus)} />
+        <Field
+          label="Tanggal Pembayaran"
+          value={paymentSummary.latestPaymentDate ? formatDate(paymentSummary.latestPaymentDate) : "Belum ada pembayaran"}
+        />
+        <Field label="Metode Pembayaran" value={formatPaymentMethod(paymentSummary.latestPaymentMethod)} />
+        <Field label="Sudah Dibayar" value={formatCurrency(paymentSummary.paidAmount)} />
+        <Field label="Sisa Hutang" value={formatCurrency(paymentSummary.outstandingAmount)} emphasis />
+        <Field label="Total Akhir Hutang" value={formatCurrency(paymentSummary.totalAmount)} />
+      </div>
+
+      <div className="document-avoid-break rounded-2xl border border-dashed border-border/80 p-4 text-sm text-muted-foreground">
         Slip timbang ini dipakai sebagai bukti timbang awal sebelum tindak lanjut pembayaran hutang petani.
       </div>
     </div>
   );
+}
+
+function formatPaymentStatus(status: string | null) {
+  switch (status) {
+    case "paid":
+      return "Lunas";
+    case "partial":
+      return "Sebagian";
+    case "cancelled":
+      return "Dibatalkan";
+    case "overdue":
+      return "Jatuh Tempo";
+    default:
+      return "Belum Dibayar";
+  }
+}
+
+function formatPaymentMethod(method: string | null) {
+  switch (method) {
+    case "cash":
+      return "Tunai";
+    case "bank_transfer":
+      return "Transfer Bank";
+    case "giro":
+      return "Giro";
+    case "other":
+      return "Lainnya";
+    default:
+      return "Belum ada pembayaran";
+  }
 }
 
 function Field({

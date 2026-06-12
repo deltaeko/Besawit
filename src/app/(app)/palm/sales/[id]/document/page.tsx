@@ -1,9 +1,7 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Printer } from "lucide-react";
 
+import { DocumentPreviewActions } from "@/components/shared/document-preview-actions";
 import { PageHeader } from "@/components/shared/page-header";
-import { Button } from "@/components/ui/button";
 import { PalmSaleDocument } from "@/modules/palm/palm-sale-document";
 import { getPalmSale } from "@/services/palm-service";
 
@@ -24,17 +22,12 @@ export default async function PalmSaleDocumentPreviewPage({
         title="Preview Dokumen Penjualan TBS"
         description="Tinjau tonase, potongan, return, dan nilai transaksi penjualan ke pabrik sebelum dicetak."
         action={
-          <div className="flex flex-wrap gap-3">
-            <Button asChild variant="outline">
-              <Link href={`/palm/sales/${id}`}>Kembali</Link>
-            </Button>
-            <Button asChild variant="outline">
-              <Link href={`/print/palm-sales/${id}/document`} target="_blank">
-                <Printer className="size-4" />
-                Print
-              </Link>
-            </Button>
-          </div>
+          <DocumentPreviewActions
+            backHref={`/palm/sales/${id}`}
+            printHref={`/print/palm-sales/${id}/document`}
+            printLabel="Print Preview"
+            whatsappMessage={`Dokumen penjualan TBS ${String(sale.code ?? id)} siap ditinjau.`}
+          />
         }
       />
 

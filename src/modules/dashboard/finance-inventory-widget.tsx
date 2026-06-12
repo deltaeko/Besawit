@@ -5,10 +5,16 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency, formatDate, formatNumber } from "@/lib/utils";
+import { FinanceHealthOverview } from "@/modules/dashboard/finance-health-overview";
+import { FinanceExposureTrend } from "@/modules/dashboard/finance-exposure-trend";
 import { formatPalmStatusLabel, resolvePalmStatusBadgeVariant } from "@/modules/palm/status-utils";
-import type { getFinanceInventorySummary } from "@/services/dashboard-service";
+import type {
+  getFinanceExposureTrendSummary,
+  getFinanceInventorySummary,
+} from "@/services/dashboard-service";
 
 type FinanceInventorySummary = Awaited<ReturnType<typeof getFinanceInventorySummary>>;
+type FinanceExposureTrendSummary = Awaited<ReturnType<typeof getFinanceExposureTrendSummary>>;
 
 function formatStockQuantity(value: number) {
   return `${formatNumber(value, 2)} unit`;
@@ -88,8 +94,10 @@ function DueList({
 }
 
 export function FinanceInventoryWidget({
+  exposureTrend,
   summary,
 }: {
+  exposureTrend: FinanceExposureTrendSummary;
   summary: FinanceInventorySummary;
 }) {
   return (
@@ -122,6 +130,9 @@ export function FinanceInventoryWidget({
         </CardHeader>
 
       <CardContent className="space-y-6 p-4 md:p-6">
+        <FinanceHealthOverview summary={summary} />
+        <FinanceExposureTrend summary={exposureTrend} />
+
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             <KpiCard
               label="Piutang Aktif"

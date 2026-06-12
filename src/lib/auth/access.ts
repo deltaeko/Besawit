@@ -11,6 +11,10 @@ export const routeAccessRules: RouteAccessRule[] = [
     roles: ["owner", "admin_sawit", "admin_store", "supervisor"],
   },
   {
+    href: "/settings",
+    roles: ["owner", "admin_sawit", "admin_store", "supervisor"],
+  },
+  {
     href: "/palm",
     roles: ["owner", "admin_sawit", "finance", "supervisor"],
   },
@@ -29,6 +33,10 @@ export const routeAccessRules: RouteAccessRule[] = [
   {
     href: "/reports",
     roles: ["owner", "finance", "supervisor"],
+  },
+  {
+    href: "/platform",
+    roles: ["owner"],
   },
 ];
 

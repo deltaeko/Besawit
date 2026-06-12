@@ -1,6 +1,6 @@
 import { and, desc, eq, gte, inArray, lt, sql } from "drizzle-orm";
 
-import { db } from "@/lib/db/client";
+import { getDb } from "@/lib/db/client";
 import {
   customers,
   factories,
@@ -10,10 +10,13 @@ import {
   receivables,
   stockBalances,
   stockTakeItems,
+  storePurchases,
   storeSales,
   suppliers,
   tbsPurchases,
   tbsSales,
+  users,
+  warehouses,
 } from "@/lib/db/schema";
 
 const DAY_IN_MS = 24 * 60 * 60 * 1000;
@@ -57,11 +60,62 @@ function formatDateLabel(date: string) {
   }).format(new Date(`${date}T00:00:00+07:00`));
 }
 
+function formatShortDateLabel(date: string) {
+  return new Intl.DateTimeFormat("id-ID", {
+    timeZone: "Asia/Jakarta",
+    day: "2-digit",
+    month: "short",
+  }).format(new Date(`${date}T00:00:00+07:00`));
+}
+
+function getRollingDates(endDate: string, days: number) {
+  const { start } = getDateRange(endDate);
+
+  return Array.from({ length: days }, (_, index) =>
+    getJakartaDateString(new Date(start.getTime() - (days - index - 1) * DAY_IN_MS)),
+  );
+}
+
 function toNumber(value: unknown) {
   if (typeof value === "number") return value;
   if (typeof value === "string") return Number(value);
   return 0;
 }
+
+export type DashboardOnboardingSummary = {
+  activeWarehouseCount: number;
+  activeProductCount: number;
+  activeUserCount: number;
+  activePartnerCount: number;
+  activeFarmerCount: number;
+  activeFactoryCount: number;
+  activeCustomerCount: number;
+  activeSupplierCount: number;
+  activePalmPurchaseCount: number;
+  activePalmSaleCount: number;
+  activeStorePurchaseCount: number;
+  activeStoreSaleCount: number;
+  totalTransactionCount: number;
+};
+
+export type DashboardTrendPoint = {
+  date: string;
+  shortLabel: string;
+  purchaseValue: number;
+  purchaseTransactionCount: number;
+  salesValue: number;
+  salesTransactionCount: number;
+  marginValue: number;
+};
+
+export type FinanceExposureTrendPoint = {
+  date: string;
+  shortLabel: string;
+  receivableValue: number;
+  receivableCount: number;
+  payableValue: number;
+  payableCount: number;
+};
 
 type TbsPurchaseAggregateRow = {
   transactionCount: number;
@@ -81,6 +135,7 @@ type TbsSaleAggregateRow = {
 };
 
 async function getTbsPurchaseAggregate(start: Date, end: Date) {
+  const db = await getDb();
   const [row] = await db
     .select({
       transactionCount: sql<number>`count(*)`,
@@ -113,6 +168,7 @@ async function getTbsPurchaseAggregateComparison(
   previousStart: Date,
   previousEnd: Date,
 ) {
+  const db = await getDb();
   const [row] = await db
     .select({
       currentTransactionCount: sql<number>`coalesce(sum(case when ${tbsPurchases.purchaseDate} >= ${currentStart} and ${tbsPurchases.purchaseDate} < ${currentEnd} then 1 else 0 end), 0)`,
@@ -154,6 +210,7 @@ async function getTbsPurchaseAggregateComparison(
 }
 
 async function getTbsPurchaseDeductionAggregate(start: Date, end: Date) {
+  const db = await getDb();
   const [row] = await db
     .select({
       totalDeduction: sql<number>`coalesce(sum(${tbsSales.totalDeduction}), 0)`,
@@ -183,6 +240,7 @@ async function getTbsPurchaseDeductionAggregateComparison(
   previousStart: Date,
   previousEnd: Date,
 ) {
+  const db = await getDb();
   const [row] = await db
     .select({
       currentTotalDeduction: sql<number>`coalesce(sum(case when ${tbsPurchases.purchaseDate} >= ${currentStart} and ${tbsPurchases.purchaseDate} < ${currentEnd} then ${tbsSales.totalDeduction} else 0 end), 0)`,
@@ -213,6 +271,7 @@ async function getTbsPurchaseDeductionAggregateComparison(
 }
 
 async function getTbsSaleAggregate(start: Date, end: Date) {
+  const db = await getDb();
   const [row] = await db
     .select({
       transactionCount: sql<number>`count(*)`,
@@ -247,6 +306,7 @@ async function getTbsSaleAggregateComparison(
   previousStart: Date,
   previousEnd: Date,
 ) {
+  const db = await getDb();
   const [row] = await db
     .select({
       currentTransactionCount: sql<number>`coalesce(sum(case when ${tbsSales.saleDate} >= ${currentStart} and ${tbsSales.saleDate} < ${currentEnd} then 1 else 0 end), 0)`,
@@ -292,6 +352,7 @@ async function getTbsSaleAggregateComparison(
 }
 
 export async function getTbsPurchaseDailySummary(selectedDateParam?: string) {
+  const db = await getDb();
   const selectedDate = resolveSelectedDate(selectedDateParam);
   const previousDate = getPreviousDate(selectedDate);
 
@@ -395,6 +456,7 @@ export async function getTbsPurchaseDailySummary(selectedDateParam?: string) {
 }
 
 export async function getTbsSaleDailySummary(selectedDateParam?: string) {
+  const db = await getDb();
   const selectedDate = resolveSelectedDate(selectedDateParam);
   const previousDate = getPreviousDate(selectedDate);
 
@@ -485,6 +547,7 @@ export async function getTbsSaleDailySummary(selectedDateParam?: string) {
 }
 
 export async function getFinanceInventorySummary() {
+  const db = await getDb();
   const activeStatuses = ["unpaid", "partial", "overdue"] as const;
 
   const [
@@ -618,8 +681,202 @@ export async function getFinanceInventorySummary() {
   };
 }
 
-export async function getDashboardSummary(selectedDateParam?: string) {
+export async function getDashboardTrendSummary(selectedDateParam?: string) {
+  const db = await getDb();
   const selectedDate = resolveSelectedDate(selectedDateParam);
+  const dates = getRollingDates(selectedDate, 7);
+  const firstRange = getDateRange(dates[0]);
+  const selectedRange = getDateRange(selectedDate);
+
+  const [purchaseRows, saleRows] = await Promise.all([
+    db
+      .select({
+        day: sql<string>`to_char((${tbsPurchases.purchaseDate} AT TIME ZONE 'Asia/Jakarta')::date, 'YYYY-MM-DD')`,
+        totalPurchase: sql<number>`coalesce(sum(${tbsPurchases.totalPurchase}), 0)`,
+        transactionCount: sql<number>`count(*)`,
+      })
+      .from(tbsPurchases)
+      .where(
+        and(
+          eq(tbsPurchases.status, "active"),
+          gte(tbsPurchases.purchaseDate, firstRange.start),
+          lt(tbsPurchases.purchaseDate, selectedRange.end),
+        ),
+      )
+      .groupBy(sql`(${tbsPurchases.purchaseDate} AT TIME ZONE 'Asia/Jakarta')::date`)
+      .orderBy(sql`(${tbsPurchases.purchaseDate} AT TIME ZONE 'Asia/Jakarta')::date asc`),
+    db
+      .select({
+        day: sql<string>`to_char((${tbsSales.saleDate} AT TIME ZONE 'Asia/Jakarta')::date, 'YYYY-MM-DD')`,
+        totalSales: sql<number>`coalesce(sum(${tbsSales.totalSales}), 0)`,
+        transactionCount: sql<number>`count(*)`,
+        margin: sql<number>`coalesce(sum(${tbsSales.margin}), 0)`,
+      })
+      .from(tbsSales)
+      .where(
+        and(
+          eq(tbsSales.status, "active"),
+          gte(tbsSales.saleDate, firstRange.start),
+          lt(tbsSales.saleDate, selectedRange.end),
+        ),
+      )
+      .groupBy(sql`(${tbsSales.saleDate} AT TIME ZONE 'Asia/Jakarta')::date`)
+      .orderBy(sql`(${tbsSales.saleDate} AT TIME ZONE 'Asia/Jakarta')::date asc`),
+  ]);
+
+  const purchaseMap = new Map(
+    purchaseRows.map((row) => [
+      row.day,
+      {
+        totalPurchase: toNumber(row.totalPurchase),
+        transactionCount: toNumber(row.transactionCount),
+      },
+    ]),
+  );
+  const salesMap = new Map(
+    saleRows.map((row) => [
+      row.day,
+      {
+        totalSales: toNumber(row.totalSales),
+        transactionCount: toNumber(row.transactionCount),
+        margin: toNumber(row.margin),
+      },
+    ]),
+  );
+
+  const series = dates.map((date) => {
+    const purchase = purchaseMap.get(date);
+    const sale = salesMap.get(date);
+
+    return {
+      date,
+      shortLabel: formatShortDateLabel(date),
+      purchaseValue: purchase?.totalPurchase ?? 0,
+      purchaseTransactionCount: purchase?.transactionCount ?? 0,
+      salesValue: sale?.totalSales ?? 0,
+      salesTransactionCount: sale?.transactionCount ?? 0,
+      marginValue: sale?.margin ?? 0,
+    } satisfies DashboardTrendPoint;
+  });
+
+  return {
+    selectedDate,
+    selectedDateLabel: formatDateLabel(selectedDate),
+    periodStartLabel: formatDateLabel(dates[0]),
+    periodEndLabel: formatDateLabel(selectedDate),
+    series,
+    summary: {
+      totalPurchase: series.reduce((sum, item) => sum + item.purchaseValue, 0),
+      totalSales: series.reduce((sum, item) => sum + item.salesValue, 0),
+      totalMargin: series.reduce((sum, item) => sum + item.marginValue, 0),
+      totalTransactions: series.reduce(
+        (sum, item) => sum + item.purchaseTransactionCount + item.salesTransactionCount,
+        0,
+      ),
+      maxValue: Math.max(
+        0,
+        ...series.map((item) => Math.max(item.purchaseValue, item.salesValue)),
+      ),
+    },
+  };
+}
+
+export async function getFinanceExposureTrendSummary(selectedDateParam?: string) {
+  const db = await getDb();
+  const selectedDate = resolveSelectedDate(selectedDateParam);
+  const dates = getRollingDates(selectedDate, 7);
+  const firstRange = getDateRange(dates[0]);
+  const selectedRange = getDateRange(selectedDate);
+  const activeStatuses = ["unpaid", "partial", "overdue"] as const;
+
+  const [receivableRows, payableRows] = await Promise.all([
+    db
+      .select({
+        day: sql<string>`to_char((${receivables.createdAt} AT TIME ZONE 'Asia/Jakarta')::date, 'YYYY-MM-DD')`,
+        amount: sql<number>`coalesce(sum(${receivables.outstandingAmount}), 0)`,
+        count: sql<number>`count(*)`,
+      })
+      .from(receivables)
+      .where(
+        and(
+          inArray(receivables.status, activeStatuses),
+          gte(receivables.createdAt, firstRange.start),
+          lt(receivables.createdAt, selectedRange.end),
+        ),
+      )
+      .groupBy(sql`(${receivables.createdAt} AT TIME ZONE 'Asia/Jakarta')::date`)
+      .orderBy(sql`(${receivables.createdAt} AT TIME ZONE 'Asia/Jakarta')::date asc`),
+    db
+      .select({
+        day: sql<string>`to_char((${payables.createdAt} AT TIME ZONE 'Asia/Jakarta')::date, 'YYYY-MM-DD')`,
+        amount: sql<number>`coalesce(sum(${payables.outstandingAmount}), 0)`,
+        count: sql<number>`count(*)`,
+      })
+      .from(payables)
+      .where(
+        and(
+          inArray(payables.status, activeStatuses),
+          gte(payables.createdAt, firstRange.start),
+          lt(payables.createdAt, selectedRange.end),
+        ),
+      )
+      .groupBy(sql`(${payables.createdAt} AT TIME ZONE 'Asia/Jakarta')::date`)
+      .orderBy(sql`(${payables.createdAt} AT TIME ZONE 'Asia/Jakarta')::date asc`),
+  ]);
+
+  const receivableMap = new Map(
+    receivableRows.map((row) => [
+      row.day,
+      {
+        amount: toNumber(row.amount),
+        count: toNumber(row.count),
+      },
+    ]),
+  );
+  const payableMap = new Map(
+    payableRows.map((row) => [
+      row.day,
+      {
+        amount: toNumber(row.amount),
+        count: toNumber(row.count),
+      },
+    ]),
+  );
+
+  const series = dates.map((date) => {
+    const receivable = receivableMap.get(date);
+    const payable = payableMap.get(date);
+
+    return {
+      date,
+      shortLabel: formatShortDateLabel(date),
+      receivableValue: receivable?.amount ?? 0,
+      receivableCount: receivable?.count ?? 0,
+      payableValue: payable?.amount ?? 0,
+      payableCount: payable?.count ?? 0,
+    } satisfies FinanceExposureTrendPoint;
+  });
+
+  return {
+    selectedDate,
+    periodStartLabel: formatDateLabel(dates[0]),
+    periodEndLabel: formatDateLabel(selectedDate),
+    series,
+    summary: {
+      totalReceivableValue: series.reduce((sum, item) => sum + item.receivableValue, 0),
+      totalPayableValue: series.reduce((sum, item) => sum + item.payableValue, 0),
+      totalReceivableCount: series.reduce((sum, item) => sum + item.receivableCount, 0),
+      totalPayableCount: series.reduce((sum, item) => sum + item.payableCount, 0),
+      maxValue: Math.max(
+        0,
+        ...series.map((item) => Math.max(item.receivableValue, item.payableValue)),
+      ),
+    },
+  };
+}
+
+export async function getDashboardSummary() {
+  const db = await getDb();
 
   const [
     [varianceRow],
@@ -676,5 +933,104 @@ export async function getDashboardSummary(selectedDateParam?: string) {
   return {
     stockTakeVariance: toNumber(varianceRow?.value),
     recentTransactions,
+  };
+}
+
+export async function getDashboardOnboardingSummary(): Promise<DashboardOnboardingSummary> {
+  const db = await getDb();
+
+  const [
+    [warehouseRow],
+    [productRow],
+    [userRow],
+    [farmerRow],
+    [factoryRow],
+    [customerRow],
+    [supplierRow],
+    [palmPurchaseRow],
+    [palmSaleRow],
+    [storePurchaseRow],
+    [storeSaleRow],
+  ] = await Promise.all([
+    db
+      .select({ count: sql<number>`count(*)` })
+      .from(warehouses)
+      .where(eq(warehouses.isActive, true)),
+    db
+      .select({ count: sql<number>`count(*)` })
+      .from(products)
+      .where(eq(products.isActive, true)),
+    db
+      .select({ count: sql<number>`count(*)` })
+      .from(users)
+      .where(eq(users.isActive, true)),
+    db
+      .select({ count: sql<number>`count(*)` })
+      .from(farmers)
+      .where(eq(farmers.isActive, true)),
+    db
+      .select({ count: sql<number>`count(*)` })
+      .from(factories)
+      .where(eq(factories.isActive, true)),
+    db
+      .select({ count: sql<number>`count(*)` })
+      .from(customers)
+      .where(eq(customers.isActive, true)),
+    db
+      .select({ count: sql<number>`count(*)` })
+      .from(suppliers)
+      .where(eq(suppliers.isActive, true)),
+    db
+      .select({ count: sql<number>`count(*)` })
+      .from(tbsPurchases)
+      .where(eq(tbsPurchases.status, "active")),
+    db
+      .select({ count: sql<number>`count(*)` })
+      .from(tbsSales)
+      .where(eq(tbsSales.status, "active")),
+    db
+      .select({ count: sql<number>`count(*)` })
+      .from(storePurchases)
+      .where(eq(storePurchases.status, "active")),
+    db
+      .select({ count: sql<number>`count(*)` })
+      .from(storeSales)
+      .where(eq(storeSales.status, "active")),
+  ]);
+
+  const activeWarehouseCount = toNumber(warehouseRow?.count);
+  const activeProductCount = toNumber(productRow?.count);
+  const activeUserCount = toNumber(userRow?.count);
+  const activeFarmerCount = toNumber(farmerRow?.count);
+  const activeFactoryCount = toNumber(factoryRow?.count);
+  const activeCustomerCount = toNumber(customerRow?.count);
+  const activeSupplierCount = toNumber(supplierRow?.count);
+  const activePalmPurchaseCount = toNumber(palmPurchaseRow?.count);
+  const activePalmSaleCount = toNumber(palmSaleRow?.count);
+  const activeStorePurchaseCount = toNumber(storePurchaseRow?.count);
+  const activeStoreSaleCount = toNumber(storeSaleRow?.count);
+
+  return {
+    activeWarehouseCount,
+    activeProductCount,
+    activeUserCount,
+    activePartnerCount:
+      activeFarmerCount +
+      activeFactoryCount +
+      activeCustomerCount +
+      activeSupplierCount,
+    activeFarmerCount,
+    activeFactoryCount,
+    activeCustomerCount,
+    activeSupplierCount,
+    activePalmPurchaseCount,
+    activePalmSaleCount,
+    activeStorePurchaseCount,
+    activeStoreSaleCount,
+    totalTransactionCount:
+      activePalmPurchaseCount +
+      activePalmSaleCount +
+      activeStorePurchaseCount +
+      activeStoreSaleCount,
   };
 }

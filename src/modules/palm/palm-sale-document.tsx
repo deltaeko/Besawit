@@ -104,8 +104,8 @@ export function PalmSaleDocument({
 }) {
   const wrapperClass =
     mode === "print"
-      ? "space-y-6"
-      : "space-y-6 rounded-3xl border border-border/80 bg-card/85 p-5 md:p-6";
+      ? "document-sheet document-sheet-print space-y-6"
+      : "document-sheet document-sheet-preview space-y-6";
   const deductions = Array.isArray(sale.deductions) ? sale.deductions : [];
   const returns = Array.isArray(sale.returns) ? sale.returns : [];
 
@@ -137,7 +137,7 @@ export function PalmSaleDocument({
         <InfoBlock label="Status Pembayaran" value={paymentStatusLabel(sale.paymentStatus)} />
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="document-avoid-break grid gap-4 md:grid-cols-3">
         <MetricCard
           label="Berat Bersih Final"
           value={`${formatNumber(sale.netWeightFinal ?? 0)} kg`}
@@ -184,7 +184,7 @@ export function PalmSaleDocument({
       </DocumentSection>
 
       <DocumentSection title="Breakdown Potongan">
-        <div className="overflow-x-auto rounded-2xl border border-border/80">
+        <div className="document-avoid-break overflow-x-auto rounded-2xl border border-border/80">
           <table className="min-w-full border-collapse text-sm">
             <thead className="bg-muted/30">
               <tr>
@@ -197,7 +197,7 @@ export function PalmSaleDocument({
             </thead>
             <tbody>
               {deductions.length ? (
-                deductions.map((item) => {
+                deductions.map((item, index) => {
                   const inputValue =
                     item.inputMode === "percentage"
                       ? `${formatNumber(item.percentageValue ?? 0)}%`
@@ -206,7 +206,10 @@ export function PalmSaleDocument({
                         : `${formatNumber(item.inputValue ?? 0)} kg`;
 
                   return (
-                    <tr className="border-b border-border/70 last:border-b-0" key={String(item.id ?? item.label ?? Math.random())}>
+                    <tr
+                      className="border-b border-border/70 last:border-b-0"
+                      key={String(item.id ?? item.configCode ?? item.label ?? `deduction-${index}`)}
+                    >
                       <td className="px-4 py-3 align-top">
                         <div className="font-semibold">{String(item.configName ?? item.label ?? "-")}</div>
                         <div className="text-xs text-muted-foreground">{String(item.configCode ?? "-")}</div>
@@ -236,7 +239,7 @@ export function PalmSaleDocument({
       </DocumentSection>
 
       <DocumentSection title="Data Return">
-        <div className="overflow-x-auto rounded-2xl border border-border/80">
+        <div className="document-avoid-break overflow-x-auto rounded-2xl border border-border/80">
           <table className="min-w-full border-collapse text-sm">
             <thead className="bg-muted/30">
               <tr>
@@ -249,8 +252,11 @@ export function PalmSaleDocument({
             </thead>
             <tbody>
               {returns.length ? (
-                returns.map((item) => (
-                  <tr className="border-b border-border/70 last:border-b-0" key={String(item.id ?? Math.random())}>
+                returns.map((item, index) => (
+                  <tr
+                    className="border-b border-border/70 last:border-b-0"
+                    key={String(item.id ?? item.returnReason ?? `return-${index}`)}
+                  >
                     <td className="px-4 py-3 align-top">{formatNumber(item.returnWeight ?? 0)} kg</td>
                     <td className="px-4 py-3 align-top">{String(item.returnReason ?? "-")}</td>
                     <td className="px-4 py-3 align-top">{returnActionLabel(item.actionType)}</td>
@@ -270,7 +276,7 @@ export function PalmSaleDocument({
       </DocumentSection>
 
       <DocumentSection title="Catatan">
-        <div className="rounded-2xl border bg-muted/20 p-4 text-sm text-muted-foreground">
+        <div className="document-avoid-break rounded-2xl border bg-muted/20 p-4 text-sm text-muted-foreground">
           {String(sale.notes ?? "").trim() || "Tidak ada catatan."}
         </div>
       </DocumentSection>

@@ -320,7 +320,7 @@ export default async function PalmDetailPage({
             description="Potongan hasil panen dialokasikan ke piutang toko tertua yang masih outstanding agar posisi hutang toko dan hutang pembelian tetap sinkron."
           >
             <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-              <div className="rounded-2xl border bg-muted/20 p-3">
+              <div className="rounded-[1.35rem] border border-border/80 bg-card/88 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]">
                 <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
                   Basis Potongan
                 </div>
@@ -328,7 +328,7 @@ export default async function PalmDetailPage({
                   {formatCurrency(Number(storeDebtOffset.offset.baseAmount))}
                 </div>
               </div>
-              <div className="rounded-2xl border bg-muted/20 p-3">
+              <div className="rounded-[1.35rem] border border-border/80 bg-card/88 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]">
                 <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
                   Nilai Diminta
                 </div>
@@ -338,7 +338,7 @@ export default async function PalmDetailPage({
                     : formatCurrency(Number(storeDebtOffset.offset.inputAmount))}
                 </div>
               </div>
-              <div className="rounded-2xl border bg-primary/10 p-3">
+              <div className="rounded-[1.35rem] border border-primary/20 bg-[linear-gradient(180deg,rgba(72,115,74,0.12),rgba(72,115,74,0.06))] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.28)]">
                 <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
                   Potongan Diterapkan
                 </div>
@@ -346,7 +346,7 @@ export default async function PalmDetailPage({
                   {formatCurrency(Number(storeDebtOffset.offset.appliedAmount))}
                 </div>
               </div>
-              <div className="rounded-2xl border bg-muted/20 p-3">
+              <div className="rounded-[1.35rem] border border-border/80 bg-card/88 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]">
                 <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
                   Catatan Potongan
                 </div>
@@ -618,7 +618,10 @@ export default async function PalmDetailPage({
           <div className="grid gap-4 md:grid-cols-2">
             {((sale as Record<string, unknown>).deductions as Array<Record<string, unknown>>).map(
               (item, index) => (
-                <div className="rounded-2xl border bg-muted/25 p-4" key={`${item.id ?? index}`}>
+                <div
+                  className="rounded-[1.35rem] border border-border/80 bg-card/88 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]"
+                  key={`${item.id ?? index}`}
+                >
                   <div className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
                     {String(item.label ?? item.configName ?? item.type ?? "Potongan")}
                   </div>
@@ -665,7 +668,7 @@ export default async function PalmDetailPage({
             )}
           </div>
         ) : (
-          <div className="rounded-2xl border border-dashed p-5 text-sm text-muted-foreground">
+          <div className="rounded-[1.35rem] border border-dashed border-border/70 p-5 text-sm text-muted-foreground">
             Tidak ada potongan tersimpan pada transaksi ini.
           </div>
         )}
